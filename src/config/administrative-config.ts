@@ -16,6 +16,11 @@ export const config = {
     dashboard: "/api/dashboard/data",
     export_pdf: "/api/dashboard/export-data",
 
+    //procesos academicos
+    teacherGroups: "/api/academic-processes/teacher-groups",
+    assignTeacher: "/api/academic-processes/teacher-groups/assign",
+    removeTeacher: "/api/academic-processes/teacher-groups/remove",
+
     //pagos
     pagos: "/api/pagos",
     pagosExportCsv: "/api/pagos/export-csv",
@@ -23,5 +28,10 @@ export const config = {
 
     //finanzas
     balance_general: "/api/finanzas/balance-general",
+
+    //estudiantes
+    students:"/api/gestion-academica/estudiantes",
+    studentsExportCsv: '/api/gestion-academica/estudiantes/export/csv',
+    studentsExportData: '/api/gestion-academica/estudiantes/export-data'
   },
 };

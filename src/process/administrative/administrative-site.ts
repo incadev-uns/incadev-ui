@@ -5,7 +5,7 @@ import {
   IconCreditCard,
   IconChartBar,
   IconFileText,
-  IconUsers, 
+  IconUsers,
 } from "@tabler/icons-react";
 import { type LucideIcon } from "lucide-react";
 
@@ -52,7 +52,7 @@ export const adminNavItems: NavItem[] = [
     url: "#",
     icon: IconSchool,
     items: [
-      { title: "Estudiantes", url: "/administrativo/estudiantes" },
+      { title: "Estudiantes", url: "/administrativo/gestion-academica/estudiantes" },
       { title: "Matrículas", url: "/administrativo/matriculas" },
       { title: "Historial Académico", url: "/administrativo/historial" },
     ],
@@ -78,14 +78,11 @@ export const adminNavItems: NavItem[] = [
 
       // Grupos
       { title: "Grupos", url: "/administrativo/groups" },
-      { title: "Docentes por Grupo", url: "/administrativo/group-teachers" },
+      { title: "Docentes por Grupo", url: "/administrativo/procesos-academicos/group-teachers" },
 
       // Control académico
       { title: "Estado de Matrículas", url: "/administrativo/enrollments" },
-      {
-        title: "Validación Académica",
-        url: "/administrativo/payment-validation",
-      },
+      //{ title: "Validación Académica", url: "/administrativo/payment-validation" },
     ],
   },
 

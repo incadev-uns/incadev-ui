@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import TeacherGroupAssignment from '@/process/administrative/academic-processes/TeacherGroupAssignment.tsx';
+const robots = ["noindex", "nofollow"];
+const title = "Docentes por Grupo | Incadev";
+const description = "Asignación y gestión de docentes a grupos de cursos";
+const keywords = ["docentes", "grupos", "asignación", "procesos académicos", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/procesos-academicos/group-teachers";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+<TeacherGroupAssignment client:load/>
+</DashboardLayout>
