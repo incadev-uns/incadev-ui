@@ -81,7 +81,7 @@ export const adminNavItems: NavItem[] = [
       { title: "Docentes por Grupo", url: "/administrativo/procesos-academicos/group-teachers" },
 
       // Control académico
-      { title: "Estado de Matrículas", url: "/administrativo/enrollments" },
+      { title: "Estado de Matrículas", url: "/administrativo/procesos-academicos/enrollment-status" },
       //{ title: "Validación Académica", url: "/administrativo/payment-validation" },
     ],
   },
