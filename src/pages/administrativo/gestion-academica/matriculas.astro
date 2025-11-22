@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import EnrollmentManagement from '@/process/administrative/academic-management/Enrollment.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Estudiantes | Incadev";
+const description = "Gestión académica de estudiantes inscritos";
+const keywords = ["estudiantes", "gestión académica", "matriculas", "certificados", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/academico/estudiantes";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<EnrollmentManagement client:load />
+</DashboardLayout>
