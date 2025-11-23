@@ -12,6 +12,7 @@ import {
   IconFileTypePdf,
   IconFileTypeCsv,
 } from '@tabler/icons-react';
+import { toast } from '@/utils/toast'; // ← IMPORTAR TOAST
 import DocumentTable from './components/document-table';
 import DocumentUploadModal from './components/document-upload-modal';
 import DocumentDetailModal from './components/document-detail-modal';
@@ -57,7 +58,6 @@ export default function DocumentsManagement() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
-  // Paginación
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta>({
     current_page: 1,
     last_page: 1,
@@ -67,11 +67,9 @@ export default function DocumentsManagement() {
     to: 0
   });
 
-  // Filtros y búsqueda
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
-  // Debounce para búsqueda
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
@@ -79,12 +77,10 @@ export default function DocumentsManagement() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Cargar datos cuando cambian los filtros
   useEffect(() => {
     loadDocuments();
   }, [paginationMeta.current_page, debouncedSearch]);
 
-  // Cargar estadísticas al montar
   useEffect(() => {
     loadStatistics();
   }, []);
@@ -126,6 +122,7 @@ export default function DocumentsManagement() {
       console.error('❌ Error loading documents:', error);
       setError(error instanceof Error ? error.message : 'Error desconocido');
       setDocuments([]);
+      toast.error('No se pudieron cargar los documentos', 'Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -164,9 +161,10 @@ export default function DocumentsManagement() {
     try {
       const url = `${config.apiUrl}${config.endpoints.documentsDownload}/${document.id}/download`;
       window.open(url, '_blank');
+      toast.success('Descarga iniciada correctamente', 'Descargando');
     } catch (error) {
       console.error('Error al descargar documento:', error);
-      alert('Error al descargar el documento');
+      toast.error('No se pudo descargar el documento', 'Error');
     }
   };
 
@@ -184,10 +182,12 @@ export default function DocumentsManagement() {
       loadDocuments();
       loadStatistics();
       setSelectedDocument(null);
-      alert('Documento eliminado exitosamente');
+      
+      // ✅ USAR TOAST EN VEZ DE ALERT
+      toast.success('El documento se eliminó correctamente', 'Eliminado');
     } catch (error) {
       console.error('Error deleting document:', error);
-      alert('Error al eliminar el documento');
+      toast.error('No se pudo eliminar el documento', 'Error');
     }
   };
 
@@ -195,9 +195,10 @@ export default function DocumentsManagement() {
     try {
       const url = `${config.apiUrl}${config.endpoints.documentsExportCsv}`;
       window.open(url, '_blank');
+      toast.success('Exportación CSV iniciada', 'Descargando');
     } catch (error) {
       console.error('Error al exportar CSV:', error);
-      alert('Error al exportar CSV');
+      toast.error('No se pudo exportar el CSV', 'Error');
     }
   };
 
@@ -219,11 +220,11 @@ export default function DocumentsManagement() {
 
       const pdfWindow = window.open('/administrativo/gestion-documentaria/export-pdf', '_blank');
       if (!pdfWindow) {
-        alert('Por favor, permite las ventanas emergentes para exportar el PDF');
+        toast.warning('Por favor, permite las ventanas emergentes', 'Bloqueado');
       }
     } catch (error) {
       console.error('Error al exportar PDF:', error);
-      alert(`Error al exportar PDF: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+      toast.error('No se pudo preparar el PDF', 'Error');
     }
   };
 
@@ -235,6 +236,7 @@ export default function DocumentsManagement() {
   const handleUploadSuccess = () => {
     loadDocuments();
     loadStatistics();
+    toast.success('Documento subido exitosamente', 'Éxito');
   };
 
   const handlePageChange = (newPage: number) => {
