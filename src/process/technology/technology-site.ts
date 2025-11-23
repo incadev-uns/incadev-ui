@@ -39,6 +39,8 @@ export const routes = {
       dashboard: "/tecnologico/admin/seguridad-dashboard",
       sessions: "/tecnologico/admin/sesiones",
       events: "/tecnologico/admin/eventos",
+      blocks: "/tecnologico/admin/bloqueos",
+      settings: "/tecnologico/admin/seguridad-configuracion",
     },
     support: {
       tickets: "/tecnologico/admin/tickets",
@@ -55,11 +57,16 @@ export const routes = {
   infrastructure: {
     servers: "/tecnologico/infrastructure/servidores",
     licenses: "/tecnologico/infrastructure/licenses",
-
+    assets: "/tecnologico/infrastructure/assets",
     profile: "/tecnologico/infrastructure/perfil",
   },
   security: {
+    dashboard: "/tecnologico/security/dashboard",
     incidents: "/tecnologico/security/incidentes",
+    blocks: "/tecnologico/security/bloqueos",
+    sessions: "/tecnologico/security/sesiones",
+    events: "/tecnologico/security/eventos",
+    settings: "/tecnologico/security/configuracion",
     profile: "/tecnologico/security/perfil",
   },
   academic_analyst: {

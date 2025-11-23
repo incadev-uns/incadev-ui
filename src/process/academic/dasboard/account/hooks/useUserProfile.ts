@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { config } from "@/config/academic-config";
+import { config } from "@/config/technology-config";
 import { routes } from "@/process/academic/academic-site";
 import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
 
@@ -59,7 +59,7 @@ export const useUserProfile = () => {
 
         const tokenWithoutQuotes = token.replace(/^"|"$/g, '');
         
-        const response = await fetch(`${config.endpoints.users.me}`, {
+        const response = await fetch(`${config.apiUrl}${config.endpoints.auth.me}`, {
           headers: {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
             "Accept": "application/json"
@@ -108,7 +108,7 @@ export const useUserProfile = () => {
     try {
       const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
       
-      const response = await fetch(`${config.endpoints.users.update}`, {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.auth.profile}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${tokenWithoutQuotes}`,
@@ -120,7 +120,7 @@ export const useUserProfile = () => {
           email: formData.email,
           dni: formData.dni,
           phone: formData.phone,
-          avatar: formData.avatar
+          //avatar: formData.avatar descomentar para cuando quiera agregar una imagen de perfil
         })
       });
 

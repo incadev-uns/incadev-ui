@@ -59,7 +59,7 @@ export function LoginForm({
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
-      const response = await fetch(`${config.endpoints.auth.login}`, {
+      const response = await fetch(`${config.endpoints.auth.register}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

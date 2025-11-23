@@ -1,7 +1,37 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, Users, Award } from "lucide-react";
+import { ArrowRight, BookOpen, Users, Award, GraduationCap } from "lucide-react";
+import { config } from "@/config/technology-config";
+
+interface HeroStats {
+  students: number;
+  courses: number;
+  teachers: number;
+}
 
 export default function HeroSection() {
+  const [stats, setStats] = useState<HeroStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchHeroStats();
+  }, []);
+
+  const fetchHeroStats = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.landing.heroStats}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setStats(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching hero stats:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="container mx-auto px-2 py-16 lg:py-24">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
@@ -29,16 +59,29 @@ export default function HeroSection() {
             <div className="text-center lg:text-left">
               <div className="flex items-center gap-2 text-primary mb-1">
                 <Users className="h-5 w-5" />
-                <span className="text-2xl font-bold">500+</span>
+                <span className="text-2xl font-bold">
+                  {isLoading ? "..." : stats?.students || 0}
+                </span>
               </div>
               <p className="text-sm text-muted-foreground">Estudiantes activos</p>
             </div>
             <div className="text-center lg:text-left">
               <div className="flex items-center gap-2 text-primary mb-1">
                 <BookOpen className="h-5 w-5" />
-                <span className="text-2xl font-bold">15+</span>
+                <span className="text-2xl font-bold">
+                  {isLoading ? "..." : stats?.courses || 0}
+                </span>
               </div>
               <p className="text-sm text-muted-foreground">Cursos disponibles</p>
+            </div>
+            <div className="text-center lg:text-left">
+              <div className="flex items-center gap-2 text-primary mb-1">
+                <GraduationCap className="h-5 w-5" />
+                <span className="text-2xl font-bold">
+                  {isLoading ? "..." : stats?.teachers || 0}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">Profesores expertos</p>
             </div>
             <div className="text-center lg:text-left">
               <div className="flex items-center gap-2 text-primary mb-1">

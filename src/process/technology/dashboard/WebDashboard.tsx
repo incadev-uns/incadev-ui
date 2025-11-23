@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { TechnologyLayout } from "../components/TechnologyLayout"
+import TechnologyLayout from "@/process/technology/TechnologyLayout"
 import { useTechnologyAuth } from "../hooks/useTechnologyAuth"
 import { technologyApi } from "@/services/tecnologico/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

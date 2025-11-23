@@ -58,7 +58,7 @@ export const navMainCollapse: NavItem[] = [];
 export const navSimpleMain: NavSimpleItem[] = [
   {
     title: "Crear Encuestas",
-    url: "/evaluacion/crud",
+    url: "/evaluacion/encuestas/panel-survey",
     icon: IconUsersPlus,
     allowedRoles: ["survey_admin"]
   },

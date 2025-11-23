@@ -1,4 +1,4 @@
-import { TechnologyLayout } from "../components/TechnologyLayout"
+import TechnologyLayout from "@/process/technology/TechnologyLayout"
 
 export default function AcademicAnalystDashboard() {
   return (

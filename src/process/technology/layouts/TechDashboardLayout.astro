@@ -35,6 +35,19 @@ const {
   </head>
   <body class="min-h-screen bg-background">
     <slot />
+    <script>
+      import { GlobalIdleDetector } from '@/components/security/GlobalIdleDetector';
+      import { createRoot } from 'react-dom/client';
+      import React from 'react';
+
+      // Montar el detector de inactividad global
+      const idleDetectorContainer = document.createElement('div');
+      idleDetectorContainer.id = 'global-idle-detector';
+      document.body.appendChild(idleDetectorContainer);
+
+      const root = createRoot(idleDetectorContainer);
+      root.render(React.createElement(GlobalIdleDetector, { enabled: true }));
+    </script>
   </body>
 </html>
 

@@ -20,12 +20,12 @@ export const config = {
       resetPassword: "/auth/reset-password",
     },
 
-    // Recovery Email
-    recoveryEmail: {
-      add: "/auth/recovery-email/add",
-      verify: "/auth/recovery-email/verify",
-      resendCode: "/auth/recovery-email/resend-code",
-      remove: "/auth/recovery-email/remove",
+    // Secondary Email
+    secondaryEmail: {
+      add: "/auth/secondary-email/add",
+      verify: "/auth/secondary-email/verify",
+      resendCode: "/auth/secondary-email/resend-code",
+      remove: "/auth/secondary-email/remove",
     },
 
     // Two-Factor Authentication (2FA)
@@ -96,6 +96,28 @@ export const config = {
     security: {
       // Dashboard
       dashboard: "/security/dashboard",
+
+      // User Blocks Management
+      blocks: {
+        list: "/security/blocks", // Listar usuarios bloqueados
+        create: "/security/blocks", // Bloquear usuario manualmente
+        history: "/security/blocks/history", // Historial de bloqueos
+        statistics: "/security/blocks/statistics", // Estadísticas de bloqueos
+        userHistory: "/security/blocks/user/:userId", // Historial de bloqueos de un usuario
+        check: "/security/blocks/check/:userId", // Verificar si usuario está bloqueado
+        unblockByUser: "/security/blocks/user/:userId", // Desbloquear por user ID
+        unblockById: "/security/blocks/:blockId", // Desbloquear por ID de bloqueo
+      },
+
+      // Security Settings
+      settings: {
+        list: "/security/settings", // Obtener todas las configuraciones
+        grouped: "/security/settings/grouped", // Configuraciones agrupadas
+        login: "/security/settings/login", // Configuraciones de login
+        update: "/security/settings/:key", // Actualizar una configuración
+        updateBulk: "/security/settings", // Actualizar múltiples configuraciones
+        clearCache: "/security/settings/clear-cache", // Limpiar cache
+      },
 
       // Sessions Management
       sessions: {
@@ -171,6 +193,12 @@ export const config = {
           summary: "/developer-web/chatbot/analytics/summary",
           conversationsByDay: "/developer-web/chatbot/analytics/conversations-by-day",
         },
+        // Conversación del Chatbot
+        conversation: {
+          start: "/developer-web/chatbot/conversation/start",
+          message: "/developer-web/chatbot/conversation/message",
+          end: "/developer-web/chatbot/conversation/end",
+        },
         // FAQs del Chatbot
         faqs: {
           public: {
@@ -185,6 +213,18 @@ export const config = {
           destroy: "/developer-web/chatbot/faqs/:id",
           stats: "/developer-web/chatbot/faqs/stats/summary",
         },
+      },
+
+      // Landing Page (Public)
+      landing: {
+        heroStats: "/developer-web/landing/hero-stats",
+        courses: "/developer-web/landing/courses",
+        featuredTeachers: "/developer-web/landing/featured-teachers",
+        testimonials: "/developer-web/landing/testimonials",
+        news: "/developer-web/landing/news",
+        newsDetail: "/developer-web/landing/news/:slug",
+        announcements: "/developer-web/landing/announcements",
+        alerts: "/developer-web/landing/alerts",
       },
     },
   }

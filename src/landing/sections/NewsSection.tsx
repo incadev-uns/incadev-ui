@@ -1,119 +1,328 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, ArrowRight, Newspaper } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Newspaper, Eye, User, Loader2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { config } from "@/config/technology-config";
 
-// Datos de ejemplo - En producción vendrían de la API
-const recentNews = [
-  {
-    id: 1,
-    title: "Nuevos cursos de Inteligencia Artificial disponibles para 2025",
-    excerpt: "Amplía tus habilidades con nuestros nuevos cursos especializados en IA, Machine Learning y Deep Learning.",
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    category: "Cursos",
-    date: "2025-01-15",
-    readTime: "5 min"
-  },
-  {
-    id: 2,
-    title: "Convenio con empresas tecnológicas líderes del país",
-    excerpt: "Nuestros estudiantes tendrán acceso a prácticas profesionales y oportunidades laborales exclusivas.",
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    category: "Alianzas",
-    date: "2025-01-10",
-    readTime: "4 min"
-  },
-  {
-    id: 3,
-    title: "Celebramos 100 egresados certificados en desarrollo web",
-    excerpt: "Un hito importante para nuestra institución. Conoce las historias de éxito de nuestros graduados.",
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    category: "Logros",
-    date: "2025-01-05",
-    readTime: "3 min"
-  }
-];
+interface News {
+  id: number;
+  title: string;
+  slug: string;
+  summary: string;
+  image_url: string;
+  category: string;
+  published_date: string;
+  views: number;
+  reading_time: string;
+  author: string;
+}
 
-const categoryColors = {
-  "Cursos": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  "Alianzas": "bg-green-500/10 text-green-600 dark:text-green-400",
-  "Logros": "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-};
+interface NewsDetail {
+  id: number;
+  title: string;
+  slug: string;
+  content: string;
+  summary: string;
+  image_url: string;
+  category: string;
+  published_date: string;
+  views: number;
+  metadata: {
+    tags: string[];
+    author: string;
+    reading_time: string;
+  };
+  seo_title: string;
+  seo_description: string;
+}
 
 export default function NewsSection() {
-  return (
-    <div className="container mx-auto px-4">
-      <div className="text-center mb-12">
-        <Badge variant="outline" className="mb-4">
-          <Newspaper className="h-3 w-3 mr-1" />
-          Últimas Noticias
-        </Badge>
-        <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-          Mantente Informado
-        </h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-          Las últimas novedades, eventos y logros de nuestra comunidad educativa
+  const [news, setNews] = useState<News[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedNews, setSelectedNews] = useState<NewsDetail | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+
+  useEffect(() => {
+    fetchNews();
+  }, []);
+
+  const fetchNews = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.landing.news}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setNews(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching news:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchNewsDetail = async (id: number) => {
+    setIsLoadingDetail(true);
+    try {
+      const response = await fetch(`${config.apiUrl}/developer-web/landing/news/${id}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setSelectedNews(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching news detail:", error);
+    } finally {
+      setIsLoadingDetail(false);
+    }
+  };
+
+  const handleOpenNews = async (item: News) => {
+    setIsModalOpen(true);
+    await fetchNewsDetail(item.id);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedNews(null);
+  };
+
+  const categoryColors: Record<string, string> = {
+    business: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    education: "bg-green-500/10 text-green-600 dark:text-green-400",
+    technology: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+    health: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    science: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  };
+
+  // Formatear el contenido con saltos de línea
+  const formatContent = (content: string) => {
+    return content.split('\r').map((paragraph, index) => {
+      const trimmed = paragraph.trim();
+      if (!trimmed) return null;
+
+      // Detectar si es un item de lista
+      if (trimmed.startsWith('-')) {
+        return (
+          <li key={index} className="ml-4">
+            {trimmed.substring(1).trim()}
+          </li>
+        );
+      }
+
+      return (
+        <p key={index} className="mb-4">
+          {trimmed}
         </p>
+      );
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <Badge variant="outline" className="mb-4">
+            <Newspaper className="h-3 w-3 mr-1" />
+            Últimas Noticias
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Mantente Informado
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Las últimas novedades, eventos y logros de nuestra comunidad educativa
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse overflow-hidden">
+              <div className="h-48 bg-muted" />
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-1/4 mb-2" />
+                <div className="h-6 bg-muted rounded w-3/4" />
+                <div className="h-4 bg-muted rounded w-full mt-2" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-10 bg-muted rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
+    );
+  }
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-        {recentNews.map((news) => (
-          <Card key={news.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
-            {/* Imagen de la noticia */}
-            <div className="relative h-48 overflow-hidden bg-muted/30">
-              <img
-                src={news.image}
-                alt={news.title}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                loading="lazy"
-              />
-              <div className="absolute top-3 left-3">
-                <Badge className={categoryColors[news.category as keyof typeof categoryColors]}>
-                  {news.category}
-                </Badge>
-              </div>
-            </div>
+  if (news.length === 0) {
+    return null;
+  }
 
-            <CardHeader>
-              <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  <span>{new Date(news.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+  return (
+    <>
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <Badge variant="outline" className="mb-4">
+            <Newspaper className="h-3 w-3 mr-1" />
+            Últimas Noticias
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Mantente Informado
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Las últimas novedades, eventos y logros de nuestra comunidad educativa
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          {news.map((item) => (
+            <Card key={item.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
+              {/* Imagen de la noticia */}
+              <div className="relative h-48 overflow-hidden bg-muted/30">
+                <img
+                  src={item.image_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+                <div className="absolute top-3 left-3">
+                  <Badge className={categoryColors[item.category] || "bg-primary/90 backdrop-blur"}>
+                    {item.category}
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="h-3 w-3" />
-                  <span>{news.readTime}</span>
-                </div>
               </div>
-              <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
-                {news.title}
-              </CardTitle>
-              <CardDescription className="line-clamp-3">
-                {news.excerpt}
-              </CardDescription>
-            </CardHeader>
 
-            <CardContent className="mt-auto">
-              <Button variant="ghost" className="w-full gap-2 group/btn" asChild>
-                <a href={`/tecnologico/web/noticias/${news.id}`}>
+              <CardHeader>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    <span>{new Date(item.published_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>{item.reading_time}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Eye className="h-3 w-3" />
+                    <span>{item.views}</span>
+                  </div>
+                </div>
+                <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
+                  {item.title}
+                </CardTitle>
+                <CardDescription className="line-clamp-3">
+                  {item.summary}
+                </CardDescription>
+              </CardHeader>
+
+              <CardContent className="mt-auto">
+                <p className="text-xs text-muted-foreground mb-3">Por {item.author}</p>
+                <Button
+                  variant="ghost"
+                  className="w-full gap-2 group/btn"
+                  onClick={() => handleOpenNews(item)}
+                >
                   Leer más
                   <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {/* Ver todas las noticias */}
+        <div className="text-center mt-12">
+          <Button variant="outline" size="lg" className="gap-2" asChild>
+            <a href="/tecnologico/web/noticias">
+              Ver todas las noticias
+              <ArrowRight className="h-4 w-4" />
+            </a>
+          </Button>
+        </div>
       </div>
 
-      {/* Ver todas las noticias */}
-      <div className="text-center mt-12">
-        <Button variant="outline" size="lg" className="gap-2" asChild>
-          <a href="/tecnologico/web/noticias">
-            Ver todas las noticias
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </Button>
-      </div>
-    </div>
+      {/* Modal de detalle de noticia - Tamaño completo */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-[95vw] w-full lg:max-w-[85vw] xl:max-w-[1400px] max-h-[95vh] overflow-y-auto p-0">
+          {isLoadingDetail ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : selectedNews ? (
+            <div className="flex flex-col">
+              {/* Imagen de cabecera */}
+              <div className="relative w-full h-64 md:h-96">
+                <img
+                  src={selectedNews.image_url}
+                  alt={selectedNews.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                  <Badge className={categoryColors[selectedNews.category] || "bg-primary/90"}>
+                    {selectedNews.category}
+                  </Badge>
+                  <h1 className="text-2xl md:text-4xl font-bold text-white mt-3 leading-tight">
+                    {selectedNews.title}
+                  </h1>
+                </div>
+              </div>
+
+              {/* Contenido */}
+              <div className="p-6 md:p-8">
+                {/* Metadatos */}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b pb-6 mb-6">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="font-medium">{selectedNews.metadata.author}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(selectedNews.published_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    <span>{selectedNews.metadata.reading_time}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
+                    <span>{selectedNews.views} vistas</span>
+                  </div>
+                </div>
+
+                {/* Resumen destacado */}
+                <div className="bg-muted/50 rounded-lg p-4 mb-6 border-l-4 border-primary">
+                  <p className="text-base md:text-lg italic text-muted-foreground">
+                    {selectedNews.summary}
+                  </p>
+                </div>
+
+                {/* Contenido principal */}
+                <article className="prose prose-lg dark:prose-invert max-w-none">
+                  <div className="text-base md:text-lg leading-relaxed text-foreground">
+                    {formatContent(selectedNews.content)}
+                  </div>
+                </article>
+
+                {/* Tags */}
+                {selectedNews.metadata.tags && selectedNews.metadata.tags.length > 0 && (
+                  <div className="mt-8 pt-6 border-t">
+                    <p className="text-sm text-muted-foreground mb-3">Etiquetas:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedNews.metadata.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

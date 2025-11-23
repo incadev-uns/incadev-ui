@@ -2,10 +2,11 @@ import AcademicLayout from "@/process/academic/AcademicLayout"
 import { GroupCard, type GroupData, type APIGroupData, mapAPIGroupToGroupData } from "@/process/academic/dasboard/groups/components/GroupCard"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, Download, Loader2, AlertCircle, FileText } from "lucide-react"
+import { Search, Download, Loader2, AlertCircle, FileText, User, Check, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 import { config } from "@/config/academic-config"
+import { config as evaluationConfig } from "@/config/evaluation-config"
 import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
@@ -17,11 +18,50 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination"
 import { Badge } from "@/components/ui/badge"
+import { routes } from "@/process/academic/academic-site"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
 
 // Interfaz extendida para incluir los campos del certificado
 interface CompletedAPIGroupData extends APIGroupData {
   has_certificate: boolean
   certificate_download_url: string
+}
+
+// Interfaz para la respuesta de encuestas completadas
+interface SurveyCompletionStatus {
+  group_id: string;
+  isCompleted: boolean;
+  requiredSurveys: Array<{
+    id: number;
+    title: string;
+    event: string;
+  }>;
+  pendingSurveys: Array<{
+    id: number;
+    title: string;
+    event: string;
+  }>;
+}
+
+// Interfaz para la respuesta de verificación de DNI
+interface DniCheckResponse {
+  success: boolean;
+  dni: string;
+  fullname: string;
+}
+
+// Interfaz para la respuesta de actualización de DNI
+interface DniUpdateResponse {
+  status: boolean;
+  message: string;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    dni: string;
+    fullname: string;
+  };
 }
 
 interface APIResponse {
@@ -37,7 +77,7 @@ interface APIResponse {
 }
 
 export default function FinishGroup() {
-  const { token } = useAcademicAuth()
+  const { token, user } = useAcademicAuth()
   const [searchQuery, setSearchQuery] = useState("")
   const [sortBy, setSortBy] = useState("recent")
   const [groups, setGroups] = useState<CompletedAPIGroupData[]>([])
@@ -46,6 +86,15 @@ export default function FinishGroup() {
   const [downloading, setDownloading] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [meta, setMeta] = useState<APIResponse["meta"] | null>(null)
+  
+  // Estados para el modal de DNI
+  const [showDniModal, setShowDniModal] = useState(false)
+  const [dniInput, setDniInput] = useState("")
+  const [dniFullname, setDniFullname] = useState("")
+  const [checkingDni, setCheckingDni] = useState(false)
+  const [updatingDni, setUpdatingDni] = useState(false)
+  const [dniError, setDniError] = useState<string | null>(null)
+  const [currentGroupForDownload, setCurrentGroupForDownload] = useState<CompletedAPIGroupData | null>(null)
 
   useEffect(() => {
     loadCompletedGroups()
@@ -90,20 +139,113 @@ export default function FinishGroup() {
     }
   }
 
-  const handleViewCertificate = async (group: CompletedAPIGroupData) => {
-    if (!token || !group.has_certificate) {
-      console.error("No hay token de autenticación o el grupo no tiene certificado")
-      return
-    }
-
+  // Verificar si las encuestas están completadas
+  const checkSurveyCompletion = async (groupId: string): Promise<SurveyCompletionStatus> => {
     try {
-      setDownloading(group.id.toString())
-      
-      // Usar la URL completa del certificado que viene en la respuesta
+      const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
+      const response = await fetch(
+        `${evaluationConfig.apiUrl}${evaluationConfig.endpoints.surveys.isSurveyCompleted}?group_id=${groupId}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error(`Error verificando encuestas para grupo ${groupId}:`, error);
+      throw error;
+    }
+  };
+
+  // Verificar DNI en el sistema
+  const checkDni = async (dni: string): Promise<DniCheckResponse> => {
+    try {
+      const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
+      const response = await fetch(
+        `${config.apiUrl}${config.endpoints.users.checkDNI}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ dni })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error verificando DNI:", error);
+      throw error;
+    }
+  };
+
+  // Actualizar DNI del usuario
+  const updateDni = async (dni: string): Promise<DniUpdateResponse> => {
+    try {
+      const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
+      const response = await fetch(
+        `${config.apiUrl}${config.endpoints.users.updateDNI}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ dni })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status && data.user) {
+        const currentUserStr = localStorage.getItem('user');
+        if (currentUserStr) {
+          const currentUser = JSON.parse(currentUserStr);
+          
+          const updatedUser = {
+            ...currentUser,
+            dni: data.user.dni,
+            fullname: data.user.fullname
+          };
+          
+          localStorage.setItem('user', JSON.stringify(updatedUser));
+          
+          console.log("Usuario actualizado en localStorage:", updatedUser);
+        }
+      }
+      return data;
+    } catch (error) {
+      console.error("Error actualizando DNI:", error);
+      throw error;
+    }
+  };
+
+  // Función para descargar el certificado (sin verificación de DNI)
+  const downloadCertificate = async (group: CompletedAPIGroupData) => {
+    try {
       const response = await fetch(group.certificate_download_url, {
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${token.replace(/^"|"$/g, '')}`,
+          "Authorization": `Bearer ${token?.replace(/^"|"$/g, '')}`,
         }
       })
 
@@ -124,13 +266,135 @@ export default function FinishGroup() {
       document.body.removeChild(a)
       
       console.log("Certificado descargado exitosamente")
+      return true;
     } catch (error) {
       console.error("Error descargando certificado:", error)
-      alert("Error al descargar el certificado. Por favor, inténtalo de nuevo.")
+      throw error;
+    }
+  }
+
+  const handleViewCertificate = async (group: CompletedAPIGroupData) => {
+    if (!token || !group.has_certificate) {
+      console.error("No hay token de autenticación o el grupo no tiene certificado")
+      return
+    }
+
+    try {
+      setDownloading(group.id.toString())
+      
+      // Primero verificar si las encuestas están completadas
+      const surveyStatus = await checkSurveyCompletion(group.id.toString());
+      
+      if (!surveyStatus.isCompleted) {
+        // Si no están completadas, redireccionar a encuestas
+        setDownloading(null);
+        window.location.href = routes.dashboard.surveys;
+        return;
+      }
+
+      // Verificar si el usuario tiene DNI
+      if (!user?.dni) {
+        // Si no tiene DNI, mostrar modal para ingresarlo
+        setCurrentGroupForDownload(group);
+        setShowDniModal(true);
+        setDownloading(null);
+        return;
+      }
+
+      // Si tiene DNI y encuestas completadas, proceder con la descarga
+      await downloadCertificate(group);
+      
+    } catch (error) {
+      console.error("Error descargando certificado:", error)
+      
+      // Si el error es específico de encuestas incompletas, mostrar mensaje apropiado
+      if (error instanceof Error && error.message.includes("encuestas")) {
+        alert("No puedes descargar el certificado hasta completar todas las encuestas requeridas.");
+        window.location.href = routes.dashboard.surveys;
+      } else {
+        alert("Error al descargar el certificado. Por favor, inténtalo de nuevo.")
+      }
     } finally {
       setDownloading(null)
     }
   }
+
+  // Manejar la verificación del DNI
+  const handleCheckDni = async () => {
+    if (!dniInput.trim()) {
+      setDniError("Por favor ingresa tu DNI");
+      return;
+    }
+
+    if (!/^\d{8}$/.test(dniInput)) {
+      setDniError("El DNI debe tener 8 dígitos numéricos");
+      return;
+    }
+
+    try {
+      setCheckingDni(true);
+      setDniError(null);
+      
+      const result = await checkDni(dniInput);
+      
+      if (result.success) {
+        setDniFullname(result.fullname);
+      } else {
+        setDniError("No se pudo verificar el DNI. Por favor, inténtalo de nuevo.");
+      }
+    } catch (error) {
+      console.error("Error verificando DNI:", error);
+      setDniError("Error al verificar el DNI. Por favor, inténtalo de nuevo.");
+    } finally {
+      setCheckingDni(false);
+    }
+  };
+
+  // Manejar la actualización del DNI
+  const handleUpdateDni = async () => {
+    if (!dniInput.trim() || !dniFullname) {
+      setDniError("Por favor verifica tu DNI primero");
+      return;
+    }
+
+    try {
+      setUpdatingDni(true);
+      setDniError(null);
+      
+      const result = await updateDni(dniInput);
+      
+      if (result.status) {
+        // DNI actualizado exitosamente, proceder con la descarga
+        setShowDniModal(false);
+        if (currentGroupForDownload) {
+          setDownloading(currentGroupForDownload.id.toString());
+          await downloadCertificate(currentGroupForDownload);
+          setDownloading(null);
+        }
+        
+        // Limpiar estados
+        setDniInput("");
+        setDniFullname("");
+        setCurrentGroupForDownload(null);
+      } else {
+        setDniError(result.message || "Error al actualizar el DNI");
+      }
+    } catch (error) {
+      console.error("Error actualizando DNI:", error);
+      setDniError("Error al actualizar el DNI. Por favor, inténtalo de nuevo.");
+    } finally {
+      setUpdatingDni(false);
+    }
+  };
+
+  // Cerrar modal y limpiar estados
+  const handleCloseDniModal = () => {
+    setShowDniModal(false);
+    setDniInput("");
+    setDniFullname("");
+    setDniError(null);
+    setCurrentGroupForDownload(null);
+  };
 
   const handleExportHistory = () => {
     const csvContent = [
@@ -390,6 +654,105 @@ export default function FinishGroup() {
           </div>
         </div>
       </div>
+
+      {/* Modal para ingresar DNI */}
+      <Dialog open={showDniModal} onOpenChange={setShowDniModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Verificación de DNI
+            </DialogTitle>
+            <DialogDescription>
+              Para descargar tu certificado, necesitamos verificar tu identidad con tu DNI.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="dni">Número de DNI</Label>
+              <Input
+                id="dni"
+                type="text"
+                placeholder="Ingresa tu DNI (8 dígitos)"
+                value={dniInput}
+                onChange={(e) => {
+                  setDniInput(e.target.value.replace(/\D/g, '').slice(0, 8));
+                  setDniFullname(""); // Resetear nombre cuando cambie el DNI
+                  setDniError(null);
+                }}
+                disabled={checkingDni || updatingDni}
+                className={dniError ? "border-destructive" : ""}
+              />
+              {dniError && (
+                <p className="text-sm text-destructive">{dniError}</p>
+              )}
+            </div>
+
+            {dniFullname && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2 text-green-800">
+                  <Check className="h-4 w-4" />
+                  <span className="font-medium">DNI verificado correctamente</span>
+                </div>
+                <p className="text-sm text-green-700 mt-1">
+                  <strong>Nombre completo:</strong> {dniFullname}
+                </p>
+                <p className="text-xs text-green-600 mt-2">
+                  Si esta información es correcta, haz clic en "Guardar y Descargar"
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={handleCloseDniModal}
+              disabled={checkingDni || updatingDni}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Cancelar
+            </Button>
+            
+            {!dniFullname ? (
+              <Button
+                onClick={handleCheckDni}
+                disabled={checkingDni || !dniInput.trim() || dniInput.length !== 8}
+              >
+                {checkingDni ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Verificando...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Verificar DNI
+                  </>
+                )}
+              </Button>
+            ) : (
+              <Button
+                onClick={handleUpdateDni}
+                disabled={updatingDni}
+              >
+                {updatingDni ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    Guardar y Descargar
+                  </>
+                )}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AcademicLayout>
   )
 }
