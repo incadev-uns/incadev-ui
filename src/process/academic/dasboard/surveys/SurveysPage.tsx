@@ -51,10 +51,31 @@ interface APIGroupData {
   progress?: number;
 }
 
+interface TeachingGroup {
+  id: number;
+  name: string;
+  course_name: string;
+  course_version: string;
+  course_version_name: string;
+  start_date: string;
+  end_date: string;
+  status: string;
+  students_count: number;
+  teachers: Array<{
+    id: number;
+    name: string;
+    fullname: string;
+    email: string;
+    avatar: string | null;
+  }>;
+  created_at: string;
+}
+
 interface SurveyStatus {
   hasResponded: boolean;
   event: string;
   group_id: number;
+  survey_id?: number;
 }
 
 interface GroupWithSurveys {
@@ -83,42 +104,86 @@ const statusConfig = {
   }
 };
 
+// Eventos permitidos por rol
+const ALLOWED_EVENTS_BY_ROLE = {
+  student: ["satisfaction", "impact"],
+  teacher: ["teacher"]
+};
+
 export default function SurveysPage() {
-  const { token } = useAcademicAuth();
+  const { token, role } = useAcademicAuth();
   const [selectedSurvey, setSelectedSurvey] = useState<{survey: APISurvey, groupId: string, event: string} | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [groupsWithSurveys, setGroupsWithSurveys] = useState<GroupWithSurveys[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Obtener grupos matriculados
-  const fetchEnrolledGroups = async (): Promise<APIGroupData[]> => {
+  // Obtener grupos matriculados (estudiantes) o grupos de enseñanza (docentes)
+  const fetchGroups = async (): Promise<APIGroupData[]> => {
     try {
       const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
-      const response = await fetch(
-        `${config.apiUrl}${config.endpoints.groups.listComplete}`,
-        {
-          method: "GET",
-          headers: {
-            "Authorization": `Bearer ${tokenWithoutQuotes}`,
-            "Content-Type": "application/json"
+      
+      if (role === 'student') {
+        // Endpoint para estudiantes
+        const response = await fetch(
+          `${config.apiUrl}${config.endpoints.groups.listComplete}`,
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${tokenWithoutQuotes}`,
+              "Content-Type": "application/json"
+            }
           }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        const data = await response.json();
+        return data.data;
+      } else if (role === 'teacher') {
+        // Endpoint para docentes - solo grupos completados
+        const response = await fetch(
+          `${config.apiUrl}${config.endpoints.groups.teaching}`,
+          {
+            method: "GET",
+            headers: {
+              "Authorization": `Bearer ${tokenWithoutQuotes}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        // Filtrar solo grupos con status 'completed' y mapear a APIGroupData
+        const completedGroups = data.data
+          .filter((group: TeachingGroup) => group.status === 'completed')
+          .map((group: TeachingGroup) => ({
+            id: group.id.toString(),
+            name: group.name,
+            description: `${group.course_name} - ${group.course_version_name}`,
+            start_date: group.start_date,
+            end_date: group.end_date,
+            status: group.status
+          }));
+
+        return completedGroups;
+      } else {
+        throw new Error("Rol de usuario no reconocido");
       }
-
-      const data = await response.json();
-      return data.data;
     } catch (error) {
       console.error("Error cargando grupos:", error);
       throw error;
     }
   };
 
-  // Obtener encuestas disponibles
+  // Obtener encuestas disponibles y filtrar por rol
   const fetchSurveys = async (): Promise<APISurvey[]> => {
     try {
       const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
@@ -138,19 +203,26 @@ export default function SurveysPage() {
       }
 
       const data = await response.json();
-      return data.data;
+      
+      // Filtrar encuestas por eventos permitidos según el rol
+      const allowedEvents = ALLOWED_EVENTS_BY_ROLE[role as keyof typeof ALLOWED_EVENTS_BY_ROLE] || [];
+      const filteredSurveys = data.data.filter((survey: APISurvey) => 
+        allowedEvents.includes(survey.mapping.event)
+      );
+
+      return filteredSurveys;
     } catch (error) {
       console.error("Error cargando encuestas:", error);
       throw error;
     }
   };
 
-  // Verificar estado de encuesta por grupo y evento
-  const checkSurveyStatus = async (groupId: string, event: string): Promise<SurveyStatus> => {
+  // Verificar estado de encuesta por grupo, evento y survey_id
+  const checkSurveyStatus = async (groupId: string, event: string, surveyId: number): Promise<SurveyStatus> => {
     try {
       const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
       const response = await fetch(
-        `${evaluationConfig.apiUrl}${evaluationConfig.endpoints.surveys.active}?event=${event}&group_id=${groupId}`,
+        `${evaluationConfig.apiUrl}${evaluationConfig.endpoints.surveys.active}?event=${event}&group_id=${groupId}&survey_id=${surveyId}`,
         {
           method: "GET",
           headers: {
@@ -167,7 +239,7 @@ export default function SurveysPage() {
       const data = await response.json();
       return data.data;
     } catch (error) {
-      console.error(`Error verificando estado de encuesta ${event} para grupo ${groupId}:`, error);
+      console.error(`Error verificando estado de encuesta ${event} (survey: ${surveyId}) para grupo ${groupId}:`, error);
       // Si hay error, asumimos que no ha respondido
       return {
         hasResponded: false,
@@ -184,17 +256,35 @@ export default function SurveysPage() {
         setLoading(true);
         setError(null);
 
+        // Si no hay rol definido, esperar
+        if (!role) {
+          return;
+        }
+
         const [groups, surveys] = await Promise.all([
-          fetchEnrolledGroups(),
+          fetchGroups(),
           fetchSurveys()
         ]);
+
+        // Si no hay grupos o encuestas, mostrar mensaje
+        if (groups.length === 0) {
+          setGroupsWithSurveys([]);
+          setLoading(false);
+          return;
+        }
+
+        if (surveys.length === 0) {
+          setGroupsWithSurveys([]);
+          setLoading(false);
+          return;
+        }
 
         // Combinar grupos con sus encuestas y verificar estado
         const groupsWithSurveysData: GroupWithSurveys[] = await Promise.all(
           groups.map(async (group) => {
             const surveysWithStatus = await Promise.all(
               surveys.map(async (survey) => {
-                const status = await checkSurveyStatus(group.id, survey.mapping.event);
+                const status = await checkSurveyStatus(group.id, survey.mapping.event, survey.id);
                 return {
                   ...survey,
                   status
@@ -218,10 +308,10 @@ export default function SurveysPage() {
       }
     };
 
-    if (token) {
+    if (token && role) {
       loadData();
     }
-  }, [token]);
+  }, [token, role]);
 
   const handleSurveyClick = (survey: APISurvey, groupId: string, event: string, hasResponded: boolean) => {
     if (hasResponded) return; // No hacer nada si ya respondió
@@ -305,9 +395,14 @@ export default function SurveysPage() {
 
             {/* Header */}
             <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-bold tracking-tight">Encuestas Disponibles</h2>
+              <h2 className="text-2xl font-bold tracking-tight">
+                {role === 'teacher' ? 'Evaluaciones de Docentes' : 'Encuestas Disponibles'}
+              </h2>
               <p className="text-muted-foreground">
-                Completa las encuestas pendientes para ayudarnos a mejorar tu experiencia académica
+                {role === 'teacher' 
+                  ? 'Completa las evaluaciones de tus grupos para mejorar la experiencia educativa'
+                  : 'Completa las encuestas pendientes para ayudarnos a mejorar tu experiencia académica'
+                }
               </p>
             </div>
 
@@ -355,89 +450,112 @@ export default function SurveysPage() {
 
             {/* Groups with Surveys */}
             <div className="space-y-6">
-              {groupsWithSurveys.map((groupData) => (
-                <div key={groupData.group.id} className="space-y-4">
-                  {/* Group Header */}
-                  <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
-                    <Users className="h-6 w-6 text-primary" />
-                    <div>
-                      <h3 className="font-semibold text-lg">{groupData.group.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {groupData.group.description}
-                      </p>
+              {groupsWithSurveys.length === 0 ? (
+                <div className="text-center py-12">
+                  <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">
+                    {role === 'teacher' 
+                      ? 'No tienes grupos completados para evaluar' 
+                      : 'No tienes grupos con encuestas disponibles'
+                    }
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {role === 'teacher'
+                      ? 'Solo los grupos con estado "completado" están disponibles para evaluación'
+                      : 'No se encontraron encuestas pendientes para tus grupos'
+                    }
+                  </p>
+                </div>
+              ) : (
+                groupsWithSurveys.map((groupData) => (
+                  <div key={groupData.group.id} className="space-y-4">
+                    {/* Group Header */}
+                    <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+                      <Users className="h-6 w-6 text-primary" />
+                      <div>
+                        <h3 className="font-semibold text-lg">{groupData.group.name}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {groupData.group.description}
+                        </p>
+                        {role === 'teacher' && (
+                          <Badge variant="outline" className="mt-1">
+                            Grupo completado
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Surveys Grid */}
+                    <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
+                      {groupData.surveys.map((survey) => {
+                        const surveyStatus = getSurveyStatus(survey.status.hasResponded);
+                        const config = statusConfig[surveyStatus];
+                        const StatusIcon = config.icon;
+                        const isCompleted = surveyStatus === "completed";
+
+                        return (
+                          <Card
+                            key={`${groupData.group.id}-${survey.id}`}
+                            className={`relative overflow-hidden transition-all ${
+                              isCompleted 
+                                ? "opacity-60 cursor-not-allowed" 
+                                : "cursor-pointer hover:shadow-md hover:border-primary"
+                            }`}
+                            onClick={() => !isCompleted && handleSurveyClick(survey, groupData.group.id, survey.mapping.event, survey.status.hasResponded)}
+                          >
+                            {isCompleted && (
+                              <div className="absolute top-3 right-3">
+                                <Lock className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                            )}
+                            
+                            <CardHeader>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1">
+                                  <CardTitle className="text-lg mb-2">{survey.title}</CardTitle>
+                                  <Badge variant={config.variant} className="mb-3">
+                                    <StatusIcon className="mr-1 h-3 w-3" />
+                                    {config.label}
+                                  </Badge>
+                                </div>
+                              </div>
+                              <CardDescription className="line-clamp-2">
+                                {survey.description}
+                              </CardDescription>
+                            </CardHeader>
+                            
+                            <CardContent>
+                              <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                                <div className="flex items-center justify-between">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-4 w-4" />
+                                    {survey.questions.length} preguntas
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between pt-2 border-t">
+                                  <span className="text-xs capitalize">
+                                    Tipo: {survey.mapping.event}
+                                  </span>
+                                  {!isCompleted && (
+                                    <Button size="sm" variant="default">
+                                      {role === 'teacher' ? 'Evaluar' : 'Iniciar'}
+                                    </Button>
+                                  )}
+                                  {isCompleted && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      Completada
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
                     </div>
                   </div>
-
-                  {/* Surveys Grid */}
-                  <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-                    {groupData.surveys.map((survey) => {
-                      const surveyStatus = getSurveyStatus(survey.status.hasResponded);
-                      const config = statusConfig[surveyStatus];
-                      const StatusIcon = config.icon;
-                      const isCompleted = surveyStatus === "completed";
-
-                      return (
-                        <Card
-                          key={`${groupData.group.id}-${survey.id}`}
-                          className={`relative overflow-hidden transition-all ${
-                            isCompleted 
-                              ? "opacity-60 cursor-not-allowed" 
-                              : "cursor-pointer hover:shadow-md hover:border-primary"
-                          }`}
-                          onClick={() => !isCompleted && handleSurveyClick(survey, groupData.group.id, survey.mapping.event, survey.status.hasResponded)}
-                        >
-                          {isCompleted && (
-                            <div className="absolute top-3 right-3">
-                              <Lock className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
-                          
-                          <CardHeader>
-                            <div className="flex items-start justify-between gap-2">
-                              <div className="flex-1">
-                                <CardTitle className="text-lg mb-2">{survey.title}</CardTitle>
-                                <Badge variant={config.variant} className="mb-3">
-                                  <StatusIcon className="mr-1 h-3 w-3" />
-                                  {config.label}
-                                </Badge>
-                              </div>
-                            </div>
-                            <CardDescription className="line-clamp-2">
-                              {survey.description}
-                            </CardDescription>
-                          </CardHeader>
-                          
-                          <CardContent>
-                            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
-                              <div className="flex items-center justify-between">
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-4 w-4" />
-                                  {survey.questions.length} preguntas
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between pt-2 border-t">
-                                <span className="text-xs capitalize">
-                                  Tipo: {survey.mapping.event}
-                                </span>
-                                {!isCompleted && (
-                                  <Button size="sm" variant="default">
-                                    Iniciar
-                                  </Button>
-                                )}
-                                {isCompleted && (
-                                  <Badge variant="secondary" className="text-xs">
-                                    Completada
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
         </div>
