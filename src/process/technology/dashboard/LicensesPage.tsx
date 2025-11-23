@@ -353,7 +353,7 @@ function EditLicenseModal({ license, assets, onClose, onUpdate, onAssign }) {
 
                     <SelectContent>
                       {assets.map((a) => (
-                        <SelectItem key={a.id} value={string(a.id)}>
+                        <SelectItem key={a.id} value={a.id}>
                           {a.name} - {a.type} 
                         </SelectItem>
                       ))}
