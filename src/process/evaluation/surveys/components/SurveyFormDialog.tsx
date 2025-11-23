@@ -13,7 +13,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import type { Survey, SurveyFormData } from "@/process/evaluation/surveys/types/survey"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import type { Survey, SurveyFormData, SurveyEvent } from "@/process/evaluation/surveys/types/survey"
+import { SURVEY_EVENTS } from "@/process/evaluation/surveys/types/survey"
 
 interface Props {
   open: boolean
@@ -25,6 +33,8 @@ interface Props {
 const defaultForm: SurveyFormData = {
   title: "",
   description: "",
+  event: "satisfaction",
+  mapping_description: "",
 }
 
 export function SurveyFormDialog({ open, onOpenChange, survey, onSubmit }: Props) {
@@ -33,7 +43,12 @@ export function SurveyFormDialog({ open, onOpenChange, survey, onSubmit }: Props
 
   useEffect(() => {
     if (survey) {
-      setForm({ title: survey.title, description: survey.description})
+      setForm({
+        title: survey.title,
+        description: survey.description,
+        event: survey.event,
+        mapping_description: survey.mapping_description,
+      })
     } else {
       setForm(defaultForm)
     }
@@ -80,6 +95,36 @@ export function SurveyFormDialog({ open, onOpenChange, survey, onSubmit }: Props
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="Describe el propósito de la encuesta..."
                 rows={3}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="event">Tipo de Evento</Label>
+              <Select
+                value={form.event}
+                onValueChange={(v) => setForm({ ...form, event: v as SurveyEvent })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecciona un tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SURVEY_EVENTS.map((evt) => (
+                    <SelectItem key={evt.value} value={evt.value}>
+                      {evt.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="mapping_description">Descripción de Mapeo</Label>
+              <Textarea
+                id="mapping_description"
+                value={form.mapping_description}
+                onChange={(e) => setForm({ ...form, mapping_description: e.target.value })}
+                placeholder="Describe cómo se mapean los datos..."
+                rows={2}
               />
             </div>
           </div>

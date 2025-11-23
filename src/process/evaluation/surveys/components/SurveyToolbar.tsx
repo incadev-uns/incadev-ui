@@ -1,13 +1,22 @@
+// src/process/evaluation/surveys/components/SurveyToolbar.tsx
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Plus, RefreshCw, Search } from "lucide-react"
+import { SURVEY_EVENTS } from "@/process/evaluation/surveys/types/survey"
 
 interface Props {
   search: string
   onSearchChange: (value: string) => void
-  statusFilter: string
-  onStatusFilterChange: (value: string) => void
+  eventFilter: string
+  onEventFilterChange: (value: string) => void
   onRefresh: () => void
   onCreate: () => void
   loading?: boolean
@@ -16,6 +25,8 @@ interface Props {
 export function SurveyToolbar({
   search,
   onSearchChange,
+  eventFilter,
+  onEventFilterChange,
   onRefresh,
   onCreate,
   loading,
@@ -32,6 +43,19 @@ export function SurveyToolbar({
             className="pl-9"
           />
         </div>
+        <Select value={eventFilter} onValueChange={onEventFilterChange}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Evento" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos</SelectItem>
+            {SURVEY_EVENTS.map((evt) => (
+              <SelectItem key={evt.value} value={evt.value}>
+                {evt.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="icon" onClick={onRefresh} disabled={loading}>

@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Pagination,
   PaginationContent,
@@ -26,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { MoreHorizontal, Pencil, Trash2, Eye, ListChecks } from "lucide-react"
-import type { Survey } from "@/process/evaluation/surveys/types/survey"
+import type { Survey, SurveyEvent } from "@/process/evaluation/surveys/types/survey"
 
 interface Meta {
   current_page: number
@@ -54,6 +55,12 @@ interface Props {
   onManageQuestions: (survey: Survey) => void
   onPageChange: (page: number) => void
   loading?: boolean
+}
+
+const eventConfig: Record<SurveyEvent, { label: string; variant: "default" | "secondary" | "outline" }> = {
+  satisfaction: { label: "Satisfacción", variant: "default" },
+  teacher: { label: "Docente", variant: "secondary" },
+  impact: { label: "Impacto", variant: "outline" },
 }
 
 export function SurveyTable({ 
@@ -96,6 +103,7 @@ export function SurveyTable({
             <TableRow>
               <TableHead className="w-[50px]">#</TableHead>
               <TableHead>Título</TableHead>
+              <TableHead>Evento</TableHead>
               <TableHead className="hidden md:table-cell">Descripción</TableHead>
               <TableHead className="hidden sm:table-cell">Creación</TableHead>
               <TableHead className="w-[70px]">Acciones</TableHead>
@@ -106,6 +114,7 @@ export function SurveyTable({
               <TableRow key={idx}>
                 <TableCell><div className="h-4 bg-muted rounded w-8 animate-pulse" /></TableCell>
                 <TableCell><div className="h-4 bg-muted rounded w-32 animate-pulse" /></TableCell>
+                <TableCell><div className="h-5 bg-muted rounded w-20 animate-pulse" /></TableCell>
                 <TableCell className="hidden md:table-cell"><div className="h-4 bg-muted rounded w-48 animate-pulse" /></TableCell>
                 <TableCell className="hidden sm:table-cell"><div className="h-4 bg-muted rounded w-24 animate-pulse" /></TableCell>
                 <TableCell><div className="h-8 w-8 bg-muted rounded animate-pulse" /></TableCell>
@@ -134,6 +143,7 @@ export function SurveyTable({
             <TableRow>
               <TableHead className="w-[50px]">#</TableHead>
               <TableHead>Título</TableHead>
+              <TableHead>Evento</TableHead>
               <TableHead className="hidden md:table-cell">Descripción</TableHead>
               <TableHead className="hidden sm:table-cell">Creación</TableHead>
               <TableHead className="w-[70px]">Acciones</TableHead>
@@ -144,7 +154,12 @@ export function SurveyTable({
               <TableRow key={survey.id}>
                 <TableCell className="font-medium">{meta.from + idx}</TableCell>
                 <TableCell className="font-medium">{survey.title}</TableCell>
-                <TableCell className="hidden md:table-cell max-w-[300px] truncate text-muted-foreground">
+                <TableCell>
+                  <Badge variant={eventConfig[survey.event]?.variant || "default"}>
+                    {eventConfig[survey.event]?.label || survey.event}
+                  </Badge>
+                </TableCell>
+                <TableCell className="hidden md:table-cell max-w-[250px] truncate text-muted-foreground">
                   {survey.description || "—"}
                 </TableCell>
                 <TableCell className="hidden sm:table-cell text-muted-foreground">

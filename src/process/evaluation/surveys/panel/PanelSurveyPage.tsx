@@ -28,7 +28,7 @@ export default function PanelSurveyPage() {
 
   // Filters
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
+  const [eventFilter, setEventFilter] = useState("all")
 
   // Dialogs
   const [formOpen, setFormOpen] = useState(false)
@@ -38,16 +38,14 @@ export default function PanelSurveyPage() {
 
   // Filtered surveys
   const filtered = useMemo(() => {
-    if (!search && statusFilter === "all") {
-      return surveys
-    }
     return surveys.filter((s) => {
-      const matchSearch = s.title.toLowerCase().includes(search.toLowerCase()) ||
+      const matchSearch = !search || 
+        s.title.toLowerCase().includes(search.toLowerCase()) ||
         s.description?.toLowerCase().includes(search.toLowerCase())
-      const matchStatus = statusFilter === "all"
-      return matchSearch && matchStatus
+      const matchEvent = eventFilter === "all" || s.event === eventFilter
+      return matchSearch && matchEvent
     })
-  }, [surveys, search, statusFilter])
+  }, [surveys, search, eventFilter])
 
   // Handlers
   const handleCreate = () => {
@@ -124,8 +122,8 @@ export default function PanelSurveyPage() {
         <SurveyToolbar
           search={search}
           onSearchChange={setSearch}
-          statusFilter={statusFilter}
-          onStatusFilterChange={setStatusFilter}
+          eventFilter={eventFilter}
+          onEventFilterChange={setEventFilter}
           onRefresh={refresh}
           onCreate={handleCreate}
           loading={loading}
