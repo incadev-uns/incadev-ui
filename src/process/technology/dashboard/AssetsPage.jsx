@@ -3,6 +3,7 @@ import {Card, CardContent} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChevronRight } from "lucide-react";
 import TechnologyLayout from "@/process/technology/TechnologyLayout"
+import { Button } from "@/components/ui/button";
 
 
 
@@ -11,6 +12,9 @@ export default function AssetsPage() {
     const [assets, setAssets] = useState([]);
     const [filterType, setFilterType] = useState("");
     const [filterStatus, setFilterStatus] = useState("");
+    const [selectedAsset, setSelectedAsset] = useState(null);
+    const [assignedLicenses, setAssignedLicenses] = useState([]);
+    
     async function fetchAssets(){
       try{
         const res = await fetch("http://localhost:8000/api/infrastructure/assets");
@@ -23,6 +27,18 @@ export default function AssetsPage() {
 
     }
 
+    async function fetchAssignedLicenses(assetId){
+      const res = await fetch(`http://localhost:8000/api/infrastructure/assignments`);
+      const data = await res.json();
+
+      const filtered = data.data.filter((item) => item.asset_id === assetId);
+      setAssignedLicenses(filtered);
+    }
+
+    const handleViewDetails= (asset) => {
+      setSelectedAsset(asset);
+      fetchAssignedLicenses(asset.id);
+    };
     const filteredAssets = assets.filter((asset) => {
       const typeMatch = filterType ? asset.type.toLowerCase() === filterType : true;
       const statusMatch = filterStatus ? asset.status === filterStatus : true;
@@ -73,20 +89,51 @@ export default function AssetsPage() {
           <p><span className="font-semibold">Tipo:</span> {asset.type}</p>
           <p><span className="font-semibold">Fecha adquisición:</span> {asset.acquisition_date}</p>
           </div>
+          <Button
+            className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            onClick={() => handleViewDetails(asset)}
+          >
+            Ver detalle
+          </Button>
 
-
-          <div className="mt-4 p-3 bg-gray-900/40 rounded-xl border border-gray-700">
-          <h3 className="font-semibold mb-2 flex items-center gap-1">
-          Hardware <ChevronRight size={16} />
-          </h3>
-          <p className="text-sm"><span className="font-semibold">Modelo:</span> {asset.hardware.model}</p>
-          <p className="text-sm"><span className="font-semibold">Serie:</span> {asset.hardware.serial_number}</p>
-          <p className="text-sm"><span className="font-semibold">Garantía:</span> {asset.hardware.warranty_expiration}</p>
-          <p className="text-sm"><span className="font-semibold">Specs:</span> {asset.hardware.specs}</p>
-          </div>
+         
           </CardContent>
           </Card>
           ))}
+
+        {selectedAsset && (
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+            <div className="bg-gray-900 p-6 rounded-2x1 w-11/12 md:w-2/3 lg:w-1/2 overflow-y-auto max-h-[80vh]">
+              <h2 className="text-2x1 font-bold mb-4">{selectedAsset.name} - Detalle</h2>
+
+              <h3 className="font-semibold mb-2">Hardware</h3>
+              <p><span className="font-semibold">Modelo:</span> {selectedAsset.hardware.model}</p>
+              <p><span className="font-semibold">Serie:</span> {selectedAsset.hardware.serial_number}</p>
+              <p><span className="font-semibold">Garantía:</span> {selectedAsset.hardware.warranty_expiration}</p>
+              <p><span className="font-semibold">Especificaciones:</span> {selectedAsset.hardware.specs}</p>
+              <h3 className="font-semibold mt-4 mb-2">Licencias asignadas</h3>
+              {assignedLicenses.length > 0 ?(
+                <ul className="list-disc ml-5">
+                  {assignedLicenses.map( (item) => (
+                    <li key={item.id}>
+                      {item.license.software.software_name} - Expira: {item.license.expiration_date}
+                    </li>
+                  ))}
+                </ul>
+              ): (
+                <p> No hay licencias registradas</p>
+              )}
+
+          <Button
+            className="mt-6 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            onClick={() => setSelectedAsset(null)}
+          >
+            Cerrar
+          </Button>
+            </div>
+          </div>
+        
+        )}
         </div>
       </TechnologyLayout>
       );
@@ -130,29 +177,5 @@ function AssetForm({ onAdd }) {
         <button type="submit">Agregar</button>
       </div>
     </form>
-  );
-}
-
-function AssetsTable({ assets }) {
-  return (
-    <table border="1" cellPadding="6" style={{ borderCollapse: "collapse", width: "100%" }}>
-      <thead>
-        <tr>
-          <th>ID</th><th>Tag</th><th>Nombre</th><th>Modelo</th><th>Serial</th><th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {assets.map(a => (
-          <tr key={a.id}>
-            <td>{a.id}</td>
-            <td>{a.tag}</td>
-            <td>{a.name}</td>
-            <td>{a.model ?? ""}</td>
-            <td>{a.serial ?? ""}</td>
-            <td>{a.status}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
   );
 }

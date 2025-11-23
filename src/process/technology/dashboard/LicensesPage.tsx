@@ -11,10 +11,23 @@ import AddLicenseForm from "./AddLicenseForm";
 import {Trash2} from "lucide-react";
 
 export default function LicensesPage(){
-
     const [softwareList, setSoftwareList] = useState([]);
     const [licenses, setLicenses] = useState([]);
     const [createModal, setCreateModal] = useState(false);
+    const [assets, setAssets] = useState([]);
+
+    async function fetchAssets(){
+      try{
+        const res = await fetch("http://localhost:8000/api/infrastructure/assets");
+        const data = await res.json();
+        setAssets(data);
+      
+      } catch(e){
+        console.error("Error cargando activos tecnológicos: ", e);
+      }
+
+    }
+
     async function fetchSoftware(){
       const res = await fetch("http://localhost:8000/api/infrastructure/softwares");
       const data = await res.json();
@@ -36,7 +49,7 @@ export default function LicensesPage(){
       open={createModal}
       onClose={() => setCreateModal(false)}
       softwareList={softwareList}
-      onCreate={(newLic) => setLicenses([...licenses, newLic])}/>
+      onCreate={(newLic: any) => setLicenses([...licenses, newLic])}/>
 
 
     const [editModal, setEditModal] = useState({
@@ -44,7 +57,7 @@ export default function LicensesPage(){
       license: null
     });
 
-    const handleEdit = (license) => {
+    const handleEdit = (license: any) => {
       setEditModal({ open: true, license });
     };
 
@@ -59,7 +72,7 @@ export default function LicensesPage(){
         alert("Ocurrió un error al eliminar la licencia");
       }
     }
-    const handleUpdate = async (updatedLic) => {
+    const handleUpdate = async (updatedLic: { id: any; }) => {
       await fetch(`http://localhost:8000/api/infrastructure/licenses/${updatedLic.id}`, {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
@@ -73,6 +86,13 @@ export default function LicensesPage(){
       setEditModal({ open: false, license: null });
     };
 
+    const handleCreateAssign = async (assignment) => {
+        await fetch("http://localhost:8000/api/infrastructure/assignments", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(assignment)
+      });
+    }
     const handleDeleteSoftware = async (softwareId: number) => {
 
       const hasLicenses = licenses.some((lic) => lic.software_id === softwareId);
@@ -113,7 +133,7 @@ export default function LicensesPage(){
                   Agregar licencia
                 </Button>
               </div>
-                <AddLicenseForm open={createModal} onClose={() => setCreateModal(false)} softwareList={softwareList} onCreate={(lic) => setLicenses([...licenses, lic])} />
+                <AddLicenseForm open={createModal} onClose={() => setCreateModal(false)} softwareList={softwareList} onCreate={(lic: any) => setLicenses([...licenses, lic])} />
                 {licensesBySoftware.map(soft => (
                 <SoftwareCard 
                   key = {soft.id} 
@@ -125,8 +145,10 @@ export default function LicensesPage(){
                   {editModal.open && (
                     <EditLicenseModal
                       license = {editModal.license}
+                      assets={assets}
                       onClose={() => setEditModal({ open: false, license: null })}
                       onUpdate= {handleUpdate}
+                      onAssign={handleCreateAssign}
                       />
                     )}
             </section>
@@ -160,7 +182,7 @@ function SoftwareCard({ soft, onEdit, onDelete, onDeleteSoftware }){
         {soft.licenses.length === 0 ? (
           <p style={ {opacity: 0.7}}> Sin licencias registradas</p>
         ): (
-          soft.licenses.map(lic => (
+          soft.licenses.map((lic: unknown) => (
             <LicenseRow 
               key = {lic.id} 
               lic={lic}
@@ -207,8 +229,8 @@ function LicenseRow({ lic, onEdit, onDelete }){
     );
 }
 
-function EditLicenseModal({ license, onClose, onUpdate }) {
-  const formatDate = (timestamp) => {
+function EditLicenseModal({ license, assets, onClose, onUpdate, onAssign }) {
+  const formatDate = (timestamp: string) => {
     if (!timestamp) return "";
     return timestamp.split("T")[0];
   };
@@ -221,17 +243,28 @@ function EditLicenseModal({ license, onClose, onUpdate }) {
         status: license.status
   });
 
+  const [assignment, setAssignment] = useState({
+    license_id: license.id,
+    asset_id: "",
+    assigned_Date: new Date().toISOString(),
+    status: "assigned"
+  });
+
 
   
 
-    const handleChange = (e) =>
+    const handleChange = (e: { target: { name: any; value: any; }; }) =>
         setForm({ ...form, [e.target.name]: e.target.value });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: { preventDefault: () => void; }) => {
         e.preventDefault();
         onUpdate({ ...license, ...form });
     };
 
+    const handleAssign = () => {
+      if (!assignment.asset_id) return alert("Selecciona un activo para asignar");
+      onAssign(assignment);
+    };
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
             <Card className="w-full max-w-lg border-gray-700 bg-gray-900">
@@ -307,6 +340,32 @@ function EditLicenseModal({ license, onClose, onUpdate }) {
                         </Button>
                     </div>
                 </form>
+                <div className="space-y-1">
+                  <Label>Asignar a activo tecnológico</Label>
+                  <Select
+                    name="asset_id"
+                    value={assignment.asset_id}
+                    onValueChange={(v) => setAssignment({ ...assignment, asset_id: v})}
+                    >                   
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar activo"></SelectValue>
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {assets.map((a) => (
+                        <SelectItem key={a.id} value={string(a.id)}>
+                          {a.name} - {a.type} 
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    className="mt-2 bg-blue-600 text-white"
+                    onClick={handleAssign}
+                  >
+                    Asignar licencia
+                  </Button>
+                </div>      
               </CardContent>
             </Card>      
           </div>
@@ -412,7 +471,7 @@ const modalStyles = {
 };
 
 /* -------------------- Badge color by status -------------------- */
-function statusColor(status) {
+function statusColor(status: any) {
   switch (status) {
     case "active":
       return { background: "#0f7", color: "#000" };
