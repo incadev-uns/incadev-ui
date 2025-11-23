@@ -90,7 +90,7 @@ export const adminNavItems: NavItem[] = [
   // MÓDULO DE PAGOS
   // --------------------------------------
   {
-    title: "Pagos",
+    title: "Pagos Académicos",
     url: "#",
     icon: IconCreditCard,
     items: [

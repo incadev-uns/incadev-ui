@@ -180,7 +180,7 @@ export default function PaymentApproval() {
         <div className="mx-auto max-w-7xl space-y-6">
           <div className="rounded-3xl border border-slate-200 dark:border-slate-800/60 bg-gradient-to-br from-sky-500 to-sky-700 px-6 py-7 shadow-xl">
             <div>
-              <p className="text-[11px] uppercase tracking-[0.28em] text-sky-100/90">Gestión Financiera</p>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-sky-100/90">Pagos Académicos</p>
               <h1 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Validar Pagos</h1>
               <p className="mt-2 max-w-xl text-sm text-sky-100/80">Revisa y aprueba los pagos pendientes de validación</p>
             </div>
