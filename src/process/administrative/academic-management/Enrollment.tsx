@@ -340,12 +340,13 @@ function EnrollmentDetailModal({
           {/* Status Cards */}
           <div className="grid gap-4 md:grid-cols-2">
             <Card
-              className={`border-2 ${enrollment.payment_status === "paid"
-                ? "border-emerald-200 dark:border-emerald-800"
-                : enrollment.payment_status === "overdue"
+              className={`border-2 ${
+                enrollment.payment_status === "paid"
+                  ? "border-emerald-200 dark:border-emerald-800"
+                  : enrollment.payment_status === "overdue"
                   ? "border-red-200 dark:border-red-800"
                   : "border-amber-200 dark:border-amber-800"
-                }`}
+              }`}
             >
               <CardContent className="p-4">
                 <div className="space-y-2">
@@ -371,12 +372,13 @@ function EnrollmentDetailModal({
             </Card>
 
             <Card
-              className={`border-2 ${enrollment.academic_status === "active"
-                ? "border-emerald-200 dark:border-emerald-800"
-                : enrollment.academic_status === "inactive"
+              className={`border-2 ${
+                enrollment.academic_status === "active"
+                  ? "border-emerald-200 dark:border-emerald-800"
+                  : enrollment.academic_status === "inactive"
                   ? "border-red-200 dark:border-red-800"
                   : "border-amber-200 dark:border-amber-800"
-                }`}
+              }`}
             >
               <CardContent className="p-4">
                 <div className="space-y-2">
@@ -601,15 +603,15 @@ function EnrollmentDetailModal({
                             enrollment.last_payment.status === "approved"
                               ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
                               : enrollment.last_payment.status === "rejected"
-                                ? "bg-red-500/10 text-red-700 dark:text-red-400"
-                                : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                              ? "bg-red-500/10 text-red-700 dark:text-red-400"
+                              : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
                           }
                         >
                           {enrollment.last_payment.status === "approved"
                             ? "✅ Aprobado"
                             : enrollment.last_payment.status === "rejected"
-                              ? "❌ Rechazado"
-                              : "⏳ Pendiente"}
+                            ? "❌ Rechazado"
+                            : "⏳ Pendiente"}
                         </Badge>
                       </div>
                     </div>
@@ -897,7 +899,10 @@ export default function EnrollmentManagement() {
       localStorage.setItem("enrollmentsExportData", JSON.stringify(data));
 
       // Abrimos la página de exportación PDF
-      window.open("/administrativo/gestion-academica/enrollment-export-pdf", "_blank");
+      window.open(
+        "/administrativo/gestion-academica/enrollment-export-pdf",
+        "_blank"
+      );
     } catch (err) {
       console.error("Error al exportar PDF:", err);
       alert("Error al exportar el reporte PDF");
@@ -1138,25 +1143,25 @@ export default function EnrollmentManagement() {
                         <Table>
                           <TableHeader>
                             <TableRow className="bg-blue-50 dark:bg-blue-950/20">
-                              <TableHead className="font-semibold text-blue-700 dark:text-blue-400">
+                              <TableHead className="font-semibold text-blue-700 dark:text-blue-400 w-[200px]">
                                 Estudiante
                               </TableHead>
-                              <TableHead className="font-semibold text-blue-700 dark:text-blue-400">
+                              <TableHead className="font-semibold text-blue-700 dark:text-blue-400 w-[180px]">
                                 Curso / Grupo
                               </TableHead>
-                              <TableHead className="font-semibold text-blue-700 dark:text-blue-400">
-                                Fecha Matrícula
+                              <TableHead className="font-semibold text-blue-700 dark:text-blue-400 w-[110px]">
+                                Fecha
                               </TableHead>
-                              <TableHead className="text-right font-semibold text-blue-700 dark:text-blue-400">
+                              <TableHead className="text-right font-semibold text-blue-700 dark:text-blue-400 w-[100px]">
                                 Monto
                               </TableHead>
-                              <TableHead className="text-center font-semibold text-blue-700 dark:text-blue-400">
-                                Estado Pago
+                              <TableHead className="text-center font-semibold text-blue-700 dark:text-blue-400 w-[120px]">
+                                Pago
                               </TableHead>
-                              <TableHead className="text-center font-semibold text-blue-700 dark:text-blue-400">
-                                Estado Académico
+                              <TableHead className="text-center font-semibold text-blue-700 dark:text-blue-400 w-[120px]">
+                                Académico
                               </TableHead>
-                              <TableHead className="text-center font-semibold text-blue-700 dark:text-blue-400">
+                              <TableHead className="text-center font-semibold text-blue-700 dark:text-blue-400 w-[100px]">
                                 Acciones
                               </TableHead>
                             </TableRow>
@@ -1241,22 +1246,22 @@ export default function EnrollmentManagement() {
                                     </Button>
                                     {enrollment.academic_status ===
                                       "pending" && (
-                                        <Button
-                                          variant="ghost"
-                                          size="sm"
-                                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
-                                          onClick={() =>
-                                            handleUpdateStatus(
-                                              enrollment.id,
-                                              "active",
-                                              "academic"
-                                            )
-                                          }
-                                          title="Activar matrícula"
-                                        >
-                                          <IconCheck className="h-4 w-4" />
-                                        </Button>
-                                      )}
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-900/20"
+                                        onClick={() =>
+                                          handleUpdateStatus(
+                                            enrollment.id,
+                                            "active",
+                                            "academic"
+                                          )
+                                        }
+                                        title="Activar matrícula"
+                                      >
+                                        <IconCheck className="h-4 w-4" />
+                                      </Button>
+                                    )}
                                   </div>
                                 </TableCell>
                               </TableRow>
