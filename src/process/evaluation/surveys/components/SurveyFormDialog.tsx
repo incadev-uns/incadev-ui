@@ -46,8 +46,8 @@ export function SurveyFormDialog({ open, onOpenChange, survey, onSubmit }: Props
       setForm({
         title: survey.title,
         description: survey.description,
-        event: survey.event,
-        mapping_description: survey.mapping_description,
+        event: survey.mapping.event, // Cambiado aquí
+        mapping_description: survey.mapping.description, // Cambiado aquí
       })
     } else {
       setForm(defaultForm)

@@ -36,13 +36,13 @@ export default function PanelSurveyPage() {
   const [questionsOpen, setQuestionsOpen] = useState(false)
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null)
 
-  // Filtered surveys
+  // En el useMemo de filtered surveys en PanelSurveyPage
   const filtered = useMemo(() => {
     return surveys.filter((s) => {
       const matchSearch = !search || 
         s.title.toLowerCase().includes(search.toLowerCase()) ||
         s.description?.toLowerCase().includes(search.toLowerCase())
-      const matchEvent = eventFilter === "all" || s.event === eventFilter
+      const matchEvent = eventFilter === "all" || s.mapping.event === eventFilter // Cambiado aquí
       return matchSearch && matchEvent
     })
   }, [surveys, search, eventFilter])

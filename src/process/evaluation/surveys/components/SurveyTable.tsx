@@ -155,8 +155,8 @@ export function SurveyTable({
                 <TableCell className="font-medium">{meta.from + idx}</TableCell>
                 <TableCell className="font-medium">{survey.title}</TableCell>
                 <TableCell>
-                  <Badge variant={eventConfig[survey.event]?.variant || "default"}>
-                    {eventConfig[survey.event]?.label || survey.event}
+                  <Badge variant={eventConfig[survey.mapping.event]?.variant || "default"}>
+                    {eventConfig[survey.mapping.event]?.label || survey.mapping.event}
                   </Badge>
                 </TableCell>
                 <TableCell className="hidden md:table-cell max-w-[250px] truncate text-muted-foreground">

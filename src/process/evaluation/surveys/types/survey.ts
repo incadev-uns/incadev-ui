@@ -2,16 +2,25 @@
 
 export type SurveyEvent = "satisfaction" | "teacher" | "impact"
 
+export interface SurveyMapping {
+  id: number
+  event: SurveyEvent
+  survey_id: number
+  description: string
+  created_at: string
+  updated_at: string
+}
+
 export interface Survey {
   id: number
   title: string
   description: string
-  event: SurveyEvent
-  mapping_description: string
+  mapping: SurveyMapping
   questions_count?: number
   responses_count?: number
   created_at: string
   updated_at: string
+  questions: any[] // Mantener por compatibilidad
 }
 
 export interface SurveyFormData {
