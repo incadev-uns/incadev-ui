@@ -48,5 +48,8 @@ export const config = {
     modulesCourseVersion: "/api/academic-processes/course-version",
     modules: "/api/academic-processes",
     modulesReorder: "/api/academic-processes/reorder",
+
+    //Configuración Académica
+    academicSettings: "/api/academic-processes/academic-settings",
   },
 };

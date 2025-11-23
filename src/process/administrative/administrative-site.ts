@@ -68,7 +68,7 @@ export const adminNavItems: NavItem[] = [
     items: [
       {
         title: "Configuración Académica",
-        url: "/administrativo/academic-settings",
+        url: "/administrativo/procesos-academicos/config-academica",
       },
 
       // Oferta educativa
