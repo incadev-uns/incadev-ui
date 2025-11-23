@@ -95,13 +95,19 @@ export default function HeroSection() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <Button size="lg" className="gap-2" asChild>
-              <a href="/academico/grupos/disponible">
+              <a href="/tecnologico/web/cursos">
                 Explorar Cursos
                 <ArrowRight className="h-4 w-4" />
               </a>
             </Button>
-            <Button variant="outline" size="lg" asChild>
-              <a href="#contacto">Contáctanos</a>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => {
+                document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              Contáctanos
             </Button>
           </div>
         </div>
