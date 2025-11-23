@@ -456,7 +456,7 @@ export default function EnrollmentStatus() {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="flex flex-wrap gap-3">
-                                        <div className="relative flex-1 min-w-[280px]">
+                                        <div className="relative flex-1 min-w-0 md:min-w-[280px]">
                                             <IconSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 type="text"
@@ -529,11 +529,44 @@ export default function EnrollmentStatus() {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="rounded-md border">
-                                                <Table>
+                                            <div className="space-y-3 md:hidden">
+                                                {pageEnrollments.map((enrollment) => (
+                                                    <div key={enrollment.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 p-4 space-y-3">
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div>
+                                                                <p className="text-xs uppercase tracking-wide text-muted-foreground">Matrícula #{enrollment.id}</p>
+                                                                <p className="font-semibold text-base">{enrollment.student_name || 'Sin nombre'}</p>
+                                                                <p className="text-xs text-muted-foreground">{enrollment.student_email}</p>
+                                                            </div>
+                                                            {getAcademicStatusBadge(enrollment.academic_status)}
+                                                        </div>
+                                                        <div className="space-y-1 text-sm text-muted-foreground">
+                                                            <p><span className="font-medium text-foreground">Grupo:</span> {enrollment.group_name || 'Sin grupo'}</p>
+                                                            <p><span className="font-medium text-foreground">Curso:</span> {enrollment.course_name || 'Sin curso'}</p>
+                                                            <p><span className="font-medium text-foreground">Fecha:</span> {new Date(enrollment.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}</p>
+                                                        </div>
+                                                        <div className="flex items-center gap-2">
+                                                            {getPaymentStatusBadge(enrollment.payment_status)}
+                                                            {getResultStatusBadge(enrollment.enrollment_result?.status)}
+                                                        </div>
+                                                        <div className="flex justify-end">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={() => handleViewDetails(enrollment)}
+                                                            >
+                                                                Ver detalles
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="hidden md:block rounded-md border">
+                                                <Table className="table-fixed w-full [&_th]:whitespace-normal [&_td]:whitespace-normal [&_th]:px-4 [&_td]:px-4">
                                                     <TableHeader>
                                                         <TableRow className="bg-sky-50 dark:bg-sky-950/20">
-                                                            <TableHead>
+                                                            <TableHead className="w-20">
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
@@ -548,10 +581,12 @@ export default function EnrollmentStatus() {
                                                                     )}
                                                                 </Button>
                                                             </TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Estudiante</TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Grupo</TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Curso</TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Fecha</TableHead>
+                                                            <TableHead className="min-w-[300px] font-semibold text-sky-700 dark:text-sky-400 text-center">
+                                                                Estudiante
+                                                            </TableHead>
+                                                            <TableHead className="hidden lg:table-cell min-w-[110px] font-semibold text-sky-700 dark:text-sky-400 text-center">Grupo</TableHead>
+                                                            <TableHead className="hidden md:table-cell min-w-[180px] font-semibold text-sky-700 dark:text-sky-400 text-center">Curso</TableHead>
+                                                            <TableHead className="hidden xl:table-cell min-w-[100px] font-semibold text-sky-700 dark:text-sky-400 text-center">Fecha</TableHead>
                                                             <TableHead>
                                                                 <Button
                                                                     variant="ghost"
@@ -567,40 +602,40 @@ export default function EnrollmentStatus() {
                                                                     )}
                                                                 </Button>
                                                             </TableHead>
-                                                            <TableHead className="text-center font-semibold text-sky-700 dark:text-sky-400">Acciones</TableHead>
+                                                            <TableHead className="text-center min-w-[100px] font-semibold text-sky-700 dark:text-sky-400">Acciones</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {pageEnrollments.map((enrollment) => (
                                                             <TableRow key={enrollment.id}>
-                                                                <TableCell className="font-semibold">
+                                                                <TableCell className="font-semibold text-center">
                                                                     #{enrollment.id}
                                                                 </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex items-center gap-2">
-                                                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/20">
+                                                                <TableCell className="align-top">
+                                                                    <div className="flex items-start gap-3 min-w-0">
+                                                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900/20">
                                                                             <IconUser className="h-4 w-4 text-sky-600 dark:text-sky-400" />
                                                                         </div>
-                                                                        <div>
-                                                                            <p className="font-medium">{enrollment.student_name || 'Sin nombre'}</p>
-                                                                            <p className="text-xs text-muted-foreground">{enrollment.student_email}</p>
+                                                                        <div className="min-w-0 space-y-0.5">
+                                                                            <p className="font-medium leading-tight break-words">{enrollment.student_name || 'Sin nombre'}</p>
+                                                                            <p className="text-xs text-muted-foreground break-words">{enrollment.student_email}</p>
                                                                         </div>
                                                                     </div>
                                                                 </TableCell>
-                                                                <TableCell className="text-muted-foreground">
+                                                                <TableCell className="hidden lg:table-cell text-muted-foreground break-words text-center">
                                                                     {enrollment.group_name || 'Sin grupo'}
                                                                 </TableCell>
-                                                                <TableCell className="text-muted-foreground">
+                                                                <TableCell className="hidden md:table-cell text-muted-foreground break-words text-center">
                                                                     {enrollment.course_name || 'Sin curso'}
                                                                 </TableCell>
-                                                                <TableCell className="text-muted-foreground">
+                                                                <TableCell className="hidden xl:table-cell text-muted-foreground text-center">
                                                                     {new Date(enrollment.created_at).toLocaleDateString('es-ES', {
                                                                         day: '2-digit',
                                                                         month: '2-digit',
                                                                         year: 'numeric'
                                                                     })}
                                                                 </TableCell>
-                                                                <TableCell>{getAcademicStatusBadge(enrollment.academic_status)}</TableCell>
+                                                                <TableCell className="text-center">{getAcademicStatusBadge(enrollment.academic_status)}</TableCell>
                                                                 <TableCell>
                                                                     <div className="flex items-center justify-center gap-2">
                                                                         <Button

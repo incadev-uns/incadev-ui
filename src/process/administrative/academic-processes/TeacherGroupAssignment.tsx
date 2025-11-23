@@ -281,13 +281,181 @@ export default function TeacherGroupAssignment() {
     const getStatusBadge = (status: string) => {
         const statusLower = status.toLowerCase();
         const statusMap: Record<string, { text: string; className: string }> = {
+            pending: { text: 'Pendiente', className: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20' },
+            enrolling: { text: 'En Inscripción', className: 'bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20' },
             active: { text: 'Activo', className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20' },
-            inactive: { text: 'Inactivo', className: 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20' },
-            completed: { text: 'Completado', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20' }
+            completed: { text: 'Completado', className: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20' },
+            cancelled: { text: 'Cancelado', className: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20' }
         };
         const statusInfo = statusMap[statusLower] || { text: status, className: 'bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20' };
         return <Badge variant="outline" className={statusInfo.className}>{statusInfo.text}</Badge>;
     };
+
+    const renderAssignDialog = (group: Group) => (
+        <Dialog open={isDialogOpen && selectedGroup?.id === group.id} onOpenChange={(open) => {
+            setIsDialogOpen(open);
+            if (!open) {
+                setSelectedGroup(null);
+                setSelectedTeacher('');
+                setTeacherSearch('');
+            }
+        }}>
+            <DialogTrigger asChild>
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                        setSelectedGroup(group);
+                        setIsDialogOpen(true);
+                    }}
+                    title="Asignar docente"
+                >
+                    <IconPlus className="h-4 w-4" />
+                </Button>
+            </DialogTrigger>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Asignar Docente</DialogTitle>
+                    <DialogDescription>
+                        {group.status.toLowerCase() === 'completed' || group.status.toLowerCase() === 'cancelled'
+                            ? `Este grupo está ${group.status.toLowerCase() === 'completed' ? 'completado' : 'cancelado'}`
+                            : `Asignar un docente al grupo ${group.name}`
+                        }
+                    </DialogDescription>
+                </DialogHeader>
+                {group.status.toLowerCase() === 'completed' || group.status.toLowerCase() === 'cancelled' ? (
+                    <>
+                        <div className="py-6">
+                            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/20">
+                                    <IconUsers className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                                </div>
+                                <div className="space-y-2">
+                                    <p className="text-sm font-medium text-foreground">
+                                        No se pueden asignar docentes
+                                    </p>
+                                    <p className="text-sm text-muted-foreground max-w-sm">
+                                        Este grupo está {group.status.toLowerCase() === 'completed' ? 'completado' : 'cancelado'} y no permite la asignación de nuevos docentes.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setIsDialogOpen(false);
+                                    setSelectedGroup(null);
+                                    setSelectedTeacher('');
+                                    setTeacherSearch('');
+                                }}
+                            >
+                                Cerrar
+                            </Button>
+                        </DialogFooter>
+                    </>
+                ) : (
+                    <>
+                        <div className="space-y-4 py-4">
+                            <div className="space-y-3">
+                                <label className="text-sm font-medium">Seleccionar Docente</label>
+                                <Input
+                                    type="text"
+                                    placeholder="Buscar por nombre, email o área..."
+                                    value={teacherSearch}
+                                    onChange={(e) => setTeacherSearch(e.target.value)}
+                                    className="w-full"
+                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2">
+                                    {filteredTeachersForDialog.length === 0 ? (
+                                        <div className="col-span-2 py-8 text-center text-sm text-muted-foreground">
+                                            No se encontraron docentes
+                                        </div>
+                                    ) : (
+                                        filteredTeachersForDialog.map((teacher) => (
+                                            <div
+                                                key={teacher.user_id}
+                                                onClick={() => setSelectedTeacher(String(teacher.user_id))}
+                                                className={cn(
+                                                    "relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md",
+                                                    selectedTeacher === String(teacher.user_id)
+                                                        ? "border-sky-500 bg-sky-50 dark:bg-sky-950/20"
+                                                        : "border-slate-200 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700"
+                                                )}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/20">
+                                                        <IconUser className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-medium text-sm truncate">
+                                                            {teacher.user_name || 'Sin nombre'}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground truncate">
+                                                            {teacher.user_email}
+                                                        </p>
+                                                    </div>
+                                                    {selectedTeacher === String(teacher.user_id) && (
+                                                        <IconCheck className="h-5 w-5 text-sky-600 dark:text-sky-400 shrink-0" />
+                                                    )}
+                                                </div>
+                                                {teacher.subject_area && (
+                                                    <div className="mt-3 flex flex-wrap gap-1">
+                                                        {teacher.subject_area.split(',').slice(0, 2).map((area, idx) => (
+                                                            <Badge
+                                                                key={idx}
+                                                                variant="secondary"
+                                                                className="text-xs bg-slate-100 dark:bg-slate-800"
+                                                            >
+                                                                {area.trim()}
+                                                            </Badge>
+                                                        ))}
+                                                        {teacher.subject_area.split(',').length > 2 && (
+                                                            <Badge variant="secondary" className="text-xs bg-slate-100 dark:bg-slate-800">
+                                                                +{teacher.subject_area.split(',').length - 2}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {teacher.professional_summary && (
+                                                    <div className="mt-2 flex items-start gap-1.5">
+                                                        <IconBriefcase className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                                                        <p className="text-xs text-muted-foreground line-clamp-2">
+                                                            {teacher.professional_summary}
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setIsDialogOpen(false);
+                                    setSelectedGroup(null);
+                                    setSelectedTeacher('');
+                                    setTeacherSearch('');
+                                }}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                onClick={handleAssignTeacher}
+                                disabled={!selectedTeacher || isAssigning}
+                                className="bg-sky-600 hover:bg-sky-700 text-white"
+                            >
+                                {isAssigning ? 'Asignando...' : 'Asignar'}
+                            </Button>
+                        </DialogFooter>
+                    </>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
 
     const start = (currentPage - 1) * itemsPerPage;
     const end = start + itemsPerPage;
@@ -296,7 +464,7 @@ export default function TeacherGroupAssignment() {
     return (
         <AdministrativeLayout title="Docentes por Grupo">
             <div className="min-h-screen p-4 md:p-6 lg:p-8">
-                <div className="mx-auto max-w-7xl space-y-6">
+                <div className="mx-auto max-w-[1600px] space-y-6">
 
                     <div className="rounded-3xl border border-slate-200 dark:border-slate-800/60 bg-gradient-to-br from-sky-500 to-sky-700 px-6 py-7 shadow-xl">
                         <div>
@@ -388,7 +556,7 @@ export default function TeacherGroupAssignment() {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="flex flex-wrap gap-3">
-                                        <div className="relative flex-1 min-w-[280px]">
+                                        <div className="relative flex-1 min-w-0 md:min-w-[280px]">
                                             <IconSearch className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                                             <Input
                                                 type="text"
@@ -414,22 +582,34 @@ export default function TeacherGroupAssignment() {
                                                 <DropdownMenuLabel>Estado del grupo</DropdownMenuLabel>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuCheckboxItem
+                                                    checked={statusFilter.includes('pending')}
+                                                    onCheckedChange={() => toggleStatusFilter('pending')}
+                                                >
+                                                    Pendiente
+                                                </DropdownMenuCheckboxItem>
+                                                <DropdownMenuCheckboxItem
+                                                    checked={statusFilter.includes('enrolling')}
+                                                    onCheckedChange={() => toggleStatusFilter('enrolling')}
+                                                >
+                                                    En Inscripción
+                                                </DropdownMenuCheckboxItem>
+                                                <DropdownMenuCheckboxItem
                                                     checked={statusFilter.includes('active')}
                                                     onCheckedChange={() => toggleStatusFilter('active')}
                                                 >
                                                     Activo
                                                 </DropdownMenuCheckboxItem>
                                                 <DropdownMenuCheckboxItem
-                                                    checked={statusFilter.includes('inactive')}
-                                                    onCheckedChange={() => toggleStatusFilter('inactive')}
-                                                >
-                                                    Inactivo
-                                                </DropdownMenuCheckboxItem>
-                                                <DropdownMenuCheckboxItem
                                                     checked={statusFilter.includes('completed')}
                                                     onCheckedChange={() => toggleStatusFilter('completed')}
                                                 >
                                                     Completado
+                                                </DropdownMenuCheckboxItem>
+                                                <DropdownMenuCheckboxItem
+                                                    checked={statusFilter.includes('cancelled')}
+                                                    onCheckedChange={() => toggleStatusFilter('cancelled')}
+                                                >
+                                                    Cancelado
                                                 </DropdownMenuCheckboxItem>
                                                 {(statusFilter.length > 0 || sortColumn) && (
                                                     <>
@@ -452,274 +632,72 @@ export default function TeacherGroupAssignment() {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="rounded-md border">
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow className="bg-sky-50 dark:bg-sky-950/20">
-                                                            <TableHead>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-8 gap-1 font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300"
-                                                                    onClick={() => handleSort('id')}
-                                                                >
-                                                                    ID
-                                                                    {sortColumn === 'id' ? (
-                                                                        sortDirection === 'asc' ? <IconChevronUp className="h-3 w-3" /> : <IconChevronDown className="h-3 w-3" />
-                                                                    ) : (
-                                                                        <IconArrowsSort className="h-3 w-3 opacity-50" />
-                                                                    )}
-                                                                </Button>
-                                                            </TableHead>
-                                                            <TableHead>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-8 gap-1 font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300"
-                                                                    onClick={() => handleSort('name')}
-                                                                >
-                                                                    Grupo
-                                                                    {sortColumn === 'name' ? (
-                                                                        sortDirection === 'asc' ? <IconChevronUp className="h-3 w-3" /> : <IconChevronDown className="h-3 w-3" />
-                                                                    ) : (
-                                                                        <IconArrowsSort className="h-3 w-3 opacity-50" />
-                                                                    )}
-                                                                </Button>
-                                                            </TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Curso</TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Fecha Inicio</TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Fecha Fin</TableHead>
-                                                            <TableHead>
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-8 gap-1 font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300"
-                                                                    onClick={() => handleSort('status')}
-                                                                >
-                                                                    Estado
-                                                                    {sortColumn === 'status' ? (
-                                                                        sortDirection === 'asc' ? <IconChevronUp className="h-3 w-3" /> : <IconChevronDown className="h-3 w-3" />
-                                                                    ) : (
-                                                                        <IconArrowsSort className="h-3 w-3 opacity-50" />
-                                                                    )}
-                                                                </Button>
-                                                            </TableHead>
-                                                            <TableHead className="font-semibold text-sky-700 dark:text-sky-400">Docentes</TableHead>
-                                                            <TableHead className="text-center font-semibold text-sky-700 dark:text-sky-400">Acciones</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {pageGroups.map((group) => (
-                                                            <TableRow key={group.id}>
-                                                                <TableCell className="font-semibold">
-                                                                    #{group.id}
-                                                                </TableCell>
-                                                                <TableCell className="font-medium">{group.name}</TableCell>
-                                                                <TableCell className="text-muted-foreground">
-                                                                    {group.course_name || 'Sin curso'}
-                                                                </TableCell>
-                                                                <TableCell className="text-muted-foreground">
-                                                                    {new Date(group.start_date).toLocaleDateString()}
-                                                                </TableCell>
-                                                                <TableCell className="text-muted-foreground">
-                                                                    {new Date(group.end_date).toLocaleDateString()}
-                                                                </TableCell>
-                                                                <TableCell>{getStatusBadge(group.status)}</TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex flex-wrap gap-1">
-                                                                        {group.teachers && group.teachers.length > 0 ? (
-                                                                            group.teachers.map((teacher) => (
-                                                                                <div key={teacher.id} className="flex items-center gap-1">
-                                                                                    <Badge variant="outline" className="bg-violet-500/10 text-violet-700 dark:text-violet-400 border-violet-500/20">
-                                                                                        {teacher.user_name || 'Sin nombre'}
-                                                                                    </Badge>
-                                                                                    <Button
-                                                                                        variant="ghost"
-                                                                                        size="sm"
-                                                                                        className="h-5 w-5 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                                                        onClick={() => handleRemoveTeacher(group.id, teacher.user_id)}
-                                                                                        title="Remover docente"
-                                                                                    >
-                                                                                        <IconTrash className="h-3 w-3" />
-                                                                                    </Button>
-                                                                                </div>
-                                                                            ))
-                                                                        ) : (
-                                                                            <span className="text-xs text-muted-foreground">Sin docentes</span>
-                                                                        )}
-                                                                    </div>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <div className="flex items-center justify-center gap-2">
-                                                                        <Dialog open={isDialogOpen && selectedGroup?.id === group.id} onOpenChange={(open) => {
-                                                                            setIsDialogOpen(open);
-                                                                            if (!open) {
-                                                                                setSelectedGroup(null);
-                                                                                setSelectedTeacher('');
-                                                                            }
-                                                                        }}>
-                                                                            <DialogTrigger asChild>
-                                                                                <Button
-                                                                                    variant="ghost"
-                                                                                    size="sm"
-                                                                                    onClick={() => {
-                                                                                        setSelectedGroup(group);
-                                                                                        setIsDialogOpen(true);
-                                                                                    }}
-                                                                                    title="Asignar docente"
-                                                                                >
-                                                                                    <IconPlus className="h-4 w-4" />
-                                                                                </Button>
-                                                                            </DialogTrigger>
-                                                                            <DialogContent>
-                                                                                <DialogHeader>
-                                                                                    <DialogTitle>Asignar Docente</DialogTitle>
-                                                                                    <DialogDescription>
-                                                                                        {group.status.toLowerCase() === 'completed' || group.status.toLowerCase() === 'cancelled'
-                                                                                            ? `Este grupo está ${group.status.toLowerCase() === 'completed' ? 'completado' : 'cancelado'}`
-                                                                                            : `Asignar un docente al grupo ${group.name}`
-                                                                                        }
-                                                                                    </DialogDescription>
-                                                                                </DialogHeader>
-                                                                                {group.status.toLowerCase() === 'completed' || group.status.toLowerCase() === 'cancelled' ? (
-                                                                                    <>
-                                                                                        <div className="py-6">
-                                                                                            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                                                                                                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/20">
-                                                                                                    <IconUsers className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-                                                                                                </div>
-                                                                                                <div className="space-y-2">
-                                                                                                    <p className="text-sm font-medium text-foreground">
-                                                                                                        No se pueden asignar docentes
-                                                                                                    </p>
-                                                                                                    <p className="text-sm text-muted-foreground max-w-sm">
-                                                                                                        Este grupo está {group.status.toLowerCase() === 'completed' ? 'completado' : 'cancelado'} y no permite la asignación de nuevos docentes.
-                                                                                                    </p>
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <DialogFooter>
-                                                                                            <Button
-                                                                                                variant="outline"
-                                                                                                onClick={() => {
-                                                                                                    setIsDialogOpen(false);
-                                                                                                    setSelectedGroup(null);
-                                                                                                    setSelectedTeacher('');
-                                                                                                    setTeacherSearch('');
-                                                                                                }}
-                                                                                            >
-                                                                                                Cerrar
-                                                                                            </Button>
-                                                                                        </DialogFooter>
-                                                                                    </>
-                                                                                ) : (
-                                                                                    <>
-                                                                                        <div className="space-y-4 py-4">
-                                                                                            <div className="space-y-3">
-                                                                                                <label className="text-sm font-medium">Seleccionar Docente</label>
-                                                                                                <Input
-                                                                                                    type="text"
-                                                                                                    placeholder="Buscar por nombre, email o área..."
-                                                                                                    value={teacherSearch}
-                                                                                                    onChange={(e) => setTeacherSearch(e.target.value)}
-                                                                                                    className="w-full"
-                                                                                                />
-                                                                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2">
-                                                                                                    {filteredTeachersForDialog.length === 0 ? (
-                                                                                                        <div className="col-span-2 py-8 text-center text-sm text-muted-foreground">
-                                                                                                            No se encontraron docentes
-                                                                                                        </div>
-                                                                                                    ) : (
-                                                                                                        filteredTeachersForDialog.map((teacher) => (
-                                                                                                            <div
-                                                                                                                key={teacher.user_id}
-                                                                                                                onClick={() => setSelectedTeacher(String(teacher.user_id))}
-                                                                                                                className={cn(
-                                                                                                                    "relative cursor-pointer rounded-lg border-2 p-4 transition-all hover:shadow-md",
-                                                                                                                    selectedTeacher === String(teacher.user_id)
-                                                                                                                        ? "border-sky-500 bg-sky-50 dark:bg-sky-950/20"
-                                                                                                                        : "border-slate-200 dark:border-slate-800 hover:border-sky-300 dark:hover:border-sky-700"
-                                                                                                                )}
-                                                                                                            >
-                                                                                                                <div className="flex items-start gap-3">
-                                                                                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-violet-100 dark:bg-violet-900/20">
-                                                                                                                        <IconUser className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-                                                                                                                    </div>
-                                                                                                                    <div className="flex-1 min-w-0">
-                                                                                                                        <p className="font-medium text-sm truncate">
-                                                                                                                            {teacher.user_name || 'Sin nombre'}
-                                                                                                                        </p>
-                                                                                                                        <p className="text-xs text-muted-foreground truncate">
-                                                                                                                            {teacher.user_email}
-                                                                                                                        </p>
-                                                                                                                    </div>
-                                                                                                                    {selectedTeacher === String(teacher.user_id) && (
-                                                                                                                        <IconCheck className="h-5 w-5 text-sky-600 dark:text-sky-400 shrink-0" />
-                                                                                                                    )}
-                                                                                                                </div>
-                                                                                                                {teacher.subject_area && (
-                                                                                                                    <div className="mt-3 flex flex-wrap gap-1">
-                                                                                                                        {teacher.subject_area.split(',').slice(0, 2).map((area, idx) => (
-                                                                                                                            <Badge
-                                                                                                                                key={idx}
-                                                                                                                                variant="secondary"
-                                                                                                                                className="text-xs bg-slate-100 dark:bg-slate-800"
-                                                                                                                            >
-                                                                                                                                {area.trim()}
-                                                                                                                            </Badge>
-                                                                                                                        ))}
-                                                                                                                        {teacher.subject_area.split(',').length > 2 && (
-                                                                                                                            <Badge variant="secondary" className="text-xs bg-slate-100 dark:bg-slate-800">
-                                                                                                                                +{teacher.subject_area.split(',').length - 2}
-                                                                                                                            </Badge>
-                                                                                                                        )}
-                                                                                                                    </div>
-                                                                                                                )}
-                                                                                                                {teacher.professional_summary && (
-                                                                                                                    <div className="mt-2 flex items-start gap-1.5">
-                                                                                                                        <IconBriefcase className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
-                                                                                                                        <p className="text-xs text-muted-foreground line-clamp-2">
-                                                                                                                            {teacher.professional_summary}
-                                                                                                                        </p>
-                                                                                                                    </div>
-                                                                                                                )}
-                                                                                                            </div>
-                                                                                                        ))
-                                                                                                    )}
-                                                                                                </div>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        <DialogFooter>
-                                                                                            <Button
-                                                                                                variant="outline"
-                                                                                                onClick={() => {
-                                                                                                    setIsDialogOpen(false);
-                                                                                                    setSelectedGroup(null);
-                                                                                                    setSelectedTeacher('');
-                                                                                                    setTeacherSearch('');
-                                                                                                }}
-                                                                                            >
-                                                                                                Cancelar
-                                                                                            </Button>
-                                                                                            <Button
-                                                                                                onClick={handleAssignTeacher}
-                                                                                                disabled={!selectedTeacher || isAssigning}
-                                                                                                className="bg-sky-600 hover:bg-sky-700 text-white"
-                                                                                            >
-                                                                                                {isAssigning ? 'Asignando...' : 'Asignar'}
-                                                                                            </Button>
-                                                                                        </DialogFooter>
-                                                                                    </>
-                                                                                )}
-                                                                            </DialogContent>
-                                                                        </Dialog>
-                                                                    </div>
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                                                {pageGroups.map((group) => (
+                                                    <div key={group.id} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-5 space-y-4 hover:shadow-lg transition-shadow">
+                                                        <div className="flex items-start justify-between gap-3">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="text-xs font-semibold text-sky-600 dark:text-sky-400">#{group.id}</span>
+                                                                    {getStatusBadge(group.status)}
+                                                                </div>
+                                                                <h3 className="text-lg font-bold text-foreground truncate">{group.name}</h3>
+                                                                <p className="text-sm text-muted-foreground truncate">{group.course_name || 'Sin curso'}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-3 text-sm">
+                                                            <div className="space-y-1">
+                                                                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                                                    <IconCalendar className="h-3 w-3" />
+                                                                    Inicio
+                                                                </p>
+                                                                <p className="font-medium">{new Date(group.start_date).toLocaleDateString()}</p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                                                                    <IconCalendar className="h-3 w-3" />
+                                                                    Fin
+                                                                </p>
+                                                                <p className="font-medium">{new Date(group.end_date).toLocaleDateString()}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+                                                            <div className="flex items-center justify-between">
+                                                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+                                                                    <IconUsers className="h-3.5 w-3.5" />
+                                                                    Docentes ({group.teachers?.length || 0})
+                                                                </p>
+                                                                {renderAssignDialog(group)}
+                                                            </div>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {group.teachers && group.teachers.length > 0 ? (
+                                                                    group.teachers.map((teacher) => (
+                                                                        <div key={teacher.id} className="flex items-center gap-1.5 rounded-lg border border-violet-500/20 bg-violet-500/10 px-2.5 py-1.5 text-xs">
+                                                                            <IconUser className="h-3 w-3 text-violet-600 dark:text-violet-400" />
+                                                                            <span className="font-medium text-violet-700 dark:text-violet-300">{teacher.user_name || 'Sin nombre'}</span>
+                                                                            <Button
+                                                                                variant="ghost"
+                                                                                size="sm"
+                                                                                className="h-4 w-4 p-0 ml-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                                                onClick={() => handleRemoveTeacher(group.id, teacher.user_id)}
+                                                                                title="Remover docente"
+                                                                            >
+                                                                                <IconTrash className="h-3 w-3" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    ))
+                                                                ) : (
+                                                                    <span className="text-xs text-muted-foreground italic">Sin docentes asignados</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
+
+
 
                                             <div className="flex items-center justify-between">
                                                 <div className="text-sm text-muted-foreground">
