@@ -55,13 +55,21 @@ export default function NewsSection() {
 
   const fetchNews = async () => {
     try {
-      // Usar el endpoint completo que incluye content_type
-      const response = await fetch(`${config.apiUrl}/developer-web/news?per_page=6`);
+      // Usar el endpoint de content y filtrar solo news
+      const response = await fetch(
+        `${config.apiUrl}/developer-web/content?status=published`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        }
+      );
       const data = await response.json();
 
-      if (data.success && data.data) {
-        // Los datos vienen paginados: data.data.data
-        const newsItems = data.data.data || data.data;
+      if (data.success && data.data?.data) {
+        // Filtrar solo items con content_type === "news"
+        const newsItems = data.data.data
+          .filter((item: any) => item.content_type === "news")
+          .slice(0, 6); // Limitar a 6 items
         setNews(newsItems);
       }
     } catch (error) {

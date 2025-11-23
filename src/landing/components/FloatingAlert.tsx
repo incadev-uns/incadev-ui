@@ -6,7 +6,6 @@ import {
   CheckCircle,
   AlertCircle,
   Wrench,
-  Megaphone,
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ import { config } from "@/config/technology-config";
 
 interface ContentItem {
   id: number;
-  content_type: "alert" | "announcement";
+  content_type: "alert";
   title: string;
   summary: string;
   content: string;
@@ -75,13 +74,6 @@ const alertItemStyles: Record<string, {
   },
 };
 
-// Estilos para announcements
-const announcementStyles = {
-  card: "border-l-4 border-l-primary",
-  icon: "text-primary",
-  badge: "bg-primary/10 text-primary",
-  accent: "text-primary",
-};
 
 export default function FloatingAlert() {
   const [notifications, setNotifications] = useState<ContentItem[]>([]);
@@ -114,16 +106,10 @@ export default function FloatingAlert() {
         const result = await response.json();
 
         if (result.success && result.data?.data) {
+          // Solo filtrar alerts (announcements se muestran en HeroSection)
           const items = result.data.data
-            .filter(
-              (item: ContentItem) =>
-                item.content_type === "alert" || item.content_type === "announcement"
-            )
-            .sort((a: ContentItem, b: ContentItem) => {
-              if (a.content_type === "alert" && b.content_type !== "alert") return -1;
-              if (a.content_type !== "alert" && b.content_type === "alert") return 1;
-              return a.priority - b.priority;
-            });
+            .filter((item: ContentItem) => item.content_type === "alert")
+            .sort((a: ContentItem, b: ContentItem) => a.priority - b.priority);
 
           // Eliminar duplicados por id
           const uniqueItems = items.filter(
@@ -209,17 +195,11 @@ export default function FloatingAlert() {
   // Si la notificación actual ya fue descartada, no mostrar
   if (!current || dismissedIds.includes(current.id)) return null;
 
-  const isAlert = current.content_type === "alert";
   const itemType = current.item_type || "information";
 
-  // Obtener estilos según el tipo
-  const styles = isAlert
-    ? alertItemStyles[itemType] || alertItemStyles.information
-    : announcementStyles;
-
-  const Icon = isAlert
-    ? alertItemIcons[itemType] || Info
-    : Megaphone;
+  // Obtener estilos según el tipo de alerta
+  const styles = alertItemStyles[itemType] || alertItemStyles.information;
+  const Icon = alertItemIcons[itemType] || Info;
 
   // Contar notificaciones restantes (activas después de la actual)
   const remainingCount = notifications
@@ -240,7 +220,7 @@ export default function FloatingAlert() {
               <Icon className="h-4 w-4" />
             </div>
             <Badge variant="outline" className={`${styles.badge} border-0 font-semibold`}>
-              {isAlert ? "Alerta" : "Anuncio"}
+              Alerta
             </Badge>
             {remainingCount > 0 && (
               <span className="text-xs text-muted-foreground">
