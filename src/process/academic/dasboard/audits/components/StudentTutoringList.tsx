@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Calendar,
   Clock,
@@ -9,6 +10,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  ExternalLink,
 } from "lucide-react";
 import { type StudentTutoring } from "@/process/academic/dasboard/audits/components/StudentTutoringView";
 
@@ -22,11 +24,19 @@ export default function StudentTutoringList({
   showHistory = false,
 }: StudentTutoringListProps) {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "long",
       year: "numeric",
     });
+  };
+
+  const formatTime = (timeString: string) => {
+    if (!timeString) return "N/A";
+    // Si viene en formato HH:MM:SS, tomar solo HH:MM
+    return timeString.substring(0, 5);
   };
 
   const getStatusConfig = (tutoring: StudentTutoring) => {
@@ -53,7 +63,7 @@ export default function StudentTutoringList({
           bgColor: "bg-red-50",
         };
       case "completed":
-        if (tutoring.studentAttended === true) {
+        if (tutoring.student_attended === true) {
           return {
             icon: <CheckCircle2 className="h-5 w-5" />,
             badge: <Badge className="bg-green-600">Completada - Asistió</Badge>,
@@ -61,7 +71,7 @@ export default function StudentTutoringList({
             bgColor: "bg-green-50",
           };
         }
-        if (tutoring.studentAttended === false) {
+        if (tutoring.student_attended === false) {
           return {
             icon: <XCircle className="h-5 w-5" />,
             badge: <Badge variant="secondary">Completada - No asistió</Badge>,
@@ -110,7 +120,9 @@ export default function StudentTutoringList({
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold">{tutoring.teacherName}</h3>
+                    <h3 className="font-semibold">
+                      {tutoring.teacher?.name || tutoring.teacherName || "Profesor"}
+                    </h3>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className={statusConfig.color}>
@@ -127,27 +139,27 @@ export default function StudentTutoringList({
                 <div className="flex items-center gap-2">
                   <BookOpen className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Curso:</span>
-                  <span className="text-sm">{tutoring.subject}</span>
+                  <span className="text-sm">{tutoring.subject || "Tutoría Académica"}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Tema:</span>
-                  <span className="text-sm">{tutoring.topic}</span>
+                  <span className="text-sm">{tutoring.topic || "Asesoría general"}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Fecha:</span>
                   <span className="text-sm">
-                    {formatDate(tutoring.requestedDate)}
+                    {formatDate(tutoring.requested_date)}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Hora:</span>
-                  <span className="text-sm">{tutoring.requestedTime}</span>
+                  <span className="text-sm">{formatTime(tutoring.requested_time)}</span>
                 </div>
               </div>
 
@@ -161,21 +173,36 @@ export default function StudentTutoringList({
               )}
 
               {tutoring.status === "accepted" && (
-                <div className="pt-2 border-t">
+                <div className="pt-2 border-t space-y-2">
                   <p className="text-sm text-green-700 font-medium">
-                    Tu tutoría ha sido confirmada. No olvides asistir en la
-                    fecha y hora programada.
+                    ✓ Tu tutoría ha sido confirmada
                   </p>
+                  {tutoring.meet_url && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => window.open(tutoring.meet_url, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Unirse a la reunión
+                    </Button>
+                  )}
+                  {!tutoring.meet_url && (
+                    <p className="text-xs text-muted-foreground">
+                      El profesor agregará el enlace de la reunión pronto.
+                    </p>
+                  )}
                 </div>
               )}
 
-              {tutoring.status === "rejected" && tutoring.rejectionReason && (
+              {tutoring.status === "rejected" && tutoring.rejection_reason && (
                 <div className="pt-2 border-t">
                   <p className="text-sm font-medium text-red-700">
                     Motivo del rechazo:
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    {tutoring.rejectionReason}
+                    {tutoring.rejection_reason}
                   </p>
                 </div>
               )}

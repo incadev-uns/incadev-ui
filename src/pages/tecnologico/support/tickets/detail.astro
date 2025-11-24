@@ -1,0 +1,22 @@
+---
+import TicketDetailPage from '@/process/technology/dashboard/TicketDetailPage';
+import '@/styles/global.css';
+
+const title = `Detalle de Ticket - Tecnológico`;
+const description = `Detalle del ticket de soporte técnico`;
+const robots = ["noindex", "nofollow"];
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="robots" content={robots.join(", ")} />
+</head>
+<body>
+  <TicketDetailPage client:load />
+</body>
+</html>

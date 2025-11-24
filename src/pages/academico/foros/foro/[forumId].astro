@@ -1,0 +1,18 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import ThreadListPage from '@/process/academic/dasboard/foros/thread-list/ThreadListPage';
+const robots = ["noindex", "nofollow"];
+
+const { forumId } = Astro.params;
+
+const title = "Foro | Incadev";
+const description = "Explora los hilos de discusión en este foro académico.";
+const keywords = ["foros Incadev", "comunidad estudiantil", "discusiones académicas", "soporte entre estudiantes"];
+const url = `https://instituto.cetivirgendelapuerta.com/academico/foros/foro/${forumId}`;
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<ThreadListPage forumId={parseInt(forumId || "0")} client:load/>
+</DashboardLayout>

@@ -12,11 +12,35 @@ import {
   SidebarGroupContent,
 } from "@/components/ui/sidebar"
 import { routes } from "@/process/technology/technology-site";
-import { IconLogout, IconUserCircle, IconHome, IconUsers, IconShield, IconKey, IconSettings, IconTicket, IconServer, IconAlertTriangle, IconFileText, IconCode, IconUser, IconLock, IconDeviceDesktop, IconActivity, IconAdjustments } from "@tabler/icons-react";
 import { toast } from "sonner";
 import { config } from "@/config/technology-config";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import {
+  IconLogout,
+  IconUserCircle,
+  IconHome,
+  IconUsers,
+  IconShield,
+  IconKey,
+  IconTicket,
+  IconServer,
+  IconFileText,
+  IconCode,
+  IconUser,
+  IconLock,
+  IconDeviceDesktop,
+  IconActivity,
+  IconAdjustments,
+  IconChartBar,
+  IconRobot,
+  IconNews,
+  IconBell,
+  IconAlertTriangle,
+  IconLifebuoy,
+  IconPackage,
+  IconApps,
+  IconLicense,
+} from "@tabler/icons-react";
 interface User {
   id: number
   name: string
@@ -24,6 +48,7 @@ interface User {
   avatar?: string | null
   avatar_url?: string | null
   role?: string
+  roles?: string[]
 }
 
 type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
@@ -73,7 +98,7 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
   };
 
   const handleGoToProfile = () => {
-    const userRole = user?.role || 'admin';
+    const userRole = user?.roles?.[0] || user?.role || 'admin';
     const profileRoutes: Record<string, string> = {
       admin: routes.admin.profile,
       support: routes.support.profile,
@@ -86,7 +111,7 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
   };
 
   // Obtener el rol del usuario
-  const userRole = user?.role || 'admin';
+  const userRole = user?.roles?.[0] || user?.role || 'admin';
 
   // Configuración de navegación por rol
   const getRoleNavigation = () => {
@@ -190,33 +215,9 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <a href={routes.admin.support.tickets}>
+                      <a href={routes.support.myTickets}>
                         <IconTicket className="h-4 w-4" />
                         <span>Mis Tickets</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <a href={routes.admin.support.createTicket}>
-                        <IconFileText className="h-4 w-4" />
-                        <span>Crear Ticket</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>Configuración</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <a href={routes.admin.profile}>
-                        <IconSettings className="h-4 w-4" />
-                        <span>Perfil</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -251,9 +252,17 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
+                      <a href={routes.support.myTickets}>
+                        <IconTicket className="h-4 w-4" />
+                        <span>Mis Tickets</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
                       <a href={routes.support.tickets}>
                         <IconTicket className="h-4 w-4" />
-                        <span>Tickets</span>
+                        <span>Todos los Tickets</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -286,6 +295,7 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
               <SidebarGroupLabel>Infraestructura</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
+                  {/* TODO: Descomentar cuando el backend de servidores esté listo
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <a href={routes.infrastructure.servers}>
@@ -294,19 +304,44 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  */}
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <a href={routes.infrastructure.assets}>
-                        <IconServer className="h-4 w-4" />
+                        <IconPackage className="h-4 w-4" />
                         <span>Activos Tecnológicos</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
+                      <a href={routes.infrastructure.software}>
+                        <IconApps className="h-4 w-4" />
+                        <span>Catálogo de Software</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
                       <a href={routes.infrastructure.licenses}>
-                        <IconServer className="h-4 w-4" />
+                        <IconLicense className="h-4 w-4" />
                         <span>Gestión de Licencias</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Soporte</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.support.myTickets}>
+                        <IconTicket className="h-4 w-4" />
+                        <span>Mis Tickets</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -320,25 +355,17 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
         return (
           <>
             <SidebarGroup>
-              <SidebarGroupLabel>General</SidebarGroupLabel>
+              <SidebarGroupLabel>Seguridad</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <a href={dashboardRoute}>
                         <IconHome className="h-4 w-4" />
-                        <span>Dashboard</span>
+                        <span>Dashboard Seguridad</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-
-            <SidebarGroup>
-              <SidebarGroupLabel>Gestión de Seguridad</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
                       <a href={routes.security.blocks}>
@@ -365,9 +392,9 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                   </SidebarMenuItem>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <a href={routes.security.incidents}>
-                        <IconAlertTriangle className="h-4 w-4" />
-                        <span>Incidentes</span>
+                      <a href={routes.security.settings}>
+                        <IconAdjustments className="h-4 w-4" />
+                        <span>Configuración Seguridad</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -376,22 +403,14 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
             </SidebarGroup>
 
             <SidebarGroup>
-              <SidebarGroupLabel>Configuración</SidebarGroupLabel>
+              <SidebarGroupLabel>Soporte</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <a href={routes.security.settings}>
-                        <IconAdjustments className="h-4 w-4" />
-                        <span>Configuración Seguridad</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <a href={routes.security.profile}>
-                        <IconSettings className="h-4 w-4" />
-                        <span>Perfil</span>
+                      <a href={routes.support.myTickets}>
+                        <IconTicket className="h-4 w-4" />
+                        <span>Mis Tickets</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -426,9 +445,57 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
+                      <a href={routes.academic_analyst.attendance}>
+                        <IconChartBar className="h-4 w-4" />
+                        <span>Asistencia</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.academic_analyst.performance}>
+                        <IconChartBar className="h-4 w-4" />
+                        <span>Rendimiento</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.academic_analyst.progress}>
+                        <IconChartBar className="h-4 w-4" />
+                        <span>Progreso</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.academic_analyst.riskPrediction}>
+                        <IconChartBar className="h-4 w-4" />
+                        <span>Predicción de Riesgo</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  {/*<SidebarMenuItem>
+                    <SidebarMenuButton asChild>
                       <a href={routes.academic_analyst.reports}>
                         <IconFileText className="h-4 w-4" />
                         <span>Reportes</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>*/}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Soporte</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.support.myTickets}>
+                        <IconTicket className="h-4 w-4" />
+                        <span>Mis Tickets</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -463,9 +530,81 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                 <SidebarMenu>
                   <SidebarMenuItem>
                     <SidebarMenuButton asChild>
-                      <a href={routes.web.projects}>
-                        <IconCode className="h-4 w-4" />
-                        <span>Proyectos</span>
+                      <a href={routes.web.news}>
+                        <IconNews className="h-4 w-4" />
+                        <span>Noticias</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.web.announcements}>
+                        <IconBell className="h-4 w-4" />
+                        <span>Anuncios</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.web.alerts}>
+                        <IconAlertTriangle className="h-4 w-4" />
+                        <span>Alertas</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Chatbot</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.web.chatbot.dashboard}>
+                        <IconRobot className="h-4 w-4" />
+                        <span>Dashboard</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.web.chatbot.faqs}>
+                        <IconRobot className="h-4 w-4" />
+                        <span>FAQs</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.web.chatbot.configuracion}>
+                        <IconAdjustments className="h-4 w-4" />
+                        <span>Configuración</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.web.chatbot.analytics}>
+                        <IconChartBar className="h-4 w-4" />
+                        <span>Analytics</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Soporte</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={routes.support.myTickets}>
+                        <IconTicket className="h-4 w-4" />
+                        <span>Mis Tickets</span>
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

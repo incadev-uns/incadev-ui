@@ -11,7 +11,7 @@ interface GoogleLoginButtonProps {
 export function GoogleLoginButton({ text = "Iniciar con Google" }: GoogleLoginButtonProps) {
   const handleGoogleLogin = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}${config.endpoints.auth.redirect}?redirect=/academico/dashboard`)
+      /* const response = await fetch(`${config.apiUrl}${config.endpoints.auth.redirect}?redirect=/academico/dashboard`)
 
       if (!response.ok) {
         const err = await response.json()
@@ -25,7 +25,8 @@ export function GoogleLoginButton({ text = "Iniciar con Google" }: GoogleLoginBu
         window.location.href = data.redirect_url
       } else {
         throw new Error("No se recibió la URL de redirección")
-      }
+      } */
+      window.location.href = "https://instituto.cetivirgendelapuerta.com/backend/academico/public/auth/google/redirect"
     } catch (error: any) {
       console.error("Error en login con Google:", error)
       toast.error("No se pudo iniciar sesión con Google.")

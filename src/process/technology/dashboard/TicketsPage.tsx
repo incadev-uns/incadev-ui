@@ -50,9 +50,11 @@ export default function TicketsPage() {
 
   // Filters
   const [search, setSearch] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("")
-  const [priorityFilter, setPriorityFilter] = useState<string>("")
-  const [typeFilter, setTypeFilter] = useState<string>("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [priorityFilter, setPriorityFilter] = useState<string>("all")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
+  const [sortBy, setSortBy] = useState<string>("updated_at")
+  const [sortOrder, setSortOrder] = useState<string>("desc")
   const [showFilters, setShowFilters] = useState(false)
 
   // Fetch tickets
@@ -62,14 +64,14 @@ export default function TicketsPage() {
       const params: any = {
         page,
         per_page: perPage,
-        sort_by: "updated_at",
-        sort_order: "desc",
+        sort_by: sortBy,
+        sort_order: sortOrder,
       }
 
-      if (search.trim()) params.search = search.trim()
-      if (statusFilter) params.status = statusFilter
-      if (priorityFilter) params.priority = priorityFilter
-      if (typeFilter) params.type = typeFilter
+      if (search.trim() && search.trim().length >= 3) params.search = search.trim()
+      if (statusFilter && statusFilter !== "all") params.status = statusFilter
+      if (priorityFilter && priorityFilter !== "all") params.priority = priorityFilter
+      if (typeFilter && typeFilter !== "all") params.type = typeFilter
 
       const response = await technologyApi.support.tickets.list(params)
 
@@ -91,7 +93,7 @@ export default function TicketsPage() {
     if (!authLoading && user) {
       fetchTickets()
     }
-  }, [page, authLoading, user])
+  }, [page, authLoading, user, sortBy, sortOrder])
 
   const handleSearch = () => {
     setPage(1)
@@ -100,11 +102,22 @@ export default function TicketsPage() {
 
   const handleClearFilters = () => {
     setSearch("")
-    setStatusFilter("")
-    setPriorityFilter("")
-    setTypeFilter("")
+    setStatusFilter("all")
+    setPriorityFilter("all")
+    setTypeFilter("all")
+    setSortBy("updated_at")
+    setSortOrder("desc")
     setPage(1)
     setTimeout(fetchTickets, 100)
+  }
+
+  const getActiveFiltersCount = () => {
+    let count = 0
+    if (search) count++
+    if (statusFilter && statusFilter !== "all") count++
+    if (priorityFilter && priorityFilter !== "all") count++
+    if (typeFilter && typeFilter !== "all") count++
+    return count
   }
 
   const handleCreateTicket = () => {
@@ -112,7 +125,7 @@ export default function TicketsPage() {
   }
 
   const handleViewTicket = (ticketId: number) => {
-    window.location.href = `/tecnologico/support/tickets/${ticketId}`
+    window.location.href = `/tecnologico/support/tickets/detail?id=${ticketId}`
   }
 
   const formatDate = (dateString: string) => {
@@ -128,7 +141,7 @@ export default function TicketsPage() {
 
   if (authLoading) {
     return (
-      <TechnologyLayout title="Tickets de Soporte">
+      <TechnologyLayout title="Todos los Tickets">
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
@@ -137,14 +150,14 @@ export default function TicketsPage() {
   }
 
   return (
-    <TechnologyLayout title="Tickets de Soporte">
+    <TechnologyLayout title="Todos los Tickets">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Tickets de Soporte</h1>
+            <h1 className="text-3xl font-bold text-foreground">Todos los Tickets</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              Gestiona tus solicitudes de soporte técnico
+              Gestiona todos los tickets de soporte técnico del sistema
             </p>
           </div>
           <Button onClick={handleCreateTicket}>
@@ -157,14 +170,21 @@ export default function TicketsPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg">Buscar y Filtrar</CardTitle>
+              <div>
+                <CardTitle className="text-lg">Buscar y Filtrar</CardTitle>
+                {getActiveFiltersCount() > 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {getActiveFiltersCount()} filtro(s) activo(s)
+                  </p>
+                )}
+              </div>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
               >
                 <Filter className="w-4 h-4 mr-2" />
-                {showFilters ? "Ocultar" : "Mostrar"} Filtros
+                {showFilters ? "Ocultar" : "Mostrar"} Filtros Avanzados
               </Button>
             </div>
           </CardHeader>
@@ -174,7 +194,7 @@ export default function TicketsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
                 <Input
-                  placeholder="Buscar por título..."
+                  placeholder="Buscar por título o contenido (mínimo 3 caracteres)..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSearch()}
@@ -182,61 +202,100 @@ export default function TicketsPage() {
                 />
               </div>
               <Button onClick={handleSearch}>Buscar</Button>
-              {(search || statusFilter || priorityFilter || typeFilter) && (
+              {getActiveFiltersCount() > 0 && (
                 <Button variant="outline" onClick={handleClearFilters}>
-                  Limpiar
+                  Limpiar Filtros
                 </Button>
               )}
             </div>
 
             {/* Filters */}
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Estado</label>
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los estados" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
-                      <SelectItem value="open">Abierto</SelectItem>
-                      <SelectItem value="pending">Pendiente</SelectItem>
-                      <SelectItem value="closed">Cerrado</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4 pt-4 border-t">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Estado</label>
+                    <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setPage(1); }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos los estados" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="pending">Pendiente</SelectItem>
+                        <SelectItem value="open">Abierto</SelectItem>
+                        <SelectItem value="closed">Cerrado</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Prioridad</label>
+                    <Select value={priorityFilter} onValueChange={(value) => { setPriorityFilter(value); setPage(1); }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todas las prioridades" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todas</SelectItem>
+                        <SelectItem value="low">Baja</SelectItem>
+                        <SelectItem value="medium">Media</SelectItem>
+                        <SelectItem value="high">Alta</SelectItem>
+                        <SelectItem value="urgent">Urgente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Tipo</label>
+                    <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setPage(1); }}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Todos los tipos" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Todos</SelectItem>
+                        <SelectItem value="technical">Técnico</SelectItem>
+                        <SelectItem value="academic">Académico</SelectItem>
+                        <SelectItem value="administrative">Administrativo</SelectItem>
+                        <SelectItem value="inquiry">Consulta</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Ordenar por</label>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="updated_at">Última actualización</SelectItem>
+                        <SelectItem value="created_at">Fecha de creación</SelectItem>
+                        <SelectItem value="priority">Prioridad</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Prioridad</label>
-                  <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todas las prioridades" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todas</SelectItem>
-                      <SelectItem value="low">Baja</SelectItem>
-                      <SelectItem value="medium">Media</SelectItem>
-                      <SelectItem value="high">Alta</SelectItem>
-                      <SelectItem value="urgent">Urgente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Tipo</label>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Todos los tipos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">Todos</SelectItem>
-                      <SelectItem value="technical">Técnico</SelectItem>
-                      <SelectItem value="academic">Académico</SelectItem>
-                      <SelectItem value="administrative">Administrativo</SelectItem>
-                      <SelectItem value="inquiry">Consulta</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Orden</label>
+                    <Select value={sortOrder} onValueChange={setSortOrder}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="desc">Descendente</SelectItem>
+                        <SelectItem value="asc">Ascendente</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex-1" />
+                  <Button
+                    variant="outline"
+                    onClick={handleClearFilters}
+                    className="mt-6"
+                  >
+                    Restablecer Filtros
+                  </Button>
                 </div>
               </div>
             )}
@@ -248,10 +307,10 @@ export default function TicketsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TicketIcon className="w-5 h-5" />
-              Mis Tickets
+              Todos los Tickets
             </CardTitle>
             <CardDescription>
-              Tienes {tickets.length} ticket(s) {statusFilter ? `en estado ${StatusLabels[statusFilter as TicketStatus]}` : ""}
+              Total: {tickets.length} ticket(s) {statusFilter && statusFilter !== "all" ? `en estado ${StatusLabels[statusFilter as TicketStatus]}` : ""}
             </CardDescription>
           </CardHeader>
           <CardContent>

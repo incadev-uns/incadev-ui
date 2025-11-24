@@ -12,6 +12,7 @@ import ContactSection from "./sections/ContactSection";
 
 // Component imports
 import ChatbotButton from "./components/ChatbotButton";
+import FloatingAlert from "./components/FloatingAlert";
 
 /**
  * LandingPage Component
@@ -70,6 +71,9 @@ const LandingPage: React.FC = () => {
           <ContactSection />
         </section>
       </main>
+
+      {/* Floating Alert */}
+      <FloatingAlert />
 
       {/* Floating Chatbot Button */}
       <ChatbotButton />

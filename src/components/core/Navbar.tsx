@@ -178,10 +178,6 @@ export function Navbar() {
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
-                      <UserIcon className="mr-2 h-4 w-4" />
-                      <span>Perfil</span>
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Cerrar sesión</span>
@@ -254,16 +250,10 @@ export function Navbar() {
                             <p className="text-xs text-muted-foreground">{user.email}</p>
                           </div>
                         </div>
-                        <div className="flex flex-col gap-2">
-                          <Button variant="outline" className="w-full" onClick={() => { handleProfileClick(); setMobileMenuOpen(false); }}>
-                            <UserIcon className="mr-2 h-4 w-4" />
-                            Perfil
-                          </Button>
-                          <Button variant="destructive" className="w-full" onClick={handleLogout}>
-                            <LogOut className="mr-2 h-4 w-4" />
-                            Cerrar sesión
-                          </Button>
-                        </div>
+                        <Button variant="destructive" className="w-full" onClick={handleLogout}>
+                          <LogOut className="mr-2 h-4 w-4" />
+                          Cerrar sesión
+                        </Button>
                       </div>
                     ) : (
                       // Usuario no logeado en mobile

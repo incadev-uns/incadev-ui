@@ -50,14 +50,17 @@ export const routes = {
   support: {
     dashboard: "/tecnologico/support/dashboard",
     tickets: "/tecnologico/support/tickets",
+    myTickets: "/tecnologico/support/mis-tickets",
     createTicket: "/tecnologico/support/tickets/crear",
-    ticketDetail: (id: number) => `/tecnologico/support/tickets/${id}`,
+    ticketDetail: (id: number) => `/tecnologico/support/tickets/detail?id=${id}`,
     profile: "/tecnologico/support/perfil",
   },
   infrastructure: {
+    dashboard: "/tecnologico/infrastructure/dashboard",
     servers: "/tecnologico/infrastructure/servidores",
-    licenses: "/tecnologico/infrastructure/licenses",
     assets: "/tecnologico/infrastructure/assets",
+    software: "/tecnologico/infrastructure/software",
+    licenses: "/tecnologico/infrastructure/licenses",
     profile: "/tecnologico/infrastructure/perfil",
   },
   security: {
@@ -70,12 +73,17 @@ export const routes = {
     profile: "/tecnologico/security/perfil",
   },
   academic_analyst: {
+    dashboard: "/tecnologico/academic_analyst/dashboard",
+    attendance: "/tecnologico/academic_analyst/asistencia",
+    performance: "/tecnologico/academic_analyst/rendimiento",
+    progress: "/tecnologico/academic_analyst/progreso",
+    riskPrediction: "/tecnologico/academic_analyst/prediccion-riesgo",
     reports: "/tecnologico/academic_analyst/reportes",
     profile: "/tecnologico/academic_analyst/perfil",
   },
   web: {
     dashboard: "/tecnologico/web/dashboard",
-    news: "/tecnologico/web/noticias",
+    news: "/tecnologico/web/noticias_add",
     announcements: "/tecnologico/web/anuncios", 
     alerts: "/tecnologico/web/alertas",
     projects: "/tecnologico/web/proyectos",

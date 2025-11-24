@@ -13,11 +13,10 @@ export function useAcademicAuth() {
     };
 
     const authDataStr = getCookie('auth_data');
-    
     if (authDataStr) {
       const authData = JSON.parse(authDataStr);
-      localStorage.setItem('token', JSON.stringify(authData.data.token));
-      localStorage.setItem('user', JSON.stringify(authData.data.user));
+      localStorage.setItem('token', JSON.stringify(authData.token));
+      localStorage.setItem('user', JSON.stringify(authData.user));
       localStorage.setItem('role', "student");
       document.cookie = "auth_data=; path=/; max-age=0";
     }

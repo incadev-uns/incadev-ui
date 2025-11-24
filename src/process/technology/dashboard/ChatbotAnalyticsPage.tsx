@@ -87,7 +87,7 @@ export default function ChatbotAnalyticsPage() {
 
   if (loading) {
     return (
-      <TechnologyLayout breadcrumbs={[{ label: "Chatbot", href: "/tecnologico/web/chatbot/dashboard" }, { label: "Analytics" }]}>
+      <TechnologyLayout>
         <div className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <span className="ml-2">Cargando analytics...</span>
@@ -97,7 +97,7 @@ export default function ChatbotAnalyticsPage() {
   }
 
   return (
-    <TechnologyLayout breadcrumbs={[{ label: "Chatbot", href: "/tecnologico/web/chatbot/dashboard" }, { label: "Analytics" }]}>
+    <TechnologyLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold tracking-tight">Analytics del Chatbot</h1>
@@ -107,7 +107,7 @@ export default function ChatbotAnalyticsPage() {
         </div>
 
         {analytics && (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Conversaciones Totales</CardTitle>
@@ -143,19 +143,6 @@ export default function ChatbotAnalyticsPage() {
                 <div className="text-2xl font-bold">{analytics.avg_satisfaction || 0}/5</div>
                 <p className="text-xs text-muted-foreground">
                   Basado en feedback de usuarios
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Derivadas a Humano</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{analytics.handed_to_human || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  {analytics.total ? `${((analytics.handed_to_human / analytics.total) * 100).toFixed(1)}% del total` : '0% del total'}
                 </p>
               </CardContent>
             </Card>

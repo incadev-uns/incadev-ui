@@ -6,23 +6,19 @@
 
 export const config = {
   apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/academico/public",
-  //apiUrl:"http://127.0.0.1:8000",
-  environment:"development",
+  //apiUrl: "http://127.0.0.1:8000",
+  environment: "development",
   endpoints: {
-
     users: {
-      me: "http://127.0.0.1:8001/api/auth/me",
-      update: "http://127.0.0.1:8001/api/auth/profile"
+      updateDNI: "/api/update-dni-and-fullname",
+      checkDNI: "/api/get-fullname-by-dni",
     },
-
     auth: {
-      login: "http://127.0.0.1:8001/api/auth/login",
-      logout: "http://127.0.0.1:8001/api/auth/logout",
       register: "/api/auth/register",
       redirect: "/auth/google/redirect",
       callback: "/auth/google/callback",
     },
-    groups:{
+    groups: {
       available: "/api/available-groups",
       enroll: "/api/available-groups/:group/enroll",
       mylist: "/api/enrolled-groups",
@@ -34,19 +30,19 @@ export const config = {
       canComplete: "/api/teaching-groups/:group/can-complete",
       complete: "/api/teaching-groups/:group/complete",
     },
-    classes:{
+    classes: {
       listAll: "/api/teaching-groups/:group/classes",
       create: "/api/teaching-groups/:group/modules/:module/classes",
       update: "/api/teaching-groups/classes/:class",
       delete: "/api/teaching-groups/classes/:class",
     },
-    materials:{
+    materials: {
       listAll: "/api/teaching-groups/classes/:class/materials",
       create: "/api/teaching-groups/classes/:class/materials",
       update: "/api/teaching-groups/materials/:material",
       delete: "/api/teaching-groups/materials/:material",
     },
-    exams:{
+    exams: {
       listAll: "/api/teaching-groups/:group/exams",
       create: "/api/teaching-groups/:group/modules/:module/exams",
       info: "/api/teaching-groups/exams/:exam",
@@ -63,7 +59,14 @@ export const config = {
       statistics: "/api/teaching-groups/:group/attendance-statistics"
     },
     marketing: {
-      students: "/api/marketing/students"
+      students: "/api/marketing/students",
+      courses: "/api/marketing/courses",
+      versions: "/api/marketing/versions"
+    },
+    export: {
+      matriculas: "/api/export/:groupId/enrollments",
+      asistencias: "/api/export/:groupId/attendances",
+      grades: "/api/export/:groupId/grades"
     }
   },
 };

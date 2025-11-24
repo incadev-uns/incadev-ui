@@ -1,14 +1,14 @@
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, BookOpen, FileText, Check, X } from "lucide-react";
+import { Calendar, Clock, User, FileText, Check, X } from "lucide-react";
 import { type TutoringRequest } from "@/process/academic/dasboard/audits/components/TeacherTutoringView";
 
 interface TutoringRequestCardProps {
   request: TutoringRequest;
-  onAccept?: (id: string) => void;
-  onReject?: (id: string) => void;
-  onMarkAttendance?: (id: string, attended: boolean) => void;
+  onAccept?: (id: number, meetUrl?: string) => void;
+  onReject?: (id: number, reason: string) => void;
+  onMarkAttendance?: (id: number, attended: boolean) => void;
 }
 
 export default function TutoringRequestCard({
@@ -46,9 +46,11 @@ export default function TutoringRequestCard({
               <User className="h-4 w-4 text-muted-foreground" />
               <h3 className="font-semibold">{request.studentName}</h3>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Código: {request.studentId}
-            </p>
+            {request.student?.email && (
+              <p className="text-sm text-muted-foreground">
+                {request.student.email}
+              </p>
+            )}
           </div>
           {getStatusBadge(request.status)}
         </div>
@@ -57,46 +59,38 @@ export default function TutoringRequestCard({
       <CardContent className="space-y-3">
         <div className="grid gap-3">
           <div className="flex items-center gap-2">
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Curso:</span>
-            <span className="text-sm">{request.subject}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">Tema:</span>
-            <span className="text-sm">{request.topic}</span>
-          </div>
-
-          <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">Fecha:</span>
-            <span className="text-sm">{formatDate(request.requestedDate)}</span>
+            <span className="text-sm">{formatDate(request.requested_date)}</span>
           </div>
 
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium">Hora:</span>
-            <span className="text-sm">{request.requestedTime}</span>
+            <span className="text-sm">{request.requested_time}</span>
           </div>
+          
+          {request.meet_url && (
+            <div className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Enlace:</span>
+              <a href={request.meet_url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">
+                Ir a la reunión
+              </a>
+            </div>
+          )}
         </div>
 
-        {request.notes && (
-          <div className="pt-2 border-t">
-            <p className="text-sm text-muted-foreground">{request.notes}</p>
-          </div>
-        )}
-
-        {request.status === "completed" && request.studentAttended !== undefined && (
+        {request.status === "completed" && request.student_attended !== undefined && (
           <div className="pt-2 border-t">
             <p className="text-sm font-medium">
               Asistencia:{" "}
               <span
                 className={
-                  request.studentAttended ? "text-green-600" : "text-red-600"
+                  request.student_attended ? "text-green-600" : "text-red-600"
                 }
               >
-                {request.studentAttended ? "Asistió" : "No asistió"}
+                {request.student_attended ? "Asistió" : "No asistió"}
               </span>
             </p>
           </div>
@@ -106,14 +100,31 @@ export default function TutoringRequestCard({
       {request.status === "pending" && onAccept && onReject && (
         <CardFooter className="flex gap-2">
           <Button
-            onClick={() => onReject(request.id)}
+            onClick={() => {
+              const reason = prompt("Motivo del rechazo:");
+              if (reason) onReject(request.id, reason);
+            }}
             variant="outline"
             className="flex-1"
           >
             <X className="h-4 w-4 mr-2" />
             Rechazar
           </Button>
-          <Button onClick={() => onAccept(request.id)} className="flex-1">
+          <Button 
+            onClick={() => {
+              let meetUrl = prompt("URL de la reunión (opcional):");
+              if (meetUrl && meetUrl.trim()) {
+                // Agregar https:// si no tiene protocolo
+                if (!meetUrl.startsWith('http://') && !meetUrl.startsWith('https://')) {
+                  meetUrl = 'https://' + meetUrl;
+                }
+                onAccept(request.id, meetUrl);
+              } else {
+                onAccept(request.id, undefined);
+              }
+            }} 
+            className="flex-1"
+          >
             <Check className="h-4 w-4 mr-2" />
             Aceptar
           </Button>

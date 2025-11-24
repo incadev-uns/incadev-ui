@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, X, Send, Minimize2, Bot, Sparkles, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { X, Send, Minimize2, Bot, Sparkles, Loader2, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
 import { config } from "@/config/technology-config";
 import { toast } from "sonner";
 
@@ -13,6 +12,8 @@ interface Message {
   type: "user" | "bot";
   content: string;
   timestamp: Date;
+  source?: "faq" | "gemini" | "fallback";
+  faqId?: number;
 }
 
 export default function ChatbotButton() {
@@ -23,67 +24,73 @@ export default function ChatbotButton() {
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Animación de apertura e iniciar conversación
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isTyping]);
+
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
       const timer = setTimeout(() => setIsAnimating(false), 300);
-
-      // Iniciar conversación solo si no existe una activa
       if (!conversationId) {
         startConversation();
       }
-
       return () => clearTimeout(timer);
     }
   }, [isOpen]);
 
-  // FAQs rápidas del chatbot
   const quickQuestions = [
     "¿Cómo me inscribo?",
-    "¿Cuáles son los precios?",
-    "¿Tienen certificación?",
-    "¿Modalidad de clases?"
+    "¿Precios?",
+    "¿Certificación?",
+    "¿Modalidad?"
   ];
 
-  /**
-   * Inicia una nueva conversación con el chatbot
-   */
   const startConversation = async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.chatbot.conversation.start}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Accept': 'application/json' },
       });
 
-      const data = await response.json();
+      const result = await response.json();
+      const conversationData = result.data || result;
 
-      if (data.success && data.data.success) {
-        setConversationId(data.data.conversation_id);
-
-        // Agregar mensaje de bienvenida
+      if (result.success && conversationData.conversation_id) {
+        setConversationId(conversationData.conversation_id);
         setMessages([{
           id: 1,
           type: "bot",
-          content: data.data.welcome_message || "¡Hola! Soy el asistente virtual de INCADEV. ¿En qué puedo ayudarte hoy?",
+          content: conversationData.welcome_message || "¡Hola! Soy el asistente virtual de INCADEV. ¿En qué puedo ayudarte?",
           timestamp: new Date()
         }]);
       } else {
-        toast.error("No se pudo conectar con el chatbot");
+        console.error("No conversation_id received:", result);
+        toast.error("No se pudo conectar");
+        setMessages([{
+          id: 1,
+          type: "bot",
+          content: "No pude conectarme. Cierra y vuelve a abrir el chat.",
+          timestamp: new Date()
+        }]);
       }
     } catch (error) {
       console.error("Error starting conversation:", error);
-      toast.error("Error al iniciar la conversación");
-
-      // Mensaje de fallback
+      toast.error("Error de conexión");
       setMessages([{
         id: 1,
         type: "bot",
-        content: "¡Hola! Soy el asistente virtual de INCADEV. ¿En qué puedo ayudarte hoy?",
+        content: "Error de conexión. Cierra y vuelve a abrir el chat.",
         timestamp: new Date()
       }]);
     } finally {
@@ -91,9 +98,6 @@ export default function ChatbotButton() {
     }
   };
 
-  /**
-   * Envía un mensaje al chatbot y recibe la respuesta
-   */
   const handleSendMessage = async () => {
     if (!message.trim() || !conversationId || isTyping) return;
 
@@ -113,48 +117,52 @@ export default function ChatbotButton() {
       const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.chatbot.conversation.message}`, {
         method: 'POST',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: userMessage,
-          conversation_id: conversationId
+          conversation_id: conversationId,
+          message: userMessage
         })
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
-      if (data.success && data.data.success) {
-        // Simular delay de typing si existe
-        if (data.data.response_delay) {
-          await new Promise(resolve => setTimeout(resolve, data.data.response_delay));
+      if (result.success && result.data) {
+        const botData = result.data;
+
+        if (botData.response_delay) {
+          await new Promise(resolve => setTimeout(resolve, Math.min(botData.response_delay, 1500)));
         }
 
         const botResponse: Message = {
           id: messages.length + 2,
           type: "bot",
-          content: data.data.response,
-          timestamp: new Date()
+          content: botData.response,
+          timestamp: new Date(),
+          source: botData.source,
+          faqId: botData.faq_id
         };
 
         setMessages(prev => [...prev, botResponse]);
       } else {
-        // Mensaje de fallback
         const fallbackResponse: Message = {
           id: messages.length + 2,
           type: "bot",
-          content: data.data.response || "Lo siento, estoy teniendo dificultades técnicas. ¿Podrías reformular tu pregunta?",
-          timestamp: new Date()
+          content: result.data?.response || "Lo siento, no pude procesar tu mensaje.",
+          timestamp: new Date(),
+          source: "fallback"
         };
         setMessages(prev => [...prev, fallbackResponse]);
       }
     } catch (error) {
       console.error("Error sending message:", error);
-
       const errorResponse: Message = {
         id: messages.length + 2,
         type: "bot",
-        content: "Lo siento, ocurrió un error al procesar tu mensaje. Por favor, intenta nuevamente.",
-        timestamp: new Date()
+        content: "Error al procesar tu mensaje. Intenta de nuevo.",
+        timestamp: new Date(),
+        source: "fallback"
       };
       setMessages(prev => [...prev, errorResponse]);
     } finally {
@@ -162,60 +170,129 @@ export default function ChatbotButton() {
     }
   };
 
-  /**
-   * Finaliza la conversación actual
-   */
-  const endConversation = async () => {
+  const endConversation = async (sendFeedback: boolean = false) => {
     if (!conversationId) return;
 
     try {
+      const feedbackData = sendFeedback ? {
+        rating: rating || undefined,
+        comment: feedbackComment || undefined,
+        resolved: true
+      } : undefined;
+
       await fetch(`${config.apiUrl}${config.endpoints.developerWeb.chatbot.conversation.end}`, {
         method: 'POST',
         headers: {
+          'Accept': 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           conversation_id: conversationId,
-          feedback: {
-            resolved: true
-          }
+          feedback: feedbackData
         })
       });
+
+      if (sendFeedback) {
+        toast.success("¡Gracias por tu feedback!");
+      }
     } catch (error) {
       console.error("Error ending conversation:", error);
     } finally {
-      // Limpiar estado
       setConversationId(null);
       setMessages([]);
+      setShowFeedback(false);
+      setRating(0);
+      setFeedbackComment("");
     }
   };
 
-  /**
-   * Maneja el cierre del chatbot
-   */
   const handleClose = () => {
+    if (messages.length > 1) {
+      setShowFeedback(true);
+    } else {
+      setIsOpen(false);
+      endConversation(false);
+    }
+  };
+
+  const handleCloseWithoutFeedback = () => {
     setIsOpen(false);
-    endConversation();
+    endConversation(false);
   };
 
-  /**
-   * Envía una pregunta rápida
-   */
+  const handleSubmitFeedback = () => {
+    setIsOpen(false);
+    endConversation(true);
+  };
+
   const handleQuickQuestion = async (question: string) => {
-    setMessage(question);
-    // Esperar a que se actualice el estado antes de enviar
-    setTimeout(() => {
-      const fakeEvent = { key: 'Enter' } as any;
-      handleKeyPress(fakeEvent);
-    }, 10);
-  };
+    if (!conversationId || isTyping) return;
 
-  /**
-   * Maneja la tecla Enter
-   */
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !isTyping) {
-      handleSendMessage();
+    const userMessage = question.trim();
+    const newUserMessage: Message = {
+      id: messages.length + 1,
+      type: "user",
+      content: userMessage,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, newUserMessage]);
+    setIsTyping(true);
+
+    try {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.chatbot.conversation.message}`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          conversation_id: conversationId,
+          message: userMessage
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        const botData = result.data;
+
+        if (botData.response_delay) {
+          await new Promise(resolve => setTimeout(resolve, Math.min(botData.response_delay, 1500)));
+        }
+
+        const botResponse: Message = {
+          id: messages.length + 2,
+          type: "bot",
+          content: botData.response,
+          timestamp: new Date(),
+          source: botData.source,
+          faqId: botData.faq_id
+        };
+
+        setMessages(prev => [...prev, botResponse]);
+      } else {
+        const fallbackResponse: Message = {
+          id: messages.length + 2,
+          type: "bot",
+          content: result.data?.response || "Lo siento, no pude procesar tu mensaje.",
+          timestamp: new Date(),
+          source: "fallback"
+        };
+        setMessages(prev => [...prev, fallbackResponse]);
+      }
+    } catch (error) {
+      console.error("Error sending quick question:", error);
+      const errorResponse: Message = {
+        id: messages.length + 2,
+        type: "bot",
+        content: "Error al procesar tu mensaje. Intenta de nuevo.",
+        timestamp: new Date(),
+        source: "fallback"
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
+      setIsTyping(false);
     }
   };
 
@@ -223,185 +300,247 @@ export default function ChatbotButton() {
     <>
       {/* Chat Window */}
       {isOpen && (
-        <Card
-          className={`fixed inset-x-2 bottom-20 sm:bottom-24 sm:right-4 sm:left-auto sm:w-96 h-[75vh] sm:h-[550px] max-h-[calc(100vh-6rem)] shadow-2xl z-50 border overflow-hidden flex flex-col
+        <div
+          className={`fixed z-50 bg-background border rounded-2xl shadow-2xl overflow-hidden flex flex-col
+            bottom-20 right-3 left-3
+            sm:bottom-24 sm:right-4 sm:left-auto sm:w-80 md:w-96
+            h-[60vh] sm:h-[480px] md:h-[520px] max-h-[calc(100vh-7rem)]
             ${isAnimating ? 'animate-in slide-in-from-bottom-5 fade-in duration-300' : ''}`}
         >
-          {/* Header */}
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-            <div className="flex items-center gap-3">
-              <Avatar className="h-10 w-10 border">
-                <AvatarFallback className="bg-primary/10">
-                  <Bot className="h-5 w-5 text-primary" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col">
-                <CardTitle className="text-base font-semibold">Asistente INCADEV</CardTitle>
-                <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="relative flex h-2 w-2">
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                  </span>
+          {/* Feedback Overlay */}
+          {showFeedback && (
+            <div className="absolute inset-0 bg-background/98 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
+              <div className="text-center space-y-3 w-full max-w-xs">
+                <h3 className="text-base font-semibold">¿Cómo fue tu experiencia?</h3>
+                <p className="text-xs text-muted-foreground">Tu opinión nos ayuda a mejorar</p>
+
+                <div className="flex justify-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setRating(star)}
+                      className="focus:outline-none transition-transform hover:scale-110 p-0.5"
+                    >
+                      <Star
+                        className={`h-7 w-7 ${
+                          star <= rating
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "text-muted-foreground/50"
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+
+                <Textarea
+                  placeholder="Comentarios (opcional)"
+                  value={feedbackComment}
+                  onChange={(e) => setFeedbackComment(e.target.value)}
+                  className="min-h-16 text-sm resize-none"
+                />
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleCloseWithoutFeedback}
+                  >
+                    Omitir
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1"
+                    onClick={handleSubmitFeedback}
+                  >
+                    Enviar
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Header - Compacto */}
+          <div className="flex items-center justify-between px-3 py-2.5 border-b bg-primary text-primary-foreground">
+            <div className="flex items-center gap-2">
+              <div className="h-8 w-8 rounded-full bg-primary-foreground/20 flex items-center justify-center">
+                <Bot className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-sm font-medium leading-tight">Asistente INCADEV</p>
+                <div className="flex items-center gap-1 text-[10px] opacity-80">
+                  <span className="h-1.5 w-1.5 rounded-full bg-green-400"></span>
                   <span>En línea</span>
                 </div>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 hover:bg-muted"
+                className="h-7 w-7 hover:bg-primary-foreground/20 text-primary-foreground"
                 onClick={() => setIsOpen(false)}
               >
-                <Minimize2 className="h-4 w-4" />
+                <Minimize2 className="h-3.5 w-3.5" />
               </Button>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 hover:bg-muted"
+                className="h-7 w-7 hover:bg-primary-foreground/20 text-primary-foreground"
                 onClick={handleClose}
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </Button>
             </div>
-          </CardHeader>
+          </div>
 
-          <CardContent className="p-4 bg-muted/30 flex-1 flex flex-col overflow-hidden">
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto mb-3 space-y-4 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                </div>
-              ) : (
-                <>
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
-                    >
-                      {msg.type === "bot" && (
-                        <Avatar className="h-8 w-8 mr-2 mt-1 shrink-0 border">
-                          <AvatarFallback className="bg-primary/10">
-                            <Bot className="h-4 w-4 text-primary" />
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-muted/20">
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              </div>
+            ) : (
+              <>
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex ${msg.type === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    {msg.type === "bot" && (
+                      <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mr-1.5 mt-0.5 shrink-0">
+                        <Bot className="h-3 w-3 text-primary" />
+                      </div>
+                    )}
+                    <div className={`max-w-[85%] ${msg.type === "user" ? "" : "flex flex-col"}`}>
                       <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                        className={`rounded-2xl px-3 py-2 text-[13px] leading-relaxed ${
                           msg.type === "user"
-                            ? "bg-primary text-primary-foreground rounded-br-md shadow-sm"
-                            : "bg-background border border-border rounded-bl-md shadow-sm"
+                            ? "bg-primary text-primary-foreground rounded-br-sm"
+                            : "bg-background border rounded-bl-sm shadow-sm"
                         }`}
                       >
-                        <p className="text-sm leading-relaxed">{msg.content}</p>
-                        <span className={`text-xs mt-1.5 block ${msg.type === "user" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                          {msg.timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                      {msg.type === "bot" && msg.source && msg.source !== "fallback" && (
+                        <span className="text-[10px] text-muted-foreground mt-0.5 ml-1">
+                          {msg.source === "faq" ? "📚 FAQ" : "✨ IA"}
                         </span>
-                      </div>
+                      )}
                     </div>
-                  ))}
+                  </div>
+                ))}
 
-                  {/* Typing Indicator */}
-                  {isTyping && (
-                    <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                      <Avatar className="h-8 w-8 mr-2 mt-1 shrink-0 border">
-                        <AvatarFallback className="bg-primary/10">
-                          <Bot className="h-4 w-4 text-primary" />
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="bg-background border border-border rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
-                        <div className="flex gap-1">
-                          <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                          <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                          <span className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                        </div>
+                {/* Typing Indicator */}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center mr-1.5 shrink-0">
+                      <Bot className="h-3 w-3 text-primary" />
+                    </div>
+                    <div className="bg-background border rounded-2xl rounded-bl-sm px-3 py-2 shadow-sm">
+                      <div className="flex gap-1">
+                        <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                        <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                        <span className="w-1.5 h-1.5 bg-muted-foreground/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                       </div>
                     </div>
-                  )}
-                </>
-              )}
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+          </div>
+
+          {/* Quick Questions - Compacto */}
+          {messages.length === 1 && !isTyping && conversationId && (
+            <div className="px-3 py-2 border-t bg-background">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Sparkles className="h-3 w-3 text-primary" />
+                <span className="text-[10px] font-medium text-muted-foreground">Preguntas rápidas</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {quickQuestions.map((question, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleQuickQuestion(question)}
+                    className="text-[11px] px-2 py-1 rounded-full border bg-muted/50 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
             </div>
+          )}
 
-            {/* Quick Questions */}
-            {messages.length === 1 && (
-              <div className="mb-3 p-3 bg-background rounded-lg border shrink-0">
-                <div className="flex items-center gap-2 mb-2.5">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                  <p className="text-xs font-semibold">Preguntas frecuentes</p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {quickQuestions.map((question, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors text-xs px-3 py-1"
-                      onClick={() => handleQuickQuestion(question)}
-                    >
-                      {question}
-                    </Badge>
-                  ))}
-                </div>
+          {/* Input Area */}
+          <div className="p-2 border-t bg-background">
+            {!conversationId && !isLoading ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={startConversation}
+              >
+                <Loader2 className="h-3 w-3 mr-1.5" />
+                Reintentar conexión
+              </Button>
+            ) : (
+              <div className="flex gap-1.5 items-center">
+                <Input
+                  placeholder={isLoading ? "Conectando..." : "Escribe un mensaje..."}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && !isTyping) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  disabled={isTyping || isLoading || !conversationId}
+                  className="flex-1 h-9 text-sm border-muted-foreground/20"
+                />
+                <Button
+                  size="icon"
+                  onClick={handleSendMessage}
+                  disabled={isTyping || isLoading || !message.trim() || !conversationId}
+                  className="h-9 w-9 shrink-0"
+                >
+                  {isTyping ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
             )}
 
-            {/* Input Area */}
-            <div className="flex gap-2 items-end shrink-0 bg-background p-3 rounded-lg border">
-              <Input
-                placeholder="Escribe tu mensaje..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={isTyping || isLoading || !conversationId}
-                className="flex-1 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm disabled:opacity-50"
-              />
-              <Button
-                size="icon"
-                onClick={handleSendMessage}
-                disabled={isTyping || isLoading || !message.trim() || !conversationId}
-                className="rounded-lg h-9 w-9 shrink-0"
-              >
-                {isTyping ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            {/* Footer Info */}
-            <div className="mt-3 pt-3 border-t shrink-0">
-              <p className="text-xs text-muted-foreground text-center flex items-center justify-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                <span className="hidden sm:inline">Tiempo de respuesta:</span>
-                <span className="sm:hidden">Respuesta:</span>
-                <span className="font-medium text-foreground">~2 min</span>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            {/* Footer minimalista */}
+            <p className="text-[9px] text-muted-foreground/60 text-center mt-1.5">
+              Powered by Gemini AI
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Floating Button */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50">
-        <Button
-          size="lg"
-          className="relative h-14 w-14 sm:h-16 sm:w-16 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-200"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          {isOpen ? (
-            <X className="h-6 w-6 sm:h-7 sm:w-7" />
-          ) : (
-            <Bot className="h-6 w-6 sm:h-7 sm:w-7" />
-          )}
-        </Button>
-
-        {/* Notification badge */}
-        {!isOpen && (
-          <span className="absolute -top-1 -right-1 h-5 w-5 sm:h-6 sm:w-6 bg-green-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-md">
-            1
-          </span>
+      <Button
+        size="icon"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 h-12 w-12 sm:h-14 sm:w-14 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? (
+          <X className="h-5 w-5 sm:h-6 sm:w-6" />
+        ) : (
+          <Bot className="h-5 w-5 sm:h-6 sm:w-6" />
         )}
-      </div>
+      </Button>
+
+      {/* Notification dot */}
+      {!isOpen && (
+        <span className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 pointer-events-none">
+          <span className="absolute top-0 right-0 h-3 w-3 bg-green-500 rounded-full animate-pulse"></span>
+        </span>
+      )}
     </>
   );
 }

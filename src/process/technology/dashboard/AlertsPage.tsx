@@ -138,7 +138,7 @@ export default function AlertsPage() {
   }
 
   return (
-    <TechnologyLayout breadcrumbs={[{ label: "Alertas" }]}>
+    <TechnologyLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -147,7 +147,10 @@ export default function AlertsPage() {
               Administra las alertas del sistema
             </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)} size="lg">
+          <Button onClick={() => {
+            setSelectedAlert(null) // Asegurar que esté limpio
+            setIsFormOpen(true)
+          }} size="lg">
             <Plus className="mr-2 h-5 w-5" />
             Nueva Alerta
           </Button>
@@ -382,7 +385,12 @@ export default function AlertsPage() {
         </Card>
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        setIsFormOpen(open)
+        if (!open) {
+          setSelectedAlert(null) // Resetear cuando se cierra el modal
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
