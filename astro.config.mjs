@@ -8,6 +8,10 @@ import node from '@astrojs/node';
 export default defineConfig({
   base: '/',
   site: "https://instituto.cetivirgendelapuerta.com",
+  output: 'server',
+  adapter: node({
+    mode: 'standalone'
+  }),
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],

@@ -24,15 +24,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { 
-  MoreHorizontal, 
-  Pencil, 
-  Trash2, 
-  Eye, 
-  ListChecks, 
-  FileText, 
+import {
+  MoreHorizontal,
+  Pencil,
+  Trash2,
+  Eye,
+  ListChecks,
+  FileText,
   Table as TableIcon,
-  TrendingUp 
+  TrendingUp
 } from "lucide-react"
 import type { Survey, SurveyEvent } from "@/process/evaluation/surveys/types/survey"
 
@@ -73,19 +73,19 @@ const eventConfig: Record<SurveyEvent, { label: string; variant: "default" | "se
   impact: { label: "Impacto", variant: "outline" },
 }
 
-export function SurveyTable({ 
-  surveys, 
-  meta, 
-  links, 
-  onEdit, 
-  onDelete, 
-  onView, 
+export function SurveyTable({
+  surveys,
+  meta,
+  links,
+  onEdit,
+  onDelete,
+  onView,
   onManageQuestions,
   onDownloadPdf,
   onDownloadExcel,
   onViewAnalysis,
   onPageChange,
-  loading = false 
+  loading = false
 }: Props) {
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("es-PE", {
@@ -251,11 +251,11 @@ export function SurveyTable({
           </TableBody>
         </Table>
       </div>
-      
+
       <Pagination>
         <PaginationContent>
           <PaginationItem>
-            <PaginationPrevious 
+            <PaginationPrevious
               href="#"
               onClick={(e) => {
                 e.preventDefault()
