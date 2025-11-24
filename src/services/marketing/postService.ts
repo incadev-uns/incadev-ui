@@ -218,7 +218,7 @@ export async function publishPost(id: number): Promise<PostForUI> {
  */
 export async function fetchPostMetrics(postId: number): Promise<PostMetricsForUI> {
     try {
-        const url = `${marketingConfig.apiUrl}/api/posts/${postId}/metrics`;
+        const url = `${marketingConfig.apiUrl}/posts/${postId}/metrics`;
 
         console.log('[postService] Fetching metrics for post:', postId);
 

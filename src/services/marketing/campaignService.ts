@@ -116,7 +116,7 @@ export async function fetchCampaignsByProposal(proposalId: number): Promise<Camp
         const endpoint = `${marketingConfig.endpoints.campaigns.list}?proposal_id=${proposalId}`;
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Fetching campaigns for proposal:', proposalId);
 
@@ -144,7 +144,7 @@ export async function fetchCampaignById(id: number): Promise<CampaignForUI> {
         const endpoint = marketingConfig.endpoints.campaigns.detail.replace(':id', String(id));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Fetching campaign by ID:', url);
 
@@ -170,7 +170,7 @@ export async function createCampaign(campaign: CreateCampaignDTO): Promise<Campa
         const endpoint = marketingConfig.endpoints.campaigns.create;
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Creating campaign:', url);
 
@@ -201,7 +201,7 @@ export async function updateCampaign(id: number, updates: UpdateCampaignDTO): Pr
         const endpoint = marketingConfig.endpoints.campaigns.update.replace(':id', String(id));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Updating campaign:', url);
 
@@ -232,7 +232,7 @@ export async function deleteCampaign(id: number): Promise<void> {
         const endpoint = marketingConfig.endpoints.campaigns.delete.replace(':id', String(id));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Deleting campaign:', url);
 
@@ -256,7 +256,7 @@ export async function fetchAllCampaigns(): Promise<CampaignForUI[]> {
         const endpoint = marketingConfig.endpoints.campaigns.list;
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Fetching all campaigns');
 
@@ -288,7 +288,7 @@ export async function fetchCampaignMetrics(campaignId: number): Promise<Campaign
         const endpoint = marketingConfig.endpoints.campaigns.metrics.replace(':id', String(campaignId));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Fetching metrics for campaign:', campaignId);
 
@@ -320,7 +320,7 @@ export async function fetchCampaignPosts(campaignId: number): Promise<PostForUI[
         const endpoint = marketingConfig.endpoints.campaigns.posts.replace(':id', String(campaignId));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[campaignService] Fetching posts for campaign:', campaignId);
 
