@@ -165,9 +165,12 @@ export interface CampaignForUI {
     objetivo: string;
     inicio: string;
     fin: string;
-    estado: 'activa' | 'finalizada';
+    estado: 'proxima' | 'activa' | 'finalizada';
     fechaCreacion: string;
     fechaActualizacion: string;
+    tipo: 'propuesta' | 'curso';
+    propuestaTitulo?: string;
+    cursoVersionNombre?: string;
 }
 
 export interface CreateCampaignDTO {
@@ -184,68 +187,6 @@ export interface UpdateCampaignDTO {
     objective?: string;
     start_date?: string;
     end_date?: string;
-}
-
-// ============================================
-// CAMPAIGN METRICS
-// ============================================
-
-export interface PostMetricFromAPI {
-    post_id: number;
-    platform: string;
-    messages_received: number;
-    pre_registrations: number;
-    intention_percentage: string;
-    total_reach: number;
-    total_interactions: number;
-    ctr_percentage: string;
-    likes: number;
-    comments: number;
-    private_messages: number;
-    expected_enrollments: number;
-    cpa_cost: string;
-}
-
-export interface CampaignMetricsFromAPI {
-    campaign_id: number;
-    campaign_name: string;
-    metrics_summary: {
-        total_messages_received: number;
-        total_pre_registrations: number;
-        average_intention_percentage: number;
-        total_reach: number;
-        total_interactions: number;
-        average_ctr_percentage: number;
-        total_likes: number;
-        total_comments: number;
-        total_private_messages: number;
-        expected_enrollments: number;
-        average_cpa_cost: number;
-    };
-    posts_metrics: PostMetricFromAPI[];
-}
-
-export interface CampaignMetricsForUI {
-    campaignId: number;
-    campaignName: string;
-    totalReach: number;
-    totalInteractions: number;
-    totalLikes: number;
-    totalComments: number;
-    totalMessages: number;
-    totalPreRegistrations: number;
-    averageIntention: number;
-    averageCtr: number;
-    expectedEnrollments: number;
-    averageCpa: number;
-    postMetrics: {
-        postId: number;
-        platform: string;
-        reach: number;
-        interactions: number;
-        likes: number;
-        comments: number;
-    }[];
 }
 
 // ============================================
@@ -283,4 +224,152 @@ export interface PostForUI {
     publicadoEn: string | null;
     creadoPor: number;
     fechaCreacion: string;
+}
+
+export interface CreatePostDTO {
+    campaign_id: number;
+    title: string;
+    platform: 'facebook' | 'instagram';
+    content: string;
+    content_type: 'image' | 'video' | 'text';
+    image_path: string;
+    link_url: string;
+    status: 'draft' | 'scheduled' | 'published';
+    scheduled_at: string | null;
+    published_at: string | null;
+    created_by: number;
+}
+
+export interface UpdatePostDTO {
+    title?: string;
+    platform?: 'facebook' | 'instagram';
+    content?: string;
+    content_type?: 'image' | 'video' | 'text';
+    image_path?: string;
+    link_url?: string;
+    status?: 'draft' | 'scheduled' | 'published';
+    scheduled_at?: string | null;
+    published_at?: string | null;
+}
+
+// ============================================
+// POST METRICS (NUEVO SISTEMA)
+// ============================================
+
+export interface MetricFromAPI {
+    id: number;
+    post_id: number;
+    platform: 'facebook' | 'instagram';
+    meta_post_id: string | null;
+    views: number;
+    likes: number;
+    comments: number;
+    shares: number;
+    engagement: number;
+    reach: number;
+    impressions: number;
+    saves: number;
+    metric_date: string;
+    metric_type: 'daily' | 'weekly' | 'monthly' | 'cumulative';
+    created_at: string | null;
+    updated_at: string | null;
+}
+
+export interface MetricForUI {
+    id: number;
+    postId: number;
+    plataforma: 'facebook' | 'instagram';
+    metaPostId: string | null;
+    vistas: number;
+    likes: number;
+    comentarios: number;
+    compartidos: number;
+    engagement: number;
+    alcance: number;
+    impresiones: number;
+    guardados: number;
+    fecha: string;
+    tipo: 'daily' | 'weekly' | 'monthly' | 'cumulative';
+}
+
+export interface PostMetricsResponseFromAPI {
+    success: boolean;
+    post_id: number;
+    post_title: string;
+    platform: string;
+    metrics: MetricFromAPI[];
+}
+
+export interface PostMetricsForUI {
+    postId: number;
+    postTitle: string;
+    platform: string;
+    metricas: MetricForUI[];
+    // Totales agregados (suma de todas las plataformas)
+    totales: {
+        vistas: number;
+        likes: number;
+        comentarios: number;
+        compartidos: number;
+        engagement: number;
+        alcance: number;
+        impresiones: number;
+        guardados: number;
+    };
+}
+
+// ============================================
+// CAMPAIGN METRICS (ACTUALIZADO)
+// ============================================
+
+export interface CampaignMetricsFromAPI {
+    campaign_id: number;
+    campaign_name: string;
+    metrics_summary: {
+        total_reach: number;
+        total_interactions: number;
+        total_likes: number;
+        total_comments: number;
+        // Campos obsoletos (mantenemos por compatibilidad con respuestas viejas)
+        total_messages_received?: number;
+        total_pre_registrations?: number;
+        average_intention_percentage?: number;
+        average_ctr_percentage?: number;
+        total_private_messages?: number;
+        expected_enrollments?: number;
+        average_cpa_cost?: number;
+    };
+    posts_metrics: Array<{
+        post_id: number;
+        platform: string;
+        total_reach: number;
+        total_interactions: number;
+        likes: number;
+        comments: number;
+        // Campos obsoletos
+        messages_received?: number;
+        pre_registrations?: number;
+        intention_percentage?: number;
+        ctr_percentage?: number;
+        private_messages?: number;
+        expected_enrollments?: number;
+        cpa_cost?: number;
+    }>;
+}
+
+export interface CampaignMetricsForUI {
+    campaignId: number;
+    campaignName: string;
+    totalReach: number;
+    totalInteractions: number;
+    totalLikes: number;
+    totalComments: number;
+    postMetrics: {
+        postId: number;
+        platform: string;
+        reach: number;
+        interactions: number;
+        likes: number;
+        comments: number;
+    }[];
 }

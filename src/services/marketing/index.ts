@@ -26,13 +26,20 @@ export type {
     UpdateCampaignDTO,
 
     // Campaign Metrics
-    PostMetricFromAPI,
     CampaignMetricsFromAPI,
     CampaignMetricsForUI,
 
     // Posts
     PostFromAPI,
-    PostForUI
+    PostForUI,
+    CreatePostDTO,
+    UpdatePostDTO,
+
+    // Post Metrics (NUEVO SISTEMA)
+    MetricFromAPI,
+    MetricForUI,
+    PostMetricsResponseFromAPI,
+    PostMetricsForUI
 } from './types';
 
 // ============================================
@@ -61,9 +68,18 @@ export {
 export {
     fetchCampaignsByProposal,
     fetchCampaignById,
+    fetchAllCampaigns,
     createCampaign,
     updateCampaign,
     deleteCampaign,
     fetchCampaignMetrics,
     fetchCampaignPosts
 } from './campaignService';
+
+// Posts
+export {
+    createPost,
+    updatePost,
+    deletePost,
+    fetchPostMetrics
+} from './postService';

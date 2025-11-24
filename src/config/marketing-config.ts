@@ -4,6 +4,7 @@
  */
 
 export const config = {
+  //apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api"
   apiUrl: "http://127.0.0.1:8002",
   environment: "development",
 

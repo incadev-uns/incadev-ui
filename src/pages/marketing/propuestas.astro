@@ -667,8 +667,15 @@ import Layout from "../../layouts/MarketingLayout.astro";
 
       container.innerHTML = filtered
         .map((p) => {
-          const estado = estadoConfig[p.estado];
-          const prioridadClass = prioridadColor[p.prioridad];
+          // ✅ FIX: Manejo seguro de estado (con fallback a 'borrador')
+          const estado =
+            estadoConfig[p.estado as keyof typeof estadoConfig] ||
+            estadoConfig.borrador;
+
+          // ✅ FIX: Manejo seguro de prioridad (con fallback a 'baja')
+          const prioridadClass =
+            prioridadColor[p.prioridad as keyof typeof prioridadColor] ||
+            prioridadColor.baja;
 
           return `
   <a 
@@ -755,9 +762,6 @@ import Layout from "../../layouts/MarketingLayout.astro";
     // ============================================
     // FUNCIONES GLOBALES (para onclick)
     // ============================================
-    (window as any).editarPropuesta = function (id: number) {
-      alert(`Editar propuesta ${id} - Funcionalidad pendiente`);
-    };
 
     (window as any).eliminarPropuesta = async function (id: number) {
       if (!confirm("¿Estás seguro de eliminar esta propuesta?")) return;
@@ -778,8 +782,6 @@ import Layout from "../../layouts/MarketingLayout.astro";
     // CARGAR DATOS Y EVENT LISTENERS
     // ============================================
     document.addEventListener("DOMContentLoaded", async () => {
-      console.log("[Propuestas] Loading proposals from API...");
-
       const container = document.getElementById("propuestasList");
       if (container) {
         container.innerHTML = `
@@ -794,11 +796,9 @@ import Layout from "../../layouts/MarketingLayout.astro";
 
       try {
         propuestas = await fetchProposals();
-        console.log("[Propuestas] Proposals loaded:", propuestas.length);
         updateStats();
         renderPropuestas();
       } catch (error) {
-        console.error("[Propuestas] Error loading proposals:", error);
         if (container) {
           container.innerHTML = `
             <div class="col-span-1 text-center py-12">
@@ -934,6 +934,7 @@ import Layout from "../../layouts/MarketingLayout.astro";
       });
 
       // Form submit
+      // Form submit - VERSIÓN SIMPLIFICADA USANDO EL SERVICIO
       const form = document.getElementById(
         "formNuevaPropuesta",
       ) as HTMLFormElement;
@@ -949,31 +950,6 @@ import Layout from "../../layouts/MarketingLayout.astro";
           return;
         }
 
-        // Validar que tengamos el created_by
-        const createdBy = formData.get("created_by");
-        if (!createdBy) {
-          alert(
-            "⚠️ Error: No se pudo obtener el usuario. Por favor recarga la página.",
-          );
-          return;
-        }
-
-        // Construir payload exacto según el POST de Postman
-        const newProposal = {
-          title: formData.get("title") as string,
-          description: formData.get("description") as string,
-          area: formData.get("area") as string,
-          priority: formData.get("priority") as string,
-          status: "borrador", // Siempre borrador al crear
-          target_audience: targetAudience as string,
-          created_by: parseInt(createdBy as string, 10),
-        };
-
-        console.log(
-          "[Propuestas] Creating proposal with payload:",
-          newProposal,
-        );
-
         const btnSubmit = document.getElementById(
           "btnSubmitForm",
         ) as HTMLButtonElement;
@@ -982,62 +958,17 @@ import Layout from "../../layouts/MarketingLayout.astro";
         btnSubmit.textContent = "Creando...";
 
         try {
-          const response = await fetch("http://127.0.0.1:8002/api/proposals", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify(newProposal),
+          // ✅ Usar el servicio que ya maneja todo (config, mapping, etc)
+          const created = await createProposal({
+            title: formData.get("title") as string,
+            description: formData.get("description") as string,
+            area: formData.get("area") as string,
+            priority: formData.get("priority") as "alto" | "medio" | "bajo",
+            target_audience: targetAudience as string,
           });
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            console.error("[Propuestas] Validation errors:", errorData);
-
-            // Mostrar errores de validación de forma amigable
-            if (errorData.errors) {
-              const errorMessages = Object.entries(errorData.errors)
-                .map(
-                  ([field, messages]) =>
-                    `• ${field}: ${(messages as string[]).join(", ")}`,
-                )
-                .join("\n");
-              throw new Error(`Errores de validación:\n${errorMessages}`);
-            }
-
-            throw new Error(
-              errorData.message || `HTTP error! status: ${response.status}`,
-            );
-          }
-
-          const created = await response.json();
-          console.log("[Propuestas] Proposal created successfully:", created);
-
-          // Extraer el objeto de datos
-          const proposalData = created.data || created; // ← AGREGAR ESTA LÍNEA
-
-          // Mapear y agregar a la lista
-          const mappedProposal: ProposalForUI = {
-            id: proposalData.id, // ← CAMBIAR created por proposalData
-            tema: proposalData.title,
-            descripcion: proposalData.description,
-            departamento: proposalData.area,
-            prioridad:
-              proposalData.priority === "alto"
-                ? "alta"
-                : proposalData.priority === "medio"
-                  ? "media"
-                  : "baja",
-            estado: proposalData.status,
-            publico: [proposalData.target_audience],
-            creadoPor: proposalData.created_by,
-            fecha: proposalData.created_at,
-            actualizado: proposalData.updated_at,
-          };
-
-          propuestas.unshift(mappedProposal);
+          // El servicio ya devuelve ProposalForUI mapeado ✅
+          propuestas.unshift(created);
           updateStats();
           renderPropuestas(filtrosActuales);
 
@@ -1047,7 +978,6 @@ import Layout from "../../layouts/MarketingLayout.astro";
 
           alert("✅ ¡Propuesta creada con éxito!");
         } catch (error) {
-          console.error("[Propuestas] Error creating proposal:", error);
           alert(
             `❌ Error al crear la propuesta:\n\n${error instanceof Error ? error.message : "Error desconocido"}`,
           );

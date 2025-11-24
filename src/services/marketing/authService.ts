@@ -52,11 +52,11 @@ export function logout(): void {
 export function hasRole(role: string | string[]): boolean {
   const user = getUser();
   if (!user) return false;
-  
+
   if (Array.isArray(role)) {
     return role.includes(user.role);
   }
-  
+
   return user.role === role;
 }
 
@@ -65,11 +65,8 @@ export function hasRole(role: string | string[]): boolean {
  */
 export async function authenticatedFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = getToken();
-  
-  console.log('[authService] Token:', token ? token.substring(0, 50) + '...' : 'NOT FOUND'); // ← Ver primeros 50 caracteres
-  
+
   if (!token) {
-    console.error('[authService] NO TOKEN FOUND!');
     throw new Error('No authentication token found. Please login first.');
   }
 
@@ -80,21 +77,12 @@ export async function authenticatedFetch(url: string, options: RequestInit = {})
     ...options.headers,
   };
 
-  console.log('[authService] Fetching URL:', url);
-  console.log('[authService] Authorization header:', `Bearer ${token.substring(0, 20)}...`); // ← Ver que se está enviando
-
   const response = await fetch(url, {
     ...options,
     headers,
   });
 
-  console.log('[authService] Response status:', response.status);
-  
   if (response.status === 401) {
-    console.error('[authService] 401 UNAUTHORIZED - Token expired or invalid');
-    const responseText = await response.text();
-    console.error('[authService] Response body:', responseText);
-    // logout();  // Mantener comentado por ahora
     throw new Error('Session expired. Please login again.');
   }
 
