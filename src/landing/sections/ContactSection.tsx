@@ -251,7 +251,6 @@ export default function ContactSection() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="general">Consulta General</SelectItem>
-                        <SelectItem value="courses">Cursos</SelectItem>
                         <SelectItem value="support">Soporte Técnico</SelectItem>
                         <SelectItem value="partnership">Alianzas / Convenios</SelectItem>
                       </SelectContent>
