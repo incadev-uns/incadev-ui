@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import TutoringPage from '@/process/support/TutoringPage';
+const robots = ["noindex", "nofollow"];
+
+const title = "Gestión de Tutorías | Incadev";
+const description = "Administra las solicitudes de tutoría de tus estudiantes. Gestiona tu disponibilidad y brinda apoyo académico personalizado.";
+const keywords = ["tutorías", "gestión tutorías", "apoyo académico", "tutor", "disponibilidad tutor", "sesiones tutorías"];
+const url = "https://instituto.cetivirgendelapuerta.com/soporte/tutoria";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<TutoringPage client:load/>
+</DashboardLayout>

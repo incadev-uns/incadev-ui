@@ -44,7 +44,7 @@ export async function fetchProposals(): Promise<ProposalForUI[]> {
         const endpoint = marketingConfig.endpoints.proposals.list;
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
         const response = await authenticatedFetch(url);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -71,7 +71,7 @@ export async function fetchProposalById(id: number): Promise<ProposalForUI> {
         const endpoint = marketingConfig.endpoints.proposals.detail.replace(':id', String(id));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         const response = await authenticatedFetch(url);
 
@@ -95,7 +95,7 @@ export async function createProposal(proposal: CreateProposalDTO): Promise<Propo
         const endpoint = marketingConfig.endpoints.proposals.create;
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         const userStr = localStorage.getItem('user');
         const userId = userStr ? JSON.parse(userStr).id : null;
@@ -130,7 +130,7 @@ export async function updateProposal(id: number, updates: UpdateProposalDTO): Pr
         const endpoint = marketingConfig.endpoints.proposals.update.replace(':id', String(id));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         const response = await authenticatedFetch(url, {
             method: 'PUT',
@@ -159,7 +159,7 @@ export async function deleteProposal(id: number): Promise<void> {
         const endpoint = marketingConfig.endpoints.proposals.delete.replace(':id', String(id));
         const url = endpoint.startsWith('http')
             ? endpoint
-            : `${marketingConfig.apiUrl}/api${endpoint}`;
+            : `${marketingConfig.apiUrl}${endpoint}`;
 
         const response = await authenticatedFetch(url, {
             method: 'DELETE'

@@ -285,7 +285,7 @@ export default function ChatbotConfigPage() {
                     onChange={(e) => setFormData({ ...formData, contact_threshold: parseInt(e.target.value) || 3 })}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Intentos fallidos antes de derivar a humano (1-10)
+                    Intentos fallidos (1-10)
                   </p>
                 </div>
               </CardContent>

@@ -182,7 +182,7 @@ function mapCampaignWithMetricsToUI(campaign: CampaignWithMetricsFromAPI): Campa
  * Obtiene el detalle de un curso por ID desde marketing-backend
  */
 export async function fetchCourseById(courseId: number): Promise<CourseDetailForUI> {
-    const url = `${marketingConfig.apiUrl}/api/courses/${courseId}`;
+    const url = `${marketingConfig.apiUrl}/courses/${courseId}`;
 
     console.log('[courseService] Fetching course detail from:', url);
 
@@ -202,7 +202,7 @@ export async function fetchCourseById(courseId: number): Promise<CourseDetailFor
  * Obtiene las versiones de un curso específico desde marketing-backend
  */
 export async function fetchCourseVersions(courseId: number): Promise<CourseVersionForUI[]> {
-    const url = `${marketingConfig.apiUrl}/api/courses/${courseId}/versions`;
+    const url = `${marketingConfig.apiUrl}/courses/${courseId}/versions`;
 
     console.log('[courseService] Fetching course versions from:', url);
 
@@ -223,7 +223,7 @@ export async function fetchCourseVersions(courseId: number): Promise<CourseVersi
  * Obtiene las campañas relacionadas a un curso desde marketing-backend
  */
 export async function fetchCourseCampaigns(courseId: number): Promise<CourseCampaignsForUI> {
-    const url = `${marketingConfig.apiUrl}/api/courses/${courseId}/campaigns`;
+    const url = `${marketingConfig.apiUrl}/courses/${courseId}/campaigns`;
 
     console.log('[courseService] Fetching course campaigns from:', url);
 

@@ -40,12 +40,13 @@ export interface News extends BaseContent {
   image_url?: string
   slug?: string
   item_type: NewsItemType
-  status: NewsStatus // Usar NewsStatus específico
+  status: NewsStatus
   category: string
   seo_title?: string
   seo_description?: string
   tags?: string[]
   published_date?: string
+  views: number // ← Cambiar de views_count a views
 }
 
 export interface NewsCategory {
@@ -89,6 +90,7 @@ export interface Announcement extends BaseContent {
   link_url?: string
   button_text?: string
   priority: number
+  views: number 
 }
 
 export interface AnnouncementStats {

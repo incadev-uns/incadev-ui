@@ -32,6 +32,18 @@ const {
     <meta name="theme-color" content="#FFFFFF" />
 
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+    <!-- Theme Script - Must run before body renders -->
+    <script is:inline>
+      const getThemePreference = () => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      };
+      const isDark = getThemePreference() === 'dark';
+      document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
+    </script>
   </head>
   <body class="min-h-screen bg-background">
     <slot />
@@ -62,15 +74,7 @@ const {
 </style>
 
 <script is:inline>
-  const getThemePreference = () => {
-    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-      return localStorage.getItem('theme');
-    }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  };
-  const isDark = getThemePreference() === 'dark';
-  document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
-
+  // Observer para mantener sincronizado el tema en localStorage
   if (typeof localStorage !== 'undefined') {
     const observer = new MutationObserver(() => {
       const isDark = document.documentElement.classList.contains('dark');

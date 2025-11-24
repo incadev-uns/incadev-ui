@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import AtencionPage from '@/process/academic/dasboard/atencion/AtencionPage';
+
+const robots = ["noindex", "nofollow"];
+const title = "Atención - Documentos Académicos | Incadev";
+const description = "Consulta y descarga tus documentos académicos";
+const keywords = ["reportes académicos", "notas", "cursos matriculados"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/atencion";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+  <AtencionPage client:load/>
+</DashboardLayout>

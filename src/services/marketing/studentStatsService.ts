@@ -124,7 +124,7 @@ function mapAlumnoToUI(alumno: AlumnoFromAPI): AlumnoForUI {
 export async function fetchAlumnosData(): Promise<AlumnosDataForUI> {
     try {
         const endpoint = marketingConfig.endpoints.alumnos.stats;
-        const url = `${marketingConfig.apiUrl}/api${endpoint}`;
+        const url = `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[studentStatsService] Fetching alumnos data from:', url);
 
@@ -182,7 +182,7 @@ export async function fetchStudentStats(): Promise<StudentStatsForUI> {
 export async function fetchStudentResumen(): Promise<StudentResumenFromAPI | null> {
     try {
         const endpoint = marketingConfig.endpoints.alumnos.resumen;
-        const url = `${marketingConfig.apiUrl}/api${endpoint}`;
+        const url = `${marketingConfig.apiUrl}${endpoint}`;
 
         console.log('[studentStatsService] Fetching resumen from:', url);
 

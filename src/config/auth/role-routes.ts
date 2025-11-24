@@ -40,8 +40,8 @@ export const ROLE_ROUTES: Record<string, string> = {
   // 📋 GRUPO 06 - AUDITORÍA Y ENCUESTAS
   // ========================================
   survey_admin: "/evaluacion/encuestas",
-  audit_manager: "/evaluacion/audit_manager/dashboard",
-  auditor: "/evaluacion/auditor/dashboard",
+  audit_manager: "/evaluacion/auditorias",
+  auditor: "/evaluacion/auditorias",
 
   // ========================================
   // 💼 GRUPO QUEZADA - RECURSOS HUMANOS Y FINANZAS
@@ -73,8 +73,8 @@ export const ROLE_ROUTES: Record<string, string> = {
   // ========================================
   // ⚙️ GRUPO DE BUSTAMANTE - ESTRATÉGICO
   // ========================================
-  planner_admin: "/estrategico/planner_admin/dashboard",
-  planner: "/estrategico/planner/dashboard",
+  planner_admin: "/estrategico/plan",
+  planner: "/estrategico/plan",
   // auditor: "/estrategico/auditor/dashboard", // NOTA: Comentado porque auditor ya existe en Grupo 06
   continuous_improvement: "/estrategico/continuous_improvement/dashboard",
 }

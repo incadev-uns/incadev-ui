@@ -1433,8 +1433,8 @@ export const technologyApi = {
     // BigQuery Sync
     bigquery: {
       /**
-       * Sincronización completa de tablas con BigQuery
-       */
+     * Sincronización completa de tablas con BigQuery
+     */
       syncFull: async (): Promise<ApiResponse<BigQuerySyncResponse>> => {
         return apiClient.post<ApiResponse<BigQuerySyncResponse>>(
           config.endpoints.academicAnalysis.bigquery.syncFull,

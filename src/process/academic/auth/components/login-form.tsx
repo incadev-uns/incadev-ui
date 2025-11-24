@@ -111,7 +111,7 @@ export function LoginForm({
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Inicia sesión en tu cuenta</h1>
           <p className="text-muted-foreground text-sm text-balance">
-            Ingresa tu correo electrónico para acceder a tu cuenta
+            Ingresa tu correo electrónico para acceder a tu cuenta ||| test
           </p>
         </div>
 

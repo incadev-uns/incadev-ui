@@ -95,12 +95,18 @@ export const navSimpleMain: NavSimpleItem[] = [
     title: "Tutorias",
     url: "/academico/tutoria",
     icon: IconSchool,
-    allowedRoles: ["teacher", "student"]
+    allowedRoles: ["student"]
   },
   {
     title: "Foros",
     url: "/academico/foros",
     icon: IconSchool,
+    allowedRoles: ["student"]
+  },
+  {
+    title: "Atención",
+    url: "/academico/atencion",
+    icon: IconReport,
     allowedRoles: ["student"]
   },
 ];

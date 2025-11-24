@@ -5,11 +5,11 @@
  **/
 
 export const config = {
-  apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/tecnologico/public/api",
+  apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/tecnologico/public/api",
   //apiUrl: "http://localhost:8000/api",
   environment: "development",
   endpoints: {
-    // Authentication
+    // Authentication 
     auth: {
       register: "/auth/register",
       login: "/auth/login",
@@ -238,7 +238,7 @@ export const config = {
       },
       // BigQuery Sync
       bigquery: {
-        syncFull: "/data-analyst/bigquery/sync-full",
+        syncFull: "/data-analyst/dataset-sync/sync",
         syncIncremental: "/data-analyst/bigquery/sync-incremental"
       },
       // Attendance

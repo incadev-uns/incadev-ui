@@ -245,7 +245,7 @@ export function OverviewTab({ systemStatus }: OverviewTabProps) {
             <div className="flex flex-col items-center text-center p-4 border rounded-lg">
               <Users className="h-8 w-8 text-primary mb-2" />
               <div className="text-2xl font-bold">{totalStudents}</div>
-              <p className="text-sm text-muted-foreground">Total de Predicciones</p>
+              <p className="text-sm text-muted-foreground">Total de Estudiantes Analizados</p>
             </div>
             <div className="flex flex-col items-center text-center p-4 border rounded-lg">
               <TrendingUp className="h-8 w-8 text-primary mb-2" />

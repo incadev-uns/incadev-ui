@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,44 +12,170 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Calendar } from "lucide-react";
+import { config } from "@/config/support-config";
+import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
+
+interface Teacher {
+  id: number;
+  name: string;
+  email: string;
+}
+
+interface Availability {
+  id: number;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+}
 
 interface TutoringRequestFormProps {
   onSubmit: (data: {
     teacherId: string;
-    subject: string;
-    topic: string;
     requestedDate: string;
     requestedTime: string;
-    notes?: string;
   }) => Promise<boolean>;
 }
+
+const DAYS_MAP: { [key: number]: string } = {
+  0: "Domingo",
+  1: "Lunes",
+  2: "Martes",
+  3: "Miércoles",
+  4: "Jueves",
+  5: "Viernes",
+  6: "Sábado"
+};
 
 export default function TutoringRequestForm({
   onSubmit,
 }: TutoringRequestFormProps) {
+  const { token } = useAcademicAuth();
   const [formData, setFormData] = useState({
     teacherId: "",
-    subject: "",
-    topic: "",
     requestedDate: "",
     requestedTime: "",
-    notes: "",
   });
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [availabilities, setAvailabilities] = useState<Availability[]>([]);
+  const [loadingTeachers, setLoadingTeachers] = useState(true);
+  const [loadingAvailabilities, setLoadingAvailabilities] = useState(false);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // TODO: Obtener la lista de docentes desde la API
-  const teachers = [
-    { id: "1", name: "Dr. Roberto Sánchez", subjects: ["Cálculo I", "Cálculo II"] },
-    { id: "2", name: "Dra. Ana Martínez", subjects: ["Álgebra Lineal", "Matemática Discreta"] },
-    { id: "3", name: "Dr. Carlos Ruiz", subjects: ["Física I", "Física II"] },
-  ];
+  // Cargar lista de profesores al montar el componente
+  useEffect(() => {
+    fetchTeachers();
+  }, [token]);
 
-  const availableSubjects = formData.teacherId
-    ? teachers.find(t => t.id === formData.teacherId)?.subjects || []
-    : [];
+  // Cargar disponibilidad cuando se selecciona un profesor
+  useEffect(() => {
+    if (formData.teacherId) {
+      fetchTeacherAvailability(formData.teacherId);
+    } else {
+      setAvailabilities([]);
+    }
+  }, [formData.teacherId]);
+
+  const fetchTeachers = async () => {
+    try {
+      setLoadingTeachers(true);
+      const tokenWithoutQuotes = token?.replace(/^"|"/g, '');
+      const response = await fetch(
+        `${config.apiUrl}${config.endpoints.tutoring.teachers}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json"
+          },
+          credentials: "include"
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const data = result.data || result;
+      setTeachers(data);
+    } catch (err) {
+      console.error("Error fetching teachers:", err);
+      setError("Error al cargar la lista de profesores");
+    } finally {
+      setLoadingTeachers(false);
+    }
+  };
+
+  const fetchTeacherAvailability = async (teacherId: string) => {
+    try {
+      setLoadingAvailabilities(true);
+      const tokenWithoutQuotes = token?.replace(/^"|"/g, '');
+      const endpoint = config.endpoints.tutoring.teacherAvailability.replace(':teacherId', teacherId);
+      const response = await fetch(
+        `${config.apiUrl}${endpoint}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json"
+          },
+          credentials: "include"
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const data = result.data || result;
+      setAvailabilities(data);
+    } catch (err) {
+      console.error("Error fetching availability:", err);
+      setAvailabilities([]);
+    } finally {
+      setLoadingAvailabilities(false);
+    }
+  };
+
+  const validateAvailability = (): boolean => {
+    if (!formData.requestedDate || !formData.requestedTime || availabilities.length === 0) {
+      return true; // Si no hay disponibilidad configurada, permitir cualquier horario
+    }
+
+    // Obtener el día de la semana de la fecha seleccionada (0=Domingo, 1=Lunes, etc.)
+    const selectedDate = new Date(formData.requestedDate + 'T00:00:00');
+    const dayOfWeek = selectedDate.getDay();
+
+    // Buscar si el tutor tiene disponibilidad ese día
+    const dayAvailability = availabilities.filter(av => av.day_of_week === dayOfWeek);
+
+    if (dayAvailability.length === 0) {
+      setError(`El tutor no tiene disponibilidad los ${DAYS_MAP[dayOfWeek]}s. Por favor elige otro día.`);
+      return false;
+    }
+
+    // Validar que la hora esté dentro del rango
+    const requestedTime = formData.requestedTime;
+    const isTimeValid = dayAvailability.some(av => {
+      const startTime = av.start_time.substring(0, 5); // HH:MM
+      const endTime = av.end_time.substring(0, 5);
+      return requestedTime >= startTime && requestedTime <= endTime;
+    });
+
+    if (!isTimeValid) {
+      const timeRanges = dayAvailability.map(av => 
+        `${av.start_time.substring(0, 5)} - ${av.end_time.substring(0, 5)}`
+      ).join(', ');
+      setError(`La hora seleccionada no está dentro de la disponibilidad del tutor para ese día (${timeRanges}).`);
+      return false;
+    }
+
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,17 +183,20 @@ export default function TutoringRequestForm({
     setError(null);
     setSuccess(false);
 
+    // Validar disponibilidad antes de enviar
+    if (!validateAvailability()) {
+      setLoading(false);
+      return;
+    }
+
     try {
       const result = await onSubmit(formData);
       if (result) {
         setSuccess(true);
         setFormData({
           teacherId: "",
-          subject: "",
-          topic: "",
           requestedDate: "",
           requestedTime: "",
-          notes: "",
         });
         setTimeout(() => setSuccess(false), 5000);
       } else {
@@ -81,25 +210,31 @@ export default function TutoringRequestForm({
   };
 
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => {
-      const newData = { ...prev, [field]: value };
-      if (field === "teacherId") {
-        newData.subject = "";
-      }
-      return newData;
-    });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 1);
-  const minDateString = minDate.toISOString().split("T")[0];
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const minDateString = `${year}-${month}-${day}`;
+
+  if (loadingTeachers) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Solicitar Tutoría</CardTitle>
         <CardDescription>
-          Completa el formulario para solicitar una tutoría con un docente
+          Selecciona un docente, fecha y hora para tu sesión de tutoría
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -131,7 +266,7 @@ export default function TutoringRequestForm({
               </SelectTrigger>
               <SelectContent>
                 {teachers.map(teacher => (
-                  <SelectItem key={teacher.id} value={teacher.id}>
+                  <SelectItem key={teacher.id} value={teacher.id.toString()}>
                     {teacher.name}
                   </SelectItem>
                 ))}
@@ -139,37 +274,42 @@ export default function TutoringRequestForm({
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="subject">Curso</Label>
-            <Select
-              value={formData.subject}
-              onValueChange={value => handleChange("subject", value)}
-              disabled={!formData.teacherId}
-              required
-            >
-              <SelectTrigger id="subject">
-                <SelectValue placeholder="Selecciona un curso" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableSubjects.map(subject => (
-                  <SelectItem key={subject} value={subject}>
-                    {subject}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="topic">Tema</Label>
-            <Input
-              id="topic"
-              placeholder="Ej: Derivadas parciales"
-              value={formData.topic}
-              onChange={e => handleChange("topic", e.target.value)}
-              required
-            />
-          </div>
+          {formData.teacherId && (
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Disponibilidad del profesor
+              </Label>
+              {loadingAvailabilities ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cargando disponibilidad...
+                </div>
+              ) : availabilities.length > 0 ? (
+                <div className="rounded-md border p-3 bg-blue-50 border-blue-200">
+                  <p className="text-xs font-medium text-blue-900 mb-2">
+                    📅 Horarios disponibles del tutor:
+                  </p>
+                  <div className="space-y-1 mb-3">
+                    {availabilities.map((av) => (
+                      <div key={av.id} className="text-sm text-blue-800">
+                        <span className="font-medium">{DAYS_MAP[av.day_of_week]}</span>
+                        {": "}
+                        <span>{av.start_time.substring(0, 5)} - {av.end_time.substring(0, 5)}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-blue-700 italic">
+                    ⚠️ Solo puedes solicitar tutorías en estos días y horarios
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Este tutor aún no ha configurado su disponibilidad.
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -194,17 +334,6 @@ export default function TutoringRequestForm({
                 required
               />
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notas adicionales (opcional)</Label>
-            <Textarea
-              id="notes"
-              placeholder="Describe brevemente qué aspectos del tema necesitas reforzar..."
-              value={formData.notes}
-              onChange={e => handleChange("notes", e.target.value)}
-              rows={3}
-            />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>

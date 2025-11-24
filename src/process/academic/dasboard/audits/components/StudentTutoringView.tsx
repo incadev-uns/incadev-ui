@@ -4,76 +4,77 @@ import TutoringRequestForm from "@/process/academic/dasboard/audits/components/T
 import StudentTutoringList from "@/process/academic/dasboard/audits/components/StudentTutoringList";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { config } from "@/config/support-config";
+import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
 
 export interface StudentTutoring {
-  id: string;
-  teacherName: string;
+  id: number;
+  student_id: number;
+  teacher_id: number;
   subject: string;
   topic: string;
-  requestedDate: string;
-  requestedTime: string;
+  requested_date: string;
+  requested_time: string;
   status: "pending" | "accepted" | "rejected" | "completed";
-  studentAttended?: boolean;
-  rejectionReason?: string;
-  createdAt: string;
+  notes?: string;
+  rejection_reason?: string;
+  student_attended?: boolean;
+  meet_url?: string;
+  created_at: string;
+  updated_at: string;
+  studentName?: string;
+  studentId?: string;
+  teacherName?: string;
+  requestedDate?: string;
+  requestedTime?: string;
+  teacher?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export default function StudentTutoringView() {
+  const { token, user } = useAcademicAuth();
   const [tutorings, setTutorings] = useState<StudentTutoring[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchStudentTutorings();
-  }, []);
+    if (token && user) {
+      fetchStudentTutorings();
+    }
+  }, [token, user]);
 
   const fetchStudentTutorings = async () => {
     try {
       setLoading(true);
-      // TODO: Reemplazar con la llamada real a tu API
-      // const response = await fetch('/api/tutoring/my-requests');
-      // const data = await response.json();
-
-      // Datos de ejemplo
-      const mockData: StudentTutoring[] = [
-        {
-          id: "1",
-          teacherName: "Dr. Roberto Sánchez",
-          subject: "Cálculo I",
-          topic: "Integrales definidas",
-          requestedDate: "2025-11-12",
-          requestedTime: "16:00",
-          status: "pending",
-          createdAt: "2025-11-05T10:00:00",
-        },
-        {
-          id: "2",
-          teacherName: "Dra. Ana Martínez",
-          subject: "Álgebra Lineal",
-          topic: "Matrices y determinantes",
-          requestedDate: "2025-11-06",
-          requestedTime: "14:00",
-          status: "accepted",
-          createdAt: "2025-11-04T15:30:00",
-        },
-        {
-          id: "3",
-          teacherName: "Dr. Roberto Sánchez",
-          subject: "Cálculo I",
-          topic: "Límites",
-          requestedDate: "2025-11-01",
-          requestedTime: "15:00",
-          status: "completed",
-          studentAttended: true,
-          createdAt: "2025-10-28T09:00:00",
-        },
-      ];
-
-      setTutorings(mockData);
       setError(null);
+      
+      const tokenWithoutQuotes = token?.replace(/^"|"/g, '');
+      const response = await fetch(
+        `${config.apiUrl}${config.endpoints.tutoring.studentRequests}?user_id=${user?.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json",
+            "X-User-Id": user?.id?.toString() || ""
+          },
+          credentials: "include"
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const data = result.data || result;
+      setTutorings(data);
     } catch (err) {
+      console.error("Error fetching student tutorings:", err);
       setError("Error al cargar tus tutorías");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -81,37 +82,41 @@ export default function StudentTutoringView() {
 
   const handleNewRequest = async (data: {
     teacherId: string;
-    subject: string;
-    topic: string;
     requestedDate: string;
     requestedTime: string;
-    notes?: string;
   }) => {
     try {
-      // TODO: Llamada a la API para crear la solicitud
-      // const response = await fetch('/api/tutoring/requests', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(data)
-      // });
-      // const newTutoring = await response.json();
+      const tokenWithoutQuotes = token?.replace(/^"|"/g, '');
+      const url = `${config.apiUrl}${config.endpoints.tutoring.createRequest}?user_id=${user?.id}`;
+      
+      const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json",
+            "X-User-Id": user?.id?.toString() || ""
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            teacher_id: Number(data.teacherId),
+            requested_date: data.requestedDate,
+            requested_time: data.requestedTime,
+          })
+        }
+      );
 
-      // Simulación de respuesta exitosa
-      const newTutoring: StudentTutoring = {
-        id: Date.now().toString(),
-        teacherName: "Docente Seleccionado",
-        subject: data.subject,
-        topic: data.topic,
-        requestedDate: data.requestedDate,
-        requestedTime: data.requestedTime,
-        status: "pending",
-        createdAt: new Date().toISOString(),
-      };
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+      }
 
+      const result = await response.json();
+      const newTutoring = result.data || result;
       setTutorings(prev => [newTutoring, ...prev]);
       return true;
     } catch (err) {
       console.error("Error al crear la solicitud:", err);
+      setError(err instanceof Error ? err.message : "Error al crear la solicitud");
       return false;
     }
   };

@@ -1,19 +1,41 @@
 ---
-import DashboardLayout from '@/layouts/DashboardLayout.astro';
-import PanelSurveyPage from '@/process/evaluation/surveys/panel/PanelSurveyPage';
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import PanelSurveyPage from "@/process/evaluation/surveys/panel/PanelSurveyPage";
 const robots = ["noindex", "nofollow"];
 
 const title = "Encuestas | Plataforma Virtual Incadev";
 
-const description = "Crea, gestiona y analiza encuestas online en la plataforma virtual de Incadev. Recoge la opinión de tus estudiantes, mide la satisfacción de tus cursos y mejora la experiencia de aprendizaje en tiempo real.";
+const description =
+    "Crea, gestiona y analiza encuestas online en la plataforma virtual de Incadev. Recoge la opinión de tus estudiantes, mide la satisfacción de tus cursos y mejora la experiencia de aprendizaje en tiempo real.";
 
-const keywords = ["encuestas online", "encuestas plataforma virtual", "encuestas educativas", "evaluación de cursos virtuales", "feedback de estudiantes", "satisfacción de estudiantes", "formularios online educativos", "encuestas para e-learning", "encuestas para clases virtuales", "encuestas Incadev", "analítica de encuestas educativas", "retroalimentación en plataforma virtual"];
+const keywords = [
+    "encuestas online",
+    "encuestas plataforma virtual",
+    "encuestas educativas",
+    "evaluación de cursos virtuales",
+    "feedback de estudiantes",
+    "satisfacción de estudiantes",
+    "formularios online educativos",
+    "encuestas para e-learning",
+    "encuestas para clases virtuales",
+    "encuestas Incadev",
+    "analítica de encuestas educativas",
+    "retroalimentación en plataforma virtual",
+];
 
 const url = "https://instituto.cetivirgendelapuerta.com/evaluacion/encuestas";
 const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
 const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
 ---
 
-<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+<DashboardLayout
+    {robots}
+    {title}
+    {description}
+    {keywords}
+    {url}
+    {imageOG}
+    {imagetwt}
+>
     <PanelSurveyPage client:load />
 </DashboardLayout>
