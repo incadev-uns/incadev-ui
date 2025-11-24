@@ -40,8 +40,8 @@ export const ROLE_ROUTES: Record<string, string> = {
   // 📋 GRUPO 06 - AUDITORÍA Y ENCUESTAS
   // ========================================
   survey_admin: "/evaluacion/encuestas",
-  audit_manager: "/evaluacion/audit_manager/dashboard",
-  auditor: "/evaluacion/auditor/dashboard",
+  audit_manager: "/evaluacion/auditorias",
+  auditor: "/evaluacion/auditorias",
 
   // ========================================
   // 💼 GRUPO QUEZADA - RECURSOS HUMANOS Y FINANZAS
