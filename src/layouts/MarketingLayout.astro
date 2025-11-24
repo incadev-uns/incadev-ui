@@ -137,21 +137,17 @@ const { title, allowedRoles = ["marketing", "marketing_admin"] } = Astro.props;
     }
 
     // Verificar autenticación
-    console.log("[MarketingLayout] Checking authentication...");
-
     const token = getToken();
     const user = getUser();
 
     // Si no hay token, redirigir a login
     if (!token) {
-      console.log("[MarketingLayout] No token found, redirecting to login");
       redirectToLogin();
       return;
     }
 
     // Si no hay usuario, redirigir a login
     if (!user) {
-      console.log("[MarketingLayout] No user found, redirecting to login");
       localStorage.removeItem("token"); // Limpiar token huérfano
       redirectToLogin();
       return;
@@ -161,20 +157,12 @@ const { title, allowedRoles = ["marketing", "marketing_admin"] } = Astro.props;
     const userRoles = user.roles || []; // ✅ CORRECTO (es un array)
     const isAllowed = userRoles.some((role) => allowedRoles.includes(role));
 
-    console.log("[MarketingLayout] User roles:", userRoles);
-    console.log("[MarketingLayout] Allowed roles:", allowedRoles);
-    console.log("[MarketingLayout] Is allowed:", isAllowed);
-
     if (!isAllowed) {
-      console.log(
-        "[MarketingLayout] User role not allowed, showing unauthorized",
-      );
       showUnauthorized();
       return;
     }
 
     // Todo OK, mostrar contenido
-    console.log("[MarketingLayout] Authentication verified, showing content");
     showContent();
   })();
 </script>

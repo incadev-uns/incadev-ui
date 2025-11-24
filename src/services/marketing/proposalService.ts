@@ -17,7 +17,12 @@ function mapProposalFromAPI(apiProposal: ProposalFromAPI): ProposalForUI {
         departamento: apiProposal.area,
         prioridad: apiProposal.priority === 'alto' ? 'alta' : apiProposal.priority === 'medio' ? 'media' : 'baja',
         estado: apiProposal.status,
-        publico: apiProposal.target_audience.split(',').map(p => p.trim()),
+        // ✅ FIX: Manejo seguro de target_audience
+        publico: apiProposal.target_audience
+            ? (apiProposal.target_audience.includes(',')
+                ? apiProposal.target_audience.split(',').map(s => s.trim())
+                : [apiProposal.target_audience])
+            : [],
         creadoPor: apiProposal.created_by,
         fecha: apiProposal.created_at,
         actualizado: apiProposal.updated_at
@@ -31,27 +36,29 @@ function mapProposalFromAPI(apiProposal: ProposalFromAPI): ProposalForUI {
 /**
  * Obtener todas las propuestas
  */
+/**
+ * Obtener todas las propuestas
+ */
 export async function fetchProposals(): Promise<ProposalForUI[]> {
     try {
         const endpoint = marketingConfig.endpoints.proposals.list;
         const url = endpoint.startsWith('http')
             ? endpoint
             : `${marketingConfig.apiUrl}/api${endpoint}`;
-
-        console.log('[proposalService] Fetching proposals from:', url);
-
         const response = await authenticatedFetch(url);
-
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+        const responseData = await response.json();
 
-        const data: ProposalFromAPI[] = await response.json();
-        console.log('[proposalService] Proposals fetched:', data.length);
+        // ✅ Extraer data del wrapper (si existe)
+        const data: ProposalFromAPI[] = responseData.data || responseData;
+
+
 
         return data.map(mapProposalFromAPI);
     } catch (error) {
-        console.error('[proposalService] Error fetching proposals:', error);
+
         throw error;
     }
 }
@@ -65,8 +72,6 @@ export async function fetchProposalById(id: number): Promise<ProposalForUI> {
         const url = endpoint.startsWith('http')
             ? endpoint
             : `${marketingConfig.apiUrl}/api${endpoint}`;
-
-        console.log('[proposalService] Fetching proposal by ID:', url);
 
         const response = await authenticatedFetch(url);
 
@@ -92,21 +97,25 @@ export async function createProposal(proposal: CreateProposalDTO): Promise<Propo
             ? endpoint
             : `${marketingConfig.apiUrl}/api${endpoint}`;
 
-        console.log('[proposalService] Creating proposal:', url);
+        const userStr = localStorage.getItem('user');
+        const userId = userStr ? JSON.parse(userStr).id : null;
 
         const response = await authenticatedFetch(url, {
             method: 'POST',
-            body: JSON.stringify(proposal)
+            body: JSON.stringify({
+                ...proposal,
+                created_by: userId
+            })
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
         }
 
-        const data: ProposalFromAPI = await response.json();
-        console.log('[proposalService] Proposal created:', data.id);
-
-        return mapProposalFromAPI(data);
+        const responseData = await response.json();
+        const proposalData: ProposalFromAPI = responseData.data || responseData;
+        return mapProposalFromAPI(proposalData);
     } catch (error) {
         console.error('[proposalService] Error creating proposal:', error);
         throw error;
@@ -122,8 +131,6 @@ export async function updateProposal(id: number, updates: UpdateProposalDTO): Pr
         const url = endpoint.startsWith('http')
             ? endpoint
             : `${marketingConfig.apiUrl}/api${endpoint}`;
-
-        console.log('[proposalService] Updating proposal:', url);
 
         const response = await authenticatedFetch(url, {
             method: 'PUT',
@@ -154,8 +161,6 @@ export async function deleteProposal(id: number): Promise<void> {
             ? endpoint
             : `${marketingConfig.apiUrl}/api${endpoint}`;
 
-        console.log('[proposalService] Deleting proposal:', url);
-
         const response = await authenticatedFetch(url, {
             method: 'DELETE'
         });
@@ -163,10 +168,7 @@ export async function deleteProposal(id: number): Promise<void> {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
-        console.log('[proposalService] Proposal deleted:', id);
     } catch (error) {
-        console.error('[proposalService] Error deleting proposal:', error);
         throw error;
     }
 }

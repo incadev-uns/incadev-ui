@@ -18,11 +18,19 @@ import type {
 /**
  * Calcula el estado de una campaña basado en su fecha de fin
  */
-function calcularEstadoCampaign(endDate: string): 'activa' | 'finalizada' {
+function calcularEstadoCampaign(startDate: string, endDate: string): 'proxima' | 'activa' | 'finalizada' {
     const hoy = new Date();
-    const fin = new Date(endDate);
+    hoy.setHours(0, 0, 0, 0);
 
-    return fin < hoy ? 'finalizada' : 'activa';
+    const inicio = new Date(startDate);
+    inicio.setHours(0, 0, 0, 0);
+
+    const fin = new Date(endDate);
+    fin.setHours(0, 0, 0, 0);
+
+    if (hoy < inicio) return 'proxima';
+    if (hoy > fin) return 'finalizada';
+    return 'activa';
 }
 
 // ============================================
@@ -41,12 +49,18 @@ function mapCampaignFromAPI(apiCampaign: CampaignFromAPI): CampaignForUI {
         objetivo: apiCampaign.objective,
         inicio: apiCampaign.start_date,
         fin: apiCampaign.end_date,
-        estado: calcularEstadoCampaign(apiCampaign.end_date),
+        estado: calcularEstadoCampaign(apiCampaign.start_date, apiCampaign.end_date),
         fechaCreacion: apiCampaign.created_at,
-        fechaActualizacion: apiCampaign.updated_at
+        fechaActualizacion: apiCampaign.updated_at,
+        tipo: apiCampaign.proposal_id ? 'propuesta' : 'curso',
+        propuestaTitulo: apiCampaign.proposal?.title,
+        cursoVersionNombre: apiCampaign.course_version?.name
     };
 }
 
+/**
+ * Mapea las métricas de campaña de la API a la estructura que necesita la UI
+ */
 /**
  * Mapea las métricas de campaña de la API a la estructura que necesita la UI
  */
@@ -58,12 +72,6 @@ function mapCampaignMetricsFromAPI(apiMetrics: CampaignMetricsFromAPI): Campaign
         totalInteractions: apiMetrics.metrics_summary.total_interactions,
         totalLikes: apiMetrics.metrics_summary.total_likes,
         totalComments: apiMetrics.metrics_summary.total_comments,
-        totalMessages: apiMetrics.metrics_summary.total_messages_received,
-        totalPreRegistrations: apiMetrics.metrics_summary.total_pre_registrations,
-        averageIntention: apiMetrics.metrics_summary.average_intention_percentage,
-        averageCtr: apiMetrics.metrics_summary.average_ctr_percentage,
-        expectedEnrollments: apiMetrics.metrics_summary.expected_enrollments,
-        averageCpa: apiMetrics.metrics_summary.average_cpa_cost,
         postMetrics: apiMetrics.posts_metrics.map(pm => ({
             postId: pm.post_id,
             platform: pm.platform,
@@ -239,6 +247,31 @@ export async function deleteCampaign(id: number): Promise<void> {
         console.log('[campaignService] Campaign deleted:', id);
     } catch (error) {
         console.error('[campaignService] Error deleting campaign:', error);
+        throw error;
+    }
+}
+
+export async function fetchAllCampaigns(): Promise<CampaignForUI[]> {
+    try {
+        const endpoint = marketingConfig.endpoints.campaigns.list;
+        const url = endpoint.startsWith('http')
+            ? endpoint
+            : `${marketingConfig.apiUrl}/api${endpoint}`;
+
+        console.log('[campaignService] Fetching all campaigns');
+
+        const response = await authenticatedFetch(url);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: CampaignFromAPI[] = await response.json();
+        console.log('[campaignService] All campaigns fetched:', data.length);
+
+        return data.map(mapCampaignFromAPI);
+    } catch (error) {
+        console.error('[campaignService] Error fetching all campaigns:', error);
         throw error;
     }
 }
