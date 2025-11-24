@@ -24,7 +24,7 @@ interface AnnouncementFormProps {
 
 export function AnnouncementForm({ announcement, onSuccess, onCancel }: AnnouncementFormProps) {
   const [loading, setLoading] = useState(false)
-  const [formLoading, setFormLoading] = useState(true) // Nuevo estado para carga del formulario
+  const [formLoading, setFormLoading] = useState(true)
   const [formData, setFormData] = useState({
     title: "",
     content: "",
@@ -39,6 +39,17 @@ export function AnnouncementForm({ announcement, onSuccess, onCancel }: Announce
     priority: 5,
   })
 
+  // Obtener fecha y hora actual en formato YYYY-MM-DDTHH:mm
+  const getCurrentDateTime = () => {
+    const now = new Date()
+    return now.toISOString().slice(0, 16)
+  }
+
+  // Obtener fecha mínima (hoy)
+  const getMinDate = () => {
+    return getCurrentDateTime()
+  }
+
   const formatDateForInput = (dateString: string) => {
     if (!dateString) return ""
     const date = new Date(dateString)
@@ -49,6 +60,21 @@ export function AnnouncementForm({ announcement, onSuccess, onCancel }: Announce
     if (!dateString) return ""
     const date = new Date(dateString)
     return date.toISOString().slice(0, 19).replace('T', ' ')
+  }
+
+  // Función para validar que la fecha no sea anterior a hoy
+  const validateDate = (dateString: string, fieldName: string): boolean => {
+    if (!dateString) return true
+    
+    const selectedDate = new Date(dateString)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0) // Establecer a inicio del día
+    
+    if (selectedDate < today) {
+      toast.error(`La ${fieldName} no puede ser anterior a hoy`)
+      return false
+    }
+    return true
   }
 
   useEffect(() => {
@@ -78,7 +104,13 @@ export function AnnouncementForm({ announcement, onSuccess, onCancel }: Announce
       
       return () => clearTimeout(timer)
     } else {
-      // En creación, no hay datos que cargar
+      // En creación, establecer fecha mínima como hoy
+      const today = getCurrentDateTime()
+      setFormData(prev => ({
+        ...prev,
+        start_date: today,
+        end_date: today
+      }))
       setFormLoading(false)
     }
   }, [announcement])
@@ -102,6 +134,11 @@ export function AnnouncementForm({ announcement, onSuccess, onCancel }: Announce
       toast.error("La fecha de fin es requerida")
       return
     }
+
+    // Validar que las fechas no sean anteriores a hoy
+    if (!validateDate(formData.start_date, "fecha de inicio")) return
+    if (!validateDate(formData.end_date, "fecha de fin")) return
+
     if (new Date(formData.end_date) <= new Date(formData.start_date)) {
       toast.error("La fecha de fin debe ser posterior a la fecha de inicio")
       return
@@ -148,6 +185,14 @@ export function AnnouncementForm({ announcement, onSuccess, onCancel }: Announce
     } finally {
       setLoading(false)
     }
+  }
+
+  // Función para manejar cambio de fecha con validación
+  const handleDateChange = (field: 'start_date' | 'end_date', value: string) => {
+    if (value && !validateDate(value, field === 'start_date' ? 'fecha de inicio' : 'fecha de fin')) {
+      return // No actualizar si la fecha no es válida
+    }
+    setFormData({ ...formData, [field]: value })
   }
 
   // Mostrar loading mientras se cargan los datos del formulario
@@ -243,11 +288,15 @@ export function AnnouncementForm({ announcement, onSuccess, onCancel }: Announce
                 id="start_date"
                 type="datetime-local"
                 value={formData.start_date}
-                onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                onChange={(e) => handleDateChange('start_date', e.target.value)}
                 className="pl-10"
+                min={getMinDate()} // ← Agregar atributo min
                 required
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              No se permiten fechas anteriores a hoy
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -260,11 +309,15 @@ export function AnnouncementForm({ announcement, onSuccess, onCancel }: Announce
                 id="end_date"
                 type="datetime-local"
                 value={formData.end_date}
-                onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                onChange={(e) => handleDateChange('end_date', e.target.value)}
                 className="pl-10"
+                min={formData.start_date || getMinDate()} // ← Mínimo debe ser start_date o hoy
                 required
               />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Debe ser posterior a la fecha de inicio
+            </p>
           </div>
         </div>
 

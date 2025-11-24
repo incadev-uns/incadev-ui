@@ -405,7 +405,7 @@ export default function NewsPage() {
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-2">
                             <Eye className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">{item.views_count}</span>
+                            <span className="font-medium">{item.views}</span>
                           </div>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">

@@ -237,24 +237,6 @@ export interface DashboardChartsResponse {
   data: DashboardChartsData
 }
 
-export interface QuickDashboard {
-  total_students: number
-  total_groups: number
-  pending_payments: number
-  open_tickets: number
-  today_sessions: number
-  upcoming_exams: number
-}
-
-export interface CombinedReport {
-  dashboard: QuickDashboard
-}
-
-export interface CombinedReportResponse {
-  success: boolean
-  data: CombinedReport
-}
-
 // ============================================
 // Interfaces - BigQuery Sync
 // ============================================

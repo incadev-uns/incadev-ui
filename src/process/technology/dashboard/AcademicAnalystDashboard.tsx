@@ -1,6 +1,5 @@
-
-import TechnologyLayout from "@/process/technology/TechnologyLayout"
 import { useState, useEffect } from "react"
+import TechnologyLayout from "@/process/technology/TechnologyLayout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -10,6 +9,8 @@ import {
   Calendar, 
   BookOpen, 
   CheckCircle, 
+  Clock,
+  AlertCircle,
   BarChart3,
   Target,
   GraduationCap,
@@ -338,7 +339,7 @@ export default function AcademicAnalystDashboard() {
                 <a href="/tecnologico/academic_analyst/prediccion-riesgo">
                   <BookOpen className="h-6 w-6" />
                   <span>Predicción</span>
-                  <span className="text-xs text-muted-foreground">Predicción de deserción</span>
+                  <span className="text-xs text-muted-foreground">Predicción de Deserción</span>
                 </a>
               </Button>
             </div>
