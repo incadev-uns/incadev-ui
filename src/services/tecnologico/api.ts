@@ -6,6 +6,32 @@
 
 import { config } from "@/config/technology-config";
 import type { WebDashboardData, FAQCategory } from "@/types/developer-web";
+import type {
+  AttendanceResponse,
+  LocalAttendanceSummary,
+  PerformanceResponse,
+  ProgressResponse,
+  AttendanceStatusResponse,
+  WeeklyTrendsResponse,
+  AttendanceCalendarResponse,
+  GradeDistributionResponse,
+  AttendanceGradeCorrelationResponse,
+  GroupPerformanceResponse,
+  GradeEvolutionResponse,
+  ChartFilters,
+  GroupOption,
+  DashboardMainResponse,
+  DashboardChartsResponse,
+  BigQuerySyncResponse
+} from "@/types/academic-analysis"
+
+import type {
+  SystemStatusData,
+  PredictionsResponse,
+  HighRiskResponse,
+  DropoutPredictionFilters,
+  DetailedPredictionsResponse,
+} from "@/types/dropout-prediction"
 
 // ============================================
 // Types & Interfaces
@@ -72,11 +98,12 @@ export interface User {
   dni?: string;
   phone?: string;
   avatar?: string;
+  avatar_url?: string | null;
   roles?: string[];
   permissions?: string[];
   two_factor_enabled?: boolean;
-  recovery_email?: string;
-  recovery_email_verified?: boolean;
+  secondary_email?: string;
+  secondary_email_verified?: boolean;
 }
 
 export interface UpdateProfileData {
@@ -423,34 +450,39 @@ export const technologyApi = {
     },
   },
 
-  // ========== Recovery Email ==========
-  recoveryEmail: {
+  // ========== Secondary Email ==========
+  secondaryEmail: {
     /**
-     * Agrega un email de recuperación
+     * Agrega un email secundario
+     * POST /api/auth/secondary-email/add
+     * Body: { "secondary_email": "mi_email_secundario@gmail.com" }
      */
-    add: async (recoveryEmail: string): Promise<ApiResponse<null>> => {
-      return apiClient.post(config.endpoints.recoveryEmail.add, { recovery_email: recoveryEmail });
+    add: async (secondaryEmail: string): Promise<ApiResponse<null>> => {
+      return apiClient.post(config.endpoints.secondaryEmail.add, { secondary_email: secondaryEmail });
     },
 
     /**
-     * Verifica el email de recuperación con código
+     * Verifica el email secundario con código
+     * POST /api/auth/secondary-email/verify
+     * Body: { "code": "123456" }
      */
     verify: async (code: string): Promise<ApiResponse<null>> => {
-      return apiClient.post(config.endpoints.recoveryEmail.verify, { code });
+      return apiClient.post(config.endpoints.secondaryEmail.verify, { code });
     },
 
     /**
      * Reenvía el código de verificación
+     * POST /auth/secondary-email/resend-code
      */
     resendCode: async (): Promise<ApiResponse<null>> => {
-      return apiClient.post(config.endpoints.recoveryEmail.resendCode);
+      return apiClient.post(config.endpoints.secondaryEmail.resendCode);
     },
 
     /**
-     * Elimina el email de recuperación
+     * Elimina el email secundario
      */
     remove: async (): Promise<ApiResponse<null>> => {
-      return apiClient.delete(config.endpoints.recoveryEmail.remove);
+      return apiClient.delete(config.endpoints.secondaryEmail.remove);
     },
   },
 
@@ -598,7 +630,7 @@ export const technologyApi = {
   support: {
     tickets: {
       /**
-       * Lista tickets con filtros y paginación
+       * Lista todos los tickets con filtros y paginación (admin/support)
        */
       list: async (params?: {
         page?: number;
@@ -621,6 +653,32 @@ export const technologyApi = {
         if (params?.sort_order) queryParams.sort_order = params.sort_order;
 
         return apiClient.get<any>(config.endpoints.support.tickets.list, queryParams);
+      },
+
+      /**
+       * Lista mis tickets (del usuario autenticado) con filtros y paginación
+       */
+      myTickets: async (params?: {
+        page?: number;
+        per_page?: number;
+        status?: string;
+        priority?: string;
+        type?: string;
+        search?: string;
+        sort_by?: string;
+        sort_order?: string;
+      }): Promise<any> => {
+        const queryParams: Record<string, string | number> = {};
+        if (params?.page) queryParams.page = params.page;
+        if (params?.per_page) queryParams.per_page = params.per_page;
+        if (params?.status) queryParams.status = params.status;
+        if (params?.priority) queryParams.priority = params.priority;
+        if (params?.type) queryParams.type = params.type;
+        if (params?.search) queryParams.search = params.search;
+        if (params?.sort_by) queryParams.sort_by = params.sort_by;
+        if (params?.sort_order) queryParams.sort_order = params.sort_order;
+
+        return apiClient.get<any>(config.endpoints.support.tickets.myTickets, queryParams);
       },
 
       /**
@@ -781,6 +839,143 @@ export const technologyApi = {
      */
     dashboard: async (): Promise<any> => {
       return apiClient.get<any>(config.endpoints.security.dashboard);
+    },
+
+    // User Blocks Management
+    blocks: {
+      /**
+       * Lista usuarios bloqueados actualmente
+       */
+      list: async (perPage: number = 15, page: number = 1): Promise<any> => {
+        const params: Record<string, string> = {
+          per_page: perPage.toString(),
+          page: page.toString(),
+        };
+        return apiClient.get<any>(config.endpoints.security.blocks.list, params);
+      },
+
+      /**
+       * Historial de todos los bloqueos
+       */
+      history: async (perPage: number = 20, page: number = 1): Promise<any> => {
+        const params: Record<string, string> = {
+          per_page: perPage.toString(),
+          page: page.toString(),
+        };
+        return apiClient.get<any>(config.endpoints.security.blocks.history, params);
+      },
+
+      /**
+       * Estadísticas de bloqueos
+       */
+      statistics: async (days: number = 30): Promise<any> => {
+        const params: Record<string, string> = {
+          days: days.toString(),
+        };
+        return apiClient.get<any>(config.endpoints.security.blocks.statistics, params);
+      },
+
+      /**
+       * Historial de bloqueos de un usuario específico
+       */
+      userHistory: async (userId: number): Promise<any> => {
+        return apiClient.get<any>(
+          config.endpoints.security.blocks.userHistory,
+          undefined,
+          { userId: userId.toString() }
+        );
+      },
+
+      /**
+       * Verificar si un usuario está bloqueado
+       */
+      check: async (userId: number): Promise<any> => {
+        return apiClient.get<any>(
+          config.endpoints.security.blocks.check,
+          undefined,
+          { userId: userId.toString() }
+        );
+      },
+
+      /**
+       * Bloquear usuario manualmente
+       */
+      create: async (data: {
+        user_id: number;
+        reason: string;
+        duration_minutes?: number;
+      }): Promise<any> => {
+        return apiClient.post<any>(config.endpoints.security.blocks.create, data);
+      },
+
+      /**
+       * Desbloquear usuario por User ID
+       */
+      unblockByUser: async (userId: number): Promise<any> => {
+        return apiClient.delete<any>(
+          config.endpoints.security.blocks.unblockByUser,
+          { userId: userId.toString() }
+        );
+      },
+
+      /**
+       * Desbloquear por ID de bloqueo
+       */
+      unblockById: async (blockId: number): Promise<any> => {
+        return apiClient.delete<any>(
+          config.endpoints.security.blocks.unblockById,
+          { blockId: blockId.toString() }
+        );
+      },
+    },
+
+    // Security Settings
+    settings: {
+      /**
+       * Obtiene todas las configuraciones de seguridad
+       */
+      list: async (): Promise<any> => {
+        return apiClient.get<any>(config.endpoints.security.settings.list);
+      },
+
+      /**
+       * Obtiene configuraciones agrupadas
+       */
+      grouped: async (): Promise<any> => {
+        return apiClient.get<any>(config.endpoints.security.settings.grouped);
+      },
+
+      /**
+       * Obtiene configuraciones de login
+       */
+      login: async (): Promise<any> => {
+        return apiClient.get<any>(config.endpoints.security.settings.login);
+      },
+
+      /**
+       * Actualiza una configuración específica
+       */
+      update: async (key: string, value: any): Promise<any> => {
+        return apiClient.put<any>(
+          config.endpoints.security.settings.update,
+          { value },
+          { key }
+        );
+      },
+
+      /**
+       * Actualiza múltiples configuraciones
+       */
+      updateBulk: async (settings: Record<string, any>): Promise<any> => {
+        return apiClient.put<any>(config.endpoints.security.settings.updateBulk, { settings });
+      },
+
+      /**
+       * Limpia el cache de configuraciones
+       */
+      clearCache: async (): Promise<any> => {
+        return apiClient.post<any>(config.endpoints.security.settings.clearCache);
+      },
     },
 
     // Sessions Management
@@ -1117,15 +1312,15 @@ export const technologyApi = {
       }): Promise<ApiResponse<any>> => {
         const queryParams: Record<string, string | number> | undefined = params
           ? Object.fromEntries(
-              Object.entries(params)
-                .filter(([, value]) => value !== undefined && value !== null)
-                .map(([key, value]) => {
-                  if (key === "active" && typeof value === "boolean") {
-                    return [key, value ? 1 : 0];
-                  }
-                  return [key, value as string | number];
-                })
-            )
+            Object.entries(params)
+              .filter(([, value]) => value !== undefined && value !== null)
+              .map(([key, value]) => {
+                if (key === "active" && typeof value === "boolean") {
+                  return [key, value ? 1 : 0];
+                }
+                return [key, value as string | number];
+              })
+          )
           : undefined;
 
         return apiClient.get<ApiResponse<any>>(config.endpoints.developerWeb.chatbot.faqs.index, queryParams);
@@ -1195,6 +1390,387 @@ export const technologyApi = {
       },
     },
   },
+
+  // ============================================
+  // Academic Analysis Module
+  // ============================================
+
+  academicAnalysis: {
+
+    groups: {
+      /**
+       * Obtiene la lista de grupos activos para filtros
+       */
+      active: async (): Promise<ApiResponse<GroupOption[]>> => {
+        return apiClient.get<ApiResponse<GroupOption[]>>(
+          "/data-analyst/groups/active"
+        );
+      },
+    },
+    // Dashboard
+    dashboard: {
+      /**
+     * Obtiene los datos principales del dashboard
+     */
+      main: async (filters?: ChartFilters): Promise<DashboardMainResponse> => {
+        return apiClient.get<DashboardMainResponse>(
+          config.endpoints.academicAnalysis.dashboard.main,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+
+      /**
+       * Obtiene los datos de gráficos del dashboard
+       */
+      charts: async (filters?: ChartFilters): Promise<DashboardChartsResponse> => {
+        return apiClient.get<DashboardChartsResponse>(
+          config.endpoints.academicAnalysis.dashboard.charts,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+    },
+
+    // BigQuery Sync
+    bigquery: {
+      /**
+       * Sincronización completa de tablas con BigQuery
+       */
+      syncFull: async (): Promise<ApiResponse<BigQuerySyncResponse>> => {
+        return apiClient.post<ApiResponse<BigQuerySyncResponse>>(
+          config.endpoints.academicAnalysis.bigquery.syncFull,
+          {}
+        );
+      },
+
+      /**
+       * Sincronización incremental con BigQuery
+       */
+      syncIncremental: async (): Promise<ApiResponse<BigQuerySyncResponse>> => {
+        return apiClient.post<ApiResponse<BigQuerySyncResponse>>(
+          config.endpoints.academicAnalysis.bigquery.syncIncremental,
+          {}
+        );
+      },
+    },
+
+    // Attendance
+    attendance: {
+      /**
+       * Obtiene el resumen general de asistencia
+       */
+      general: async (filters?: ChartFilters): Promise<AttendanceResponse> => {
+        return apiClient.get<AttendanceResponse>(
+          config.endpoints.academicAnalysis.attendance.general,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+
+      /**
+       * Obtiene el resumen local de asistencia
+       */
+      local: async (filters?: ChartFilters): Promise<ApiResponse<LocalAttendanceSummary[]>> => {
+        return apiClient.get<ApiResponse<LocalAttendanceSummary[]>>(
+          config.endpoints.academicAnalysis.attendance.local,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+
+      /**
+   * Exporta reporte de asistencia en PDF o Excel
+   */
+      export: async (filters: ChartFilters, format: 'pdf' | 'excel'): Promise<Blob> => {
+        const response = await fetch(`${config.apiUrl}${config.endpoints.academicAnalysis.attendance.export}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Authorization': `Bearer ${getStoredToken()}`
+          },
+          body: JSON.stringify({
+            ...filters,
+            format: format
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new ApiError(
+            errorData.error || `Error ${response.status}: ${response.statusText}`,
+            response.status
+          );
+        }
+
+        return response.blob();
+      },
+    },
+
+    // Performance
+    performance: {
+      /**
+       * Obtiene el rendimiento completo
+       */
+      general: async (filters?: ChartFilters): Promise<PerformanceResponse> => {
+        return apiClient.get<PerformanceResponse>(
+          config.endpoints.academicAnalysis.performance.general,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+      export: async (filters: ChartFilters, format: 'pdf' | 'excel'): Promise<Blob> => {
+        const response = await fetch(`${config.apiUrl}${config.endpoints.academicAnalysis.performance.export}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Authorization': `Bearer ${getStoredToken()}`
+          },
+          body: JSON.stringify({
+            ...filters,
+            format: format
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new ApiError(
+            errorData.error || `Error ${response.status}: ${response.statusText}`,
+            response.status
+          );
+        }
+
+        return response.blob();
+      },
+    },
+
+    // Progress
+    progress: {
+      /**
+       * Obtiene el progreso completo
+       */
+      general: async (filters?: ChartFilters): Promise<ProgressResponse> => {
+        return apiClient.get<ProgressResponse>(
+          config.endpoints.academicAnalysis.progress.general,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+
+      export: async (filters: ChartFilters, format: 'pdf' | 'excel'): Promise<Blob> => {
+        const response = await fetch(`${config.apiUrl}${config.endpoints.academicAnalysis.progress.export}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Authorization': `Bearer ${getStoredToken()}`
+          },
+          body: JSON.stringify({
+            ...filters,
+            format: format
+          })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new ApiError(
+            errorData.error || `Error ${response.status}: ${response.statusText}`,
+            response.status
+          );
+        }
+
+        return response.blob();
+      },
+    },
+
+    // Attendance Charts
+    attendanceCharts: {
+      /**
+       * Obtiene distribución de estados de asistencia
+       */
+      statusDistribution: async (filters?: ChartFilters): Promise<ApiResponse<AttendanceStatusResponse>> => {
+        return apiClient.get<ApiResponse<AttendanceStatusResponse>>(
+          config.endpoints.academicAnalysis.attendance.statusDistribution,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+
+      /**
+       * Obtiene tendencias semanales de ausencias
+       */
+      weeklyTrends: async (filters?: ChartFilters): Promise<ApiResponse<WeeklyTrendsResponse>> => {
+        return apiClient.get<ApiResponse<WeeklyTrendsResponse>>(
+          config.endpoints.academicAnalysis.attendance.weeklyTrends,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+
+      /**
+       * Obtiene datos para calendario de asistencia
+       */
+      attendanceCalendar: async (filters?: ChartFilters): Promise<ApiResponse<AttendanceCalendarResponse>> => {
+        return apiClient.get<ApiResponse<AttendanceCalendarResponse>>(
+          config.endpoints.academicAnalysis.attendance.attendanceCalendar,
+          filters as Record<string, string | number> | undefined
+        );
+      },
+    },
+
+    // Performance Charts
+    performanceCharts: {
+      /**
+       * Obtiene distribución de calificaciones
+       */
+      gradeDistribution: async (filters?: ChartFilters): Promise<ApiResponse<GradeDistributionResponse>> => {
+        return apiClient.get<ApiResponse<GradeDistributionResponse>>(
+          config.endpoints.academicAnalysis.performance.gradeDistribution,
+          filters as Record<string, string | number> | undefined
+        )
+      },
+
+      /**
+       * Obtiene correlación entre asistencia y calificación
+       */
+      attendanceGradeCorrelation: async (filters?: ChartFilters): Promise<ApiResponse<AttendanceGradeCorrelationResponse>> => {
+        return apiClient.get<ApiResponse<AttendanceGradeCorrelationResponse>>(
+          config.endpoints.academicAnalysis.performance.attendanceGradeCorrelation,
+          filters as Record<string, string | number> | undefined
+        )
+      },
+
+      /**
+       * Obtiene rendimiento por grupo para gráfico radar
+       */
+      groupPerformance: async (filters?: ChartFilters): Promise<ApiResponse<GroupPerformanceResponse>> => {
+        return apiClient.get<ApiResponse<GroupPerformanceResponse>>(
+          config.endpoints.academicAnalysis.performance.groupPerformance,
+          filters as Record<string, string | number> | undefined
+        )
+      },
+    },
+
+    // Progress Charts
+    progressCharts: {
+      /**
+       * Obtiene evolución de calificaciones
+       */
+      gradeEvolution: async (filters?: ChartFilters): Promise<ApiResponse<GradeEvolutionResponse>> => {
+        return apiClient.get<ApiResponse<GradeEvolutionResponse>>(
+          config.endpoints.academicAnalysis.progress.gradeEvolution,
+          filters as Record<string, string | number> | undefined
+        )
+      },
+    },
+  },
+
+  // ============================================
+  // Dropout Prediction Module
+  // ============================================
+
+  dropoutPrediction: {
+    /**
+     * Obtiene las predicciones de deserción
+     */
+    predictions: async (filters?: DropoutPredictionFilters): Promise<PredictionsResponse> => {
+      const params = filters ? convertDropoutFilters(filters) : undefined
+      return apiClient.get<PredictionsResponse>(
+        config.endpoints.dropoutPrediction.predictions,
+        params
+      )
+    },
+
+    /**
+     * Obtiene predicciones detalladas
+     */
+    predictionsDetailed: async (): Promise<DetailedPredictionsResponse> => {
+      return apiClient.get<DetailedPredictionsResponse>(
+        config.endpoints.dropoutPrediction.predictionsDetailed
+      )
+    },
+
+    /**
+     * Obtiene estudiantes de alto riesgo
+     */
+    highRisk: async (): Promise<HighRiskResponse> => {
+      return apiClient.get<HighRiskResponse>(
+        config.endpoints.dropoutPrediction.highRisk
+      )
+    },
+
+    /**
+     * Obtiene el estado del sistema
+     */
+    systemStatus: async (): Promise<ApiResponse<SystemStatusData>> => {
+      return apiClient.get<ApiResponse<SystemStatusData>>(
+        config.endpoints.dropoutPrediction.systemStatus
+      )
+    },
+
+    /**
+     * Obtiene predicciones por grupo
+     */
+    predictionsByGroup: async (groupId: number): Promise<PredictionsResponse> => {
+      return apiClient.get<PredictionsResponse>(
+        config.endpoints.dropoutPrediction.predictionsByGroup.replace(':groupId', groupId.toString())
+      )
+    },
+
+    /**
+   * Exporta predicciones de deserción en PDF o Excel
+   */
+    exportPredictions: async (filters: DropoutPredictionFilters, format: 'pdf' | 'excel'): Promise<Blob> => {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.dropoutPrediction.export.predictions}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Authorization': `Bearer ${getStoredToken()}`
+        },
+        body: JSON.stringify({
+          ...filters,
+          format: format
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          errorData.error || `Error ${response.status}: ${response.statusText}`,
+          response.status
+        );
+      }
+
+      return response.blob();
+    },
+
+    /**
+     * Exporta estudiantes de alto riesgo en PDF o Excel
+     */
+    exportHighRisk: async (format: 'pdf' | 'excel'): Promise<Blob> => {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.dropoutPrediction.export.highRisk}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+          'Authorization': `Bearer ${getStoredToken()}`
+        },
+        body: JSON.stringify({
+          format: format
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new ApiError(
+          errorData.error || `Error ${response.status}: ${response.statusText}`,
+          response.status
+        );
+      }
+
+      return response.blob();
+    },
+  },
 };
 
 // ============================================
@@ -1236,3 +1812,20 @@ export const getStoredToken = (): string | null => {
   const token = localStorage.getItem("token");
   return token ? token.replace(/^"|"$/g, "") : null;
 };
+
+function convertDropoutFilters(filters: DropoutPredictionFilters): Record<string, string | number> {
+  const result: Record<string, string | number> = {}
+
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== null) {
+      if (key === 'date_range' && typeof value === 'object') {
+        if (value.start) result.start_date = value.start
+        if (value.end) result.end_date = value.end
+      } else {
+        result[key] = value
+      }
+    }
+  })
+
+  return result
+}

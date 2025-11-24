@@ -45,15 +45,23 @@ import {
   TicketTypeColors,
 } from "@/types/support"
 
-interface TicketDetailPageProps {
-  ticketId: number
-}
-
-export default function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
+export default function TicketDetailPage() {
   const { user, loading: authLoading } = useTechnologyAuth()
   const [ticket, setTicket] = useState<Ticket | null>(null)
   const [loading, setLoading] = useState(true)
   const [submittingReply, setSubmittingReply] = useState(false)
+  const [ticketId, setTicketId] = useState<number | null>(null)
+
+  // Obtener el ID del ticket desde la URL (query param ?id=123)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const id = params.get("id")
+      if (id) {
+        setTicketId(parseInt(id, 10))
+      }
+    }
+  }, [])
 
   // Reply form
   const [replyContent, setReplyContent] = useState("")
@@ -65,12 +73,13 @@ export default function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
   const isSupport = currentUser?.roles?.includes("support") || currentUser?.roles?.includes("admin")
 
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && ticketId) {
       fetchTicket()
     }
   }, [ticketId, authLoading, user])
 
   const fetchTicket = async () => {
+    if (!ticketId) return
     setLoading(true)
     try {
       const response = await technologyApi.support.tickets.getById(ticketId)
@@ -220,11 +229,28 @@ export default function TicketDetailPage({ ticketId }: TicketDetailPageProps) {
     return <FileText className="w-4 h-4" />
   }
 
-  if (authLoading || loading) {
+  if (authLoading || (loading && ticketId)) {
     return (
       <TechnologyLayout title="Cargando...">
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </TechnologyLayout>
+    )
+  }
+
+  if (!ticketId) {
+    return (
+      <TechnologyLayout title="ID de ticket no especificado">
+        <div className="text-center py-12">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+          <p className="text-muted-foreground font-medium">ID de ticket no especificado</p>
+          <p className="text-sm text-muted-foreground mt-2">
+            Accede desde la lista de tickets o usa la URL correcta: /tecnologico/support/tickets/detail?id=123
+          </p>
+          <Button className="mt-4" onClick={() => window.location.href = "/tecnologico/support/tickets"}>
+            Ir a Tickets
+          </Button>
         </div>
       </TechnologyLayout>
     )

@@ -19,7 +19,7 @@ import {
 export const routes = {
   base: "/academico/",
   general: {
-    login: "/academico/login",
+    login: "/auth/academico",
     register: "/academico/register",
   },
   dashboard:{
@@ -89,13 +89,19 @@ export const navSimpleMain: NavSimpleItem[] = [
     title: "Encuestas",
     url: "/academico/encuesta",
     icon: IconChecklist,
-    allowedRoles: ["teacher"]
+    allowedRoles: ["student"]
   },
   {
     title: "Tutorias",
     url: "/academico/tutoria",
     icon: IconSchool,
-    allowedRoles: ["teacher"]
+    allowedRoles: ["teacher", "student"]
+  },
+  {
+    title: "Foros",
+    url: "/academico/foros",
+    icon: IconSchool,
+    allowedRoles: ["student"]
   },
 ];
 

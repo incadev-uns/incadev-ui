@@ -1,52 +1,82 @@
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Clock, Users, Star, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight, Tag } from "lucide-react";
+import { config } from "@/config/technology-config";
 
-// Datos de ejemplo - En producción vendrían de la API
-const courses = [
-  {
-    id: 1,
-    name: "Desarrollo Web Full Stack",
-    description: "Aprende a crear aplicaciones web completas con tecnologías modernas",
-    price: 350,
-    duration: "12 semanas",
-    students: 45,
-    rating: 4.8,
-    modules: 8,
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    level: "Intermedio",
-    status: "available"
-  },
-  {
-    id: 2,
-    name: "Python para Análisis de Datos",
-    description: "Domina Python y sus librerías para análisis y visualización de datos",
-    price: 300,
-    duration: "10 semanas",
-    students: 38,
-    rating: 4.9,
-    modules: 6,
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    level: "Principiante",
-    status: "available"
-  },
-  {
-    id: 3,
-    name: "Diseño UX/UI Profesional",
-    description: "Crea experiencias digitales excepcionales centradas en el usuario",
-    price: 280,
-    duration: "8 semanas",
-    students: 52,
-    rating: 4.7,
-    modules: 7,
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    level: "Intermedio",
-    status: "available"
-  }
-];
+interface Course {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  version: string;
+  version_name: string;
+  price: string;
+  created_at: string;
+}
 
 export default function CoursesSection() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.landing.courses}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setCourses(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <Badge variant="outline" className="mb-4">
+            <BookOpen className="h-3 w-3 mr-1" />
+            Cursos Certificados
+          </Badge>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Cursos Disponibles
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Descubre nuestros cursos diseñados por expertos y comienza tu camino en tecnología
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse overflow-hidden">
+              <div className="h-48 bg-muted" />
+              <CardHeader>
+                <div className="h-6 bg-muted rounded w-3/4" />
+                <div className="h-4 bg-muted rounded w-full mt-2" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-4 bg-muted rounded w-1/3 mb-4" />
+                <div className="h-10 bg-muted rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (courses.length === 0) {
+    return null;
+  }
+
   return (
     <div className="container mx-auto px-4">
       <div className="text-center mb-12">
@@ -73,11 +103,6 @@ export default function CoursesSection() {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 loading="lazy"
               />
-              <div className="absolute top-3 right-3">
-                <Badge className="bg-primary/90 backdrop-blur">
-                  {course.level}
-                </Badge>
-              </div>
             </div>
 
             <CardHeader>
@@ -88,44 +113,20 @@ export default function CoursesSection() {
             </CardHeader>
 
             <CardContent className="flex-1 flex flex-col">
-              {/* Estadísticas del curso */}
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4 text-primary" />
-                  <span>{course.duration}</span>
-                </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4 text-primary" />
-                  <span>{course.students}</span>
-                </div>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                  <span>{course.rating}</span>
-                </div>
+              {/* Versión */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                <Tag className="h-4 w-4 text-primary" />
+                <span>{course.version_name}</span>
               </div>
 
-              {/* Módulos */}
-              <div className="mb-4 pb-4 border-b">
-                <p className="text-sm text-muted-foreground">
-                  <BookOpen className="h-4 w-4 inline mr-1" />
-                  {course.modules} módulos
-                </p>
-              </div>
-
-              {/* Precio y CTA */}
-              <div className="mt-auto space-y-3">
+              {/* Precio */}
+              <div className="mt-auto pt-4 border-t">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-3xl font-bold text-primary">
-                    S/ {course.price}
+                  <span className="text-2xl font-bold text-primary">
+                    S/ {parseFloat(course.price).toFixed(0)}
                   </span>
                   <span className="text-sm text-muted-foreground">por curso</span>
                 </div>
-                <Button className="w-full gap-2" asChild>
-                  <a href={`/academico/grupos/disponible?course=${course.id}`}>
-                    Ver detalles
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </Button>
               </div>
             </CardContent>
           </Card>

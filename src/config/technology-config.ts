@@ -5,8 +5,8 @@
  **/
 
 export const config = {
-  //apiUrl:"https://instituto.cetivirgendelapuerta.com/procesostecnologicos/backend/public/api",
-  apiUrl: "http://127.0.0.1:8001/api",
+  apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/tecnologico/public/api",
+  //apiUrl: "http://localhost:8000/api",
   environment: "development",
   endpoints: {
     // Authentication
@@ -20,12 +20,12 @@ export const config = {
       resetPassword: "/auth/reset-password",
     },
 
-    // Recovery Email
-    recoveryEmail: {
-      add: "/auth/recovery-email/add",
-      verify: "/auth/recovery-email/verify",
-      resendCode: "/auth/recovery-email/resend-code",
-      remove: "/auth/recovery-email/remove",
+    // Secondary Email
+    secondaryEmail: {
+      add: "/auth/secondary-email/add",
+      verify: "/auth/secondary-email/verify",
+      resendCode: "/auth/secondary-email/resend-code",
+      remove: "/auth/secondary-email/remove",
     },
 
     // Two-Factor Authentication (2FA)
@@ -72,6 +72,7 @@ export const config = {
       // Tickets
       tickets: {
         list: "/support/tickets",
+        myTickets: "/support/my-tickets",
         create: "/support/tickets",
         getById: "/support/tickets/:id",
         update: "/support/tickets/:id",
@@ -96,6 +97,28 @@ export const config = {
     security: {
       // Dashboard
       dashboard: "/security/dashboard",
+
+      // User Blocks Management
+      blocks: {
+        list: "/security/blocks", // Listar usuarios bloqueados
+        create: "/security/blocks", // Bloquear usuario manualmente
+        history: "/security/blocks/history", // Historial de bloqueos
+        statistics: "/security/blocks/statistics", // Estadísticas de bloqueos
+        userHistory: "/security/blocks/user/:userId", // Historial de bloqueos de un usuario
+        check: "/security/blocks/check/:userId", // Verificar si usuario está bloqueado
+        unblockByUser: "/security/blocks/user/:userId", // Desbloquear por user ID
+        unblockById: "/security/blocks/:blockId", // Desbloquear por ID de bloqueo
+      },
+
+      // Security Settings
+      settings: {
+        list: "/security/settings", // Obtener todas las configuraciones
+        grouped: "/security/settings/grouped", // Configuraciones agrupadas
+        login: "/security/settings/login", // Configuraciones de login
+        update: "/security/settings/:key", // Actualizar una configuración
+        updateBulk: "/security/settings", // Actualizar múltiples configuraciones
+        clearCache: "/security/settings/clear-cache", // Limpiar cache
+      },
 
       // Sessions Management
       sessions: {
@@ -171,6 +194,12 @@ export const config = {
           summary: "/developer-web/chatbot/analytics/summary",
           conversationsByDay: "/developer-web/chatbot/analytics/conversations-by-day",
         },
+        // Conversación del Chatbot
+        conversation: {
+          start: "/developer-web/chatbot/conversation/start",
+          message: "/developer-web/chatbot/conversation/message",
+          end: "/developer-web/chatbot/conversation/end",
+        },
         // FAQs del Chatbot
         faqs: {
           public: {
@@ -185,6 +214,124 @@ export const config = {
           destroy: "/developer-web/chatbot/faqs/:id",
           stats: "/developer-web/chatbot/faqs/stats/summary",
         },
+      },
+
+      // Landing Page (Public)
+      landing: {
+        heroStats: "/developer-web/landing/hero-stats",
+        courses: "/developer-web/landing/courses",
+        featuredTeachers: "/developer-web/landing/featured-teachers",
+        testimonials: "/developer-web/landing/testimonials",
+        news: "/developer-web/landing/news",
+        newsDetail: "/developer-web/landing/news/:slug",
+        announcements: "/developer-web/landing/announcements",
+        alerts: "/developer-web/landing/alerts",
+      },
+    },
+
+    // Academic Analysis Module
+    academicAnalysis: {
+      // Dashboard
+      dashboard: {
+        main: "/data-analyst/dashboard",
+        charts: "/data-analyst/dashboard/charts"
+      },
+      // BigQuery Sync
+      bigquery: {
+        syncFull: "/data-analyst/bigquery/sync-full",
+        syncIncremental: "/data-analyst/bigquery/sync-incremental"
+      },
+      // Attendance
+      attendance: {
+        general: "/data-analyst/attendance",
+        local: "/data-analyst/local/attendance/summary",
+        statusDistribution: "/data-analyst/charts/attendance-status",
+        weeklyTrends: "/data-analyst/charts/weekly-absence-trends",
+        attendanceCalendar: "/data-analyst/charts/attendance-calendar",
+        export: "/data-analyst/export/attendance",
+      },
+      // Performance
+      performance: {
+        general: "/data-analyst/performance",
+        gradeDistribution: "/data-analyst/charts/grade-distribution",
+        attendanceGradeCorrelation: "/data-analyst/charts/attendance-grade-correlation",
+        groupPerformance: "/data-analyst/charts/group-performance-radar",
+        export: "/data-analyst/export/performance",
+      },
+      // Progress
+      progress: {
+        general: "/data-analyst/progress",
+        activeStudents: "/data-analyst/local/students/active",
+        gradeEvolution: "/data-analyst/charts/grade-evolution",
+        export: "/data-analyst/export/progress",
+      },
+    },
+    // Dropout Prediction Module
+    dropoutPrediction: {
+      // System Status & Overview
+      systemStatus: "/data-analyst/dropout-prediction/system-status",
+      // Predictions
+      predictions: "/data-analyst/dropout-prediction/predictions",
+      predictionsDetailed: "/data-analyst/dropout-prediction/predictions/detailed",
+      predictionsByGroup: "/data-analyst/dropout-prediction/predictions/group/:groupId",
+      // High Risk
+      highRisk: "/data-analyst/dropout-prediction/high-risk",
+
+      export: {
+        predictions: "/data-analyst/dropout-prediction/export/predictions",
+        highRisk: "/data-analyst/dropout-prediction/export/high-risk"
+      }
+    },
+    groups: {
+      active: "/data-analyst/groups/active",
+    },
+
+    // Infrastructure Module
+    infrastructure: {
+      // Dashboard
+      dashboard: {
+        stats: "/infrastructure/dashboard/stats",
+        summary: "/infrastructure/dashboard/summary",
+      },
+      // Tech Assets
+      assets: {
+        list: "/infrastructure/assets",
+        show: "/infrastructure/assets/:id",
+        store: "/infrastructure/assets",
+        update: "/infrastructure/assets/:id",
+        destroy: "/infrastructure/assets/:id",
+      },
+      // Hardware
+      hardware: {
+        list: "/infrastructure/hardwares",
+        show: "/infrastructure/hardwares/:id",
+        store: "/infrastructure/hardwares",
+        update: "/infrastructure/hardwares/:id",
+        destroy: "/infrastructure/hardwares/:id",
+      },
+      // Software
+      software: {
+        list: "/infrastructure/softwares",
+        show: "/infrastructure/softwares/:id",
+        store: "/infrastructure/softwares",
+        update: "/infrastructure/softwares/:id",
+        destroy: "/infrastructure/softwares/:id",
+      },
+      // Licenses
+      licenses: {
+        list: "/infrastructure/licenses",
+        show: "/infrastructure/licenses/:id",
+        store: "/infrastructure/licenses",
+        update: "/infrastructure/licenses/:id",
+        destroy: "/infrastructure/licenses/:id",
+      },
+      // License Assignments
+      assignments: {
+        list: "/infrastructure/assignments",
+        show: "/infrastructure/assignments/:id",
+        store: "/infrastructure/assignments",
+        update: "/infrastructure/assignments/:id",
+        destroy: "/infrastructure/assignments/:id",
       },
     },
   }

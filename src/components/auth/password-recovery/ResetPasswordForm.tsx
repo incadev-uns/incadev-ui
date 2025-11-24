@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
-import { usePasswordRecovery } from "../../hooks/usePasswordRecovery"
+import { usePasswordRecovery } from "@/hooks/usePasswordRecovery"
 import { PasswordStrengthIndicator } from "./PasswordStrengthIndicator"
 
 // Form Schema
@@ -87,7 +87,7 @@ export function ResetPasswordForm() {
   useEffect(() => {
     if (success) {
       setTimeout(() => {
-        window.location.href = "/tecnologico/login"
+        window.location.href = "/auth"
       }, 3000)
     }
   }, [success])

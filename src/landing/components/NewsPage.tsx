@@ -1,279 +1,505 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, ArrowRight, Newspaper, TrendingUp } from "lucide-react";
-
-// Datos de noticias - En producción vendrían de la API
-const allNews = [
-  {
-    id: 1,
-    title: "Nuevos cursos de Inteligencia Artificial disponibles para 2025",
-    excerpt: "Amplía tus habilidades con nuestros nuevos cursos especializados en IA, Machine Learning y Deep Learning.",
-    content: "INCADEV se complace en anunciar el lanzamiento de su nueva línea de cursos especializados en Inteligencia Artificial...",
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    category: "Cursos",
-    date: "2025-01-15",
-    readTime: "5 min",
-    featured: true
-  },
-  {
-    id: 2,
-    title: "Convenio con empresas tecnológicas líderes del país",
-    excerpt: "Nuestros estudiantes tendrán acceso a prácticas profesionales y oportunidades laborales exclusivas.",
-    content: "INCADEV firma convenio estratégico con las principales empresas de tecnología del país para ofrecer oportunidades laborales...",
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    category: "Alianzas",
-    date: "2025-01-10",
-    readTime: "4 min",
-    featured: true
-  },
-  {
-    id: 3,
-    title: "Celebramos 100 egresados certificados en desarrollo web",
-    excerpt: "Un hito importante para nuestra institución. Conoce las historias de éxito de nuestros graduados.",
-    content: "Este mes celebramos un hito histórico: 100 estudiantes han completado exitosamente nuestro programa de Desarrollo Web...",
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    category: "Logros",
-    date: "2025-01-05",
-    readTime: "3 min",
-    featured: true
-  },
-  {
-    id: 4,
-    title: "Hackathon 2025: Innovación y Tecnología",
-    excerpt: "Participa en nuestro primer hackathon presencial. Premios de hasta S/ 5,000 para los ganadores.",
-    content: "INCADEV organiza su primer hackathon presencial donde estudiantes y profesionales competirán en desafíos tecnológicos...",
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    category: "Eventos",
-    date: "2025-01-03",
-    readTime: "6 min",
-    featured: false
-  },
-  {
-    id: 5,
-    title: "Nuevas instalaciones: Laboratorio de Ciberseguridad",
-    excerpt: "Inauguramos nuestro moderno laboratorio equipado con las últimas herramientas de pentesting y análisis forense.",
-    content: "Como parte de nuestro compromiso con la educación de calidad, inauguramos nuestro nuevo laboratorio de ciberseguridad...",
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    category: "Infraestructura",
-    date: "2024-12-28",
-    readTime: "4 min",
-    featured: false
-  },
-  {
-    id: 6,
-    title: "Webinar gratuito: Tendencias tecnológicas 2025",
-    excerpt: "Únete a nuestro webinar con expertos de la industria sobre las tecnologías que dominarán este año.",
-    content: "No te pierdas nuestro webinar gratuito donde expertos de empresas líderes compartirán las tendencias tecnológicas...",
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    category: "Eventos",
-    date: "2024-12-20",
-    readTime: "3 min",
-    featured: false
-  },
-  {
-    id: 7,
-    title: "Estudiantes de INCADEV ganan competencia nacional de programación",
-    excerpt: "Nuestro equipo se llevó el primer lugar en el Coding Challenge Nacional 2024.",
-    content: "Con orgullo anunciamos que nuestro equipo de estudiantes ganó el primer lugar en el Coding Challenge Nacional...",
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    category: "Logros",
-    date: "2024-12-15",
-    readTime: "5 min",
-    featured: false
-  },
-  {
-    id: 8,
-    title: "Programa de becas 2025: Convocatoria abierta",
-    excerpt: "Postula a nuestro programa de becas completas y parciales. Hasta 30 becas disponibles.",
-    content: "INCADEV abre su convocatoria anual de becas académicas para estudiantes destacados con necesidades económicas...",
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    category: "Becas",
-    date: "2024-12-10",
-    readTime: "7 min",
-    featured: false
-  },
-  {
-    id: 9,
-    title: "Actualización de contenidos: Cursos renovados para 2025",
-    excerpt: "Todos nuestros cursos han sido actualizados con los últimos frameworks y tecnologías del mercado.",
-    content: "En INCADEV nos mantenemos a la vanguardia. Por eso, hemos actualizado el contenido de todos nuestros cursos...",
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    category: "Cursos",
-    date: "2024-12-05",
-    readTime: "4 min",
-    featured: false
-  }
-];
-
-const categoryColors: Record<string, string> = {
-  "Cursos": "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-  "Alianzas": "bg-green-500/10 text-green-600 dark:text-green-400",
-  "Logros": "bg-purple-500/10 text-purple-600 dark:text-purple-400",
-  "Eventos": "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  "Infraestructura": "bg-pink-500/10 text-pink-600 dark:text-pink-400",
-  "Becas": "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
-};
+import { useState, useEffect } from "react"
+import TechnologyLayout from "@/process/technology/TechnologyLayout"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Search, Eye, MoreVertical, Loader2, FileText } from "lucide-react"
+import { technologyApi } from "@/services/tecnologico/api"
+import type { News, NewsCategory } from "@/types/developer-web"
+import { NewsForm } from "@/process/technology/dashboard/NewsForm"
+import { NewsStatusLabels, NewsStatusColors, NewsItemTypeLabels, NewsItemTypeColors } from "@/types/developer-web"
 
 export default function NewsPage() {
-  const featuredNews = allNews.filter(news => news.featured);
-  const regularNews = allNews.filter(news => !news.featured);
+  const [news, setNews] = useState<News[]>([])
+  const [categories, setCategories] = useState<NewsCategory[]>([])
+  const [stats, setStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState<string>("all")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [selectedNews, setSelectedNews] = useState<News | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [newsToDelete, setNewsToDelete] = useState<number | null>(null)
+
+  useEffect(() => {
+    loadNews()
+    loadCategories()
+    loadStats()
+  }, [])
+
+  const loadNews = async () => {
+    try {
+      setLoading(true)
+
+      // Construir parámetros sin valores undefined o vacíos
+      const params: any = {}
+      if (search && search.trim() !== '') params.search = search
+      if (categoryFilter !== "all") params.category = categoryFilter // ← Cambiar aquí: usar categoryFilter directamente (que es la key)
+      if (statusFilter !== "all") params.status = statusFilter
+
+      console.log('Parámetros de búsqueda:', params) // ← Debug
+
+      const response = await technologyApi.developerWeb.news.list(params)
+      if (response.success && response.data) {
+        // Manejar tanto respuesta paginada como array simple
+        setNews(response.data.data || response.data)
+      }
+    } catch (error) {
+      console.error("Error al cargar noticias:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadCategories = async () => {
+    try {
+      const response = await technologyApi.developerWeb.news.categories()
+      console.log('Respuesta de categorías:', response)
+
+      if (response.success && response.data) {
+        // Transformar el objeto {key: name} a array de categorías
+        const categoriesData = Object.entries(response.data).map(([key, name], index) => ({
+          id: index + 1,
+          key: key, // Guardar la clave original
+          name: name as string,
+          slug: key
+        }))
+
+        console.log('Categorías transformadas:', categoriesData)
+        setCategories(categoriesData)
+      } else {
+        console.log('No hay datos de categorías en la respuesta')
+        // Fallback a categorías por defecto
+
+      }
+    } catch (error) {
+      console.error("Error al cargar categorías:", error)
+      // Fallback a categorías por defecto
+    }
+  }
+
+  const loadStats = async () => {
+    try {
+      const response = await technologyApi.developerWeb.news.stats()
+      if (response.success && response.data) {
+        setStats(response.data)
+      }
+    } catch (error) {
+      console.error("Error al cargar estadísticas:", error)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!newsToDelete) return
+    try {
+      await technologyApi.developerWeb.news.delete(newsToDelete)
+      loadNews()
+      loadStats()
+      setDeleteDialogOpen(false)
+      setNewsToDelete(null)
+    } catch (error) {
+      console.error("Error al eliminar noticia:", error)
+    }
+  }
+
+  const handleResetViews = async (id: number) => {
+    try {
+      await technologyApi.developerWeb.news.resetViews(id)
+      loadNews()
+      loadStats()
+    } catch (error) {
+      console.error("Error al resetear vistas:", error)
+    }
+  }
+
+  const handleFormSuccess = () => {
+    setIsFormOpen(false)
+    setSelectedNews(null)
+    loadNews()
+    loadStats()
+  }
+
+  // Función para manejar la búsqueda cuando se presiona Enter
+  const handleSearchKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      loadNews()
+    }
+  }
+
+  // Función para obtener el nombre de la categoría a partir de la key
+  const getCategoryName = (categoryKey: string) => {
+    const category = categories.find(cat => cat.key === categoryKey)
+    return category ? category.name : categoryKey
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
-      <div className="container mx-auto px-4 py-20 md:py-24 max-w-[1400px]">
-        {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-12">
-          <a href="/" className="hover:text-foreground transition-colors">
-            Inicio
-          </a>
-          <span>/</span>
-          <span className="text-foreground font-medium">Noticias</span>
-        </nav>
-
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-            <Newspaper className="h-4 w-4" />
-            <span>Centro de Noticias</span>
+    <TechnologyLayout>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Gestión de Noticias</h1>
+            <p className="text-muted-foreground">
+              Administra las noticias del portal tecnológico
+            </p>
           </div>
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-            Últimas Noticias
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
-            Mantente informado sobre eventos, logros, nuevos cursos y todo lo que sucede en INCADEV
-          </p>
+          <Button onClick={() => {
+            setSelectedNews(null) // Limpiar antes de abrir
+            setIsFormOpen(true)
+          }} size="lg">
+            <Plus className="mr-2 h-5 w-5" />
+            Nueva Noticia
+          </Button>
         </div>
 
-        {/* Últimas Noticias Destacadas */}
-        <div className="mb-20">
-          <div className="flex items-center gap-3 mb-8">
-            <TrendingUp className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl md:text-3xl font-bold">Noticias Destacadas</h2>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {featuredNews.map((news) => (
-              <Card
-                key={news.id}
-                className="group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col border-2 border-primary/20"
-              >
-                {/* Imagen de la noticia */}
-                <div className="relative h-56 overflow-hidden bg-muted/30">
-                  <img
-                    src={news.image}
-                    alt={news.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute top-3 left-3">
-                    <Badge className={categoryColors[news.category]}>
-                      {news.category}
-                    </Badge>
-                  </div>
-                  <div className="absolute top-3 right-3">
-                    <Badge className="bg-primary/95 backdrop-blur-sm shadow-md">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      Destacado
-                    </Badge>
-                  </div>
-                </div>
-
-                <CardHeader>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{new Date(news.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{news.readTime}</span>
-                    </div>
-                  </div>
-                  <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
-                    {news.title}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-3">
-                    {news.excerpt}
-                  </CardDescription>
+        {stats && (
+          <div className="space-y-4">
+            {/* Estadísticas Principales */}
+            <div className="grid gap-4 md:grid-cols-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Noticias</CardTitle>
+                  <FileText className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-
-                <CardContent className="mt-auto">
-                  <Button variant="ghost" className="w-full gap-2 group/btn" asChild>
-                    <a href={`/tecnologico/web/noticias/${news.id}`}>
-                      Leer más
-                      <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </a>
-                  </Button>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total || 0}</div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
-        </div>
-
-        {/* Todas las Noticias */}
-        <div>
-          <div className="flex items-center gap-3 mb-8">
-            <Newspaper className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl md:text-3xl font-bold">Todas las Noticias</h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {regularNews.map((news) => (
-              <Card
-                key={news.id}
-                className="group hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col"
-              >
-                {/* Imagen de la noticia */}
-                <div className="relative h-48 overflow-hidden bg-muted/30">
-                  <img
-                    src={news.image}
-                    alt={news.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute top-3 left-3">
-                    <Badge className={categoryColors[news.category]}>
-                      {news.category}
-                    </Badge>
-                  </div>
-                </div>
-
-                <CardHeader>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{new Date(news.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{news.readTime}</span>
-                    </div>
-                  </div>
-                  <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
-                    {news.title}
-                  </CardTitle>
-                  <CardDescription className="line-clamp-3">
-                    {news.excerpt}
-                  </CardDescription>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Publicadas</CardTitle>
+                  <FileText className="h-4 w-4 text-green-600" />
                 </CardHeader>
-
-                <CardContent className="mt-auto">
-                  <Button variant="ghost" className="w-full gap-2 group/btn" asChild>
-                    <a href={`/tecnologico/web/noticias/${news.id}`}>
-                      Leer más
-                      <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </a>
-                  </Button>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.published || 0}</div>
                 </CardContent>
               </Card>
-            ))}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Borradores</CardTitle>
+                  <FileText className="h-4 w-4 text-yellow-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.status_counts?.draft || 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Vistas</CardTitle>
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.total_views || 0}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Estadísticas Secundarias */}
+            <div className="grid gap-4 md:grid-cols-3">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Programadas</CardTitle>
+                  <FileText className="h-4 w-4 text-blue-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.status_counts?.scheduled || 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Categorías</CardTitle>
+                  <FileText className="h-4 w-4 text-purple-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.categories_count || 0}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Recientes</CardTitle>
+                  <FileText className="h-4 w-4 text-orange-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats.recent_published || 0}</div>
+                  <p className="text-xs text-muted-foreground">últimas publicadas</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Noticia Más Vista */}
+            {stats.most_viewed && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-sm">Noticia Más Vista</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-sm">{stats.most_viewed.title}</p>
+                      <p className="text-xs text-muted-foreground">{stats.most_viewed.views} vistas</p>
+                    </div>
+                    <Badge variant="secondary">Más Popular</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
-        </div>
+        )}
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Filtros</CardTitle>
+            <CardDescription>Busca y filtra las noticias</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4 md:flex-row">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por título..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
+                  className="pl-9"
+                />
+              </div>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Categoría" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las categorías</SelectItem>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.key}> {/* ← Cambiar aquí: usar cat.key en lugar de String(cat.id) */}
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="published">Publicado</SelectItem>
+                  <SelectItem value="draft">Borrador</SelectItem>
+                  <SelectItem value="archived">Archivado</SelectItem>
+                  <SelectItem value="scheduled">Programado</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={loadNews} variant="secondary">
+                Buscar
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Lista de Noticias</CardTitle>
+            <CardDescription>
+              Todas las noticias del sistema ({news.length})
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="flex items-center justify-center p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : news.length === 0 ? (
+              <div className="flex flex-col items-center justify-center p-8 text-center">
+                <FileText className="h-12 w-12 text-muted-foreground/50 mb-4" />
+                <p className="text-muted-foreground">No se encontraron noticias</p>
+                <p className="text-sm text-muted-foreground">
+                  {search || categoryFilter !== "all" || statusFilter !== "all"
+                    ? "Intenta ajustar los filtros"
+                    : "Crea una nueva noticia para comenzar"}
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Título</TableHead>
+                      <TableHead>Categoría</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-center">Vistas</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {news.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="font-medium max-w-md">
+                          {item.title}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="text-xs">
+                            {getCategoryName(item.category)} {/* ← Cambiar aquí: usar getCategoryName */}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className={NewsItemTypeColors[item.item_type]}>
+                            {NewsItemTypeLabels[item.item_type]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className={NewsStatusColors[item.status]}
+                          >
+                            {NewsStatusLabels[item.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{item.views_count}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(item.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setSelectedNews(item)
+                                  setIsFormOpen(true)
+                                }}
+                              >
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleResetViews(item.id)}>
+                                Resetear vistas
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onClick={() => {
+                                  setNewsToDelete(item.id)
+                                  setDeleteDialogOpen(true)
+                                }}
+                              >
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </div>
-  );
+
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        setIsFormOpen(open)
+        if (!open) {
+          setSelectedNews(null) // Resetear al cerrar
+        }
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedNews ? "Editar Noticia" : "Nueva Noticia"}
+            </DialogTitle>
+            <DialogDescription>
+              {selectedNews
+                ? "Modifica los datos de la noticia"
+                : "Completa el formulario para crear una nueva noticia"}
+            </DialogDescription>
+          </DialogHeader>
+          <NewsForm
+            news={selectedNews}
+            categories={categories}
+            onSuccess={handleFormSuccess}
+            onCancel={() => {
+              setIsFormOpen(false)
+              setSelectedNews(null)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. La noticia será eliminada permanentemente del sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </TechnologyLayout>
+  )
 }

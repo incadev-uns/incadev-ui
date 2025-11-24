@@ -92,7 +92,7 @@ export function RegisterForm({
     formState: { errors, isSubmitting },
     reset,
   } = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(FormSchema as any) as any,
     defaultValues: {
       name: "",
       dni: "",

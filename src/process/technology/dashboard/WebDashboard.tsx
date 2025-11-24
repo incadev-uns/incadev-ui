@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { TechnologyLayout } from "../components/TechnologyLayout"
+import TechnologyLayout from "@/process/technology/TechnologyLayout"
 import { useTechnologyAuth } from "../hooks/useTechnologyAuth"
 import { technologyApi } from "@/services/tecnologico/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -71,7 +71,7 @@ export default function WebDashboard() {
 
   if (authLoading) {
     return (
-      <TechnologyLayout breadcrumbs={[{ label: "Dashboard Web" }]}>
+      <TechnologyLayout>
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
@@ -84,11 +84,7 @@ export default function WebDashboard() {
   const alertStats = getContentStats('alerts')
 
   return (
-    <TechnologyLayout
-      breadcrumbs={[
-        { label: "Desarrollo Web", href: "/tecnologico/web/dashboard" },
-      ]}
-    >
+    <TechnologyLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -228,57 +224,11 @@ export default function WebDashboard() {
               </Card>
             </div>
 
-            {/* Acciones Rápidas */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Acciones Rápidas</CardTitle>
-                <CardDescription>Gestiona rápidamente el contenido web</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <Button
-                    className="flex flex-col h-auto py-4 gap-2"
-                    onClick={() => window.location.href = "/tecnologico/web/noticias?action=create"}
-                  >
-                    <Newspaper className="w-6 h-6" />
-                    <span>Nueva Noticia</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="flex flex-col h-auto py-4 gap-2"
-                    onClick={() => window.location.href = "/tecnologico/web/anuncios?action=create"}
-                  >
-                    <Megaphone className="w-6 h-6" />
-                    <span>Nuevo Anuncio</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="flex flex-col h-auto py-4 gap-2"
-                    onClick={() => window.location.href = "/tecnologico/web/alertas?action=create"}
-                  >
-                    <AlertTriangle className="w-6 h-6" />
-                    <span>Nueva Alerta</span>
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="flex flex-col h-auto py-4 gap-2"
-                    onClick={() => window.location.href = "/tecnologico/web/faqs?action=create"}
-                  >
-                    <MessageCircle className="w-6 h-6" />
-                    <span>Nueva FAQ</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Enlaces Directos */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card
                 className="hover:shadow-md transition-shadow cursor-pointer border-blue-200"
-                onClick={() => window.location.href = "/tecnologico/web/noticias"}
+                onClick={() => window.location.href = "/tecnologico/web/noticias_add"}
               >
                 <CardContent className="p-6 flex items-center gap-4">
                   <div className="p-3 bg-blue-100 rounded-lg">

@@ -5,163 +5,36 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   BookOpen,
-  Clock,
-  Users,
-  Star,
-  ArrowRight,
   Search,
-  Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Tag,
+  Home
 } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import FeaturedCoursesSlider from "./FeaturedCoursesSlider";
+import { config } from "@/config/technology-config";
 
-// Datos extendidos de cursos - En producción vendrían de la API
-const allCourses = [
-  {
-    id: 1,
-    name: "Desarrollo Web Full Stack",
-    description: "Aprende a crear aplicaciones web completas con tecnologías modernas como React, Node.js y bases de datos",
-    price: 350,
-    duration: "12 semanas",
-    students: 45,
-    rating: 4.8,
-    modules: 8,
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    level: "Intermedio",
-    category: "Programación",
-    status: "available"
-  },
-  {
-    id: 2,
-    name: "Python para Análisis de Datos",
-    description: "Domina Python y sus librerías para análisis y visualización de datos con pandas, numpy y matplotlib",
-    price: 300,
-    duration: "10 semanas",
-    students: 38,
-    rating: 4.9,
-    modules: 6,
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    level: "Principiante",
-    category: "Data Science",
-    status: "available"
-  },
-  {
-    id: 3,
-    name: "Diseño UX/UI Profesional",
-    description: "Crea experiencias digitales excepcionales centradas en el usuario con Figma y metodologías ágiles",
-    price: 280,
-    duration: "8 semanas",
-    students: 52,
-    rating: 4.7,
-    modules: 7,
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    level: "Intermedio",
-    category: "Diseño",
-    status: "available"
-  },
-  {
-    id: 4,
-    name: "React Avanzado y Next.js",
-    description: "Desarrolla aplicaciones web modernas con React 18, Next.js 14 y las últimas características del ecosistema",
-    price: 400,
-    duration: "14 semanas",
-    students: 35,
-    rating: 4.9,
-    modules: 10,
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    level: "Avanzado",
-    category: "Programación",
-    status: "available"
-  },
-  {
-    id: 5,
-    name: "Marketing Digital y SEO",
-    description: "Aprende estrategias de marketing digital, SEO, SEM y analítica web para impulsar tu negocio online",
-    price: 250,
-    duration: "6 semanas",
-    students: 67,
-    rating: 4.6,
-    modules: 5,
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    level: "Principiante",
-    category: "Marketing",
-    status: "available"
-  },
-  {
-    id: 6,
-    name: "Machine Learning con Python",
-    description: "Domina los algoritmos de aprendizaje automático y construye modelos predictivos con scikit-learn y TensorFlow",
-    price: 450,
-    duration: "16 semanas",
-    students: 28,
-    rating: 4.9,
-    modules: 12,
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    level: "Avanzado",
-    category: "Data Science",
-    status: "available"
-  },
-  {
-    id: 7,
-    name: "Desarrollo de Apps Móviles",
-    description: "Crea aplicaciones móviles nativas y multiplataforma con React Native y Flutter",
-    price: 380,
-    duration: "12 semanas",
-    students: 42,
-    rating: 4.7,
-    modules: 9,
-    image: "/tecnologico/landing/educacion-y-estudiantes-sonriente-joven-asiatica-con-mochila-y-cuadernos-posando-contra-bac-azul.jpg",
-    level: "Intermedio",
-    category: "Programación",
-    status: "available"
-  },
-  {
-    id: 8,
-    name: "Ciberseguridad y Ethical Hacking",
-    description: "Aprende a proteger sistemas y redes, realiza auditorías de seguridad y ethical hacking",
-    price: 420,
-    duration: "14 semanas",
-    students: 31,
-    rating: 4.8,
-    modules: 11,
-    image: "/tecnologico/landing/chica-joven-estudiante-aislada-en-la-pared-gris-sonriendo-la-camara-presionando-la-computadora-portatil-contra-el-pecho-con-mochila-lista-para-ir-estudios-comenzar-un-nu.jpg",
-    level: "Avanzado",
-    category: "Seguridad",
-    status: "available"
-  },
-  {
-    id: 9,
-    name: "Cloud Computing con AWS",
-    description: "Domina los servicios de Amazon Web Services y aprende a desplegar aplicaciones escalables en la nube",
-    price: 400,
-    duration: "10 semanas",
-    students: 39,
-    rating: 4.8,
-    modules: 8,
-    image: "/tecnologico/landing/educacion-y-estudiantes-mujer-asiatica-feliz-sosteniendo-cuadernos-y-riendo-sonriendo-la-camara-disfruta-de-goi.jpg",
-    level: "Intermedio",
-    category: "Cloud",
-    status: "available"
-  }
-];
-
-const categories = ["Todas", "Programación", "Data Science", "Diseño", "Marketing", "Seguridad", "Cloud"];
-const levels = ["Todos", "Principiante", "Intermedio", "Avanzado"];
+interface Course {
+  id: number;
+  name: string;
+  description: string;
+  image: string;
+  version: string;
+  version_name: string;
+  price: string;
+  created_at: string;
+}
 
 export default function CourseCatalog() {
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Todas");
-  const [selectedLevel, setSelectedLevel] = useState("Todos");
   const [currentPage, setCurrentPage] = useState(1);
   const coursesPerPage = 6;
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
 
   // Agregar estilos de animación en el cliente
   useEffect(() => {
@@ -187,14 +60,26 @@ export default function CourseCatalog() {
     }
   }, []);
 
+  const fetchCourses = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.landing.courses}`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setCourses(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching courses:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Filtrar cursos
-  const filteredCourses = allCourses.filter((course) => {
+  const filteredCourses = courses.filter((course) => {
     const matchesSearch = course.name.toLowerCase().includes(search.toLowerCase()) ||
                          course.description.toLowerCase().includes(search.toLowerCase());
-    const matchesCategory = selectedCategory === "Todas" || course.category === selectedCategory;
-    const matchesLevel = selectedLevel === "Todos" || course.level === selectedLevel;
-
-    return matchesSearch && matchesCategory && matchesLevel;
+    return matchesSearch;
   });
 
   // Paginación
@@ -208,6 +93,49 @@ export default function CourseCatalog() {
     setCurrentPage(1);
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
+        <div className="container mx-auto px-4 py-20 md:py-24 max-w-[1400px]">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+            <a href="/" className="hover:text-foreground transition-colors flex items-center gap-1">
+              <Home className="h-4 w-4" />
+              Inicio
+            </a>
+            <span>/</span>
+            <span className="text-foreground font-medium">Catálogo de Cursos</span>
+          </nav>
+
+          <div className="space-y-3 mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+              <BookOpen className="h-4 w-4" />
+              <span>Cargando cursos...</span>
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              Catálogo de Cursos
+            </h1>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Card key={i} className="animate-pulse overflow-hidden">
+                <div className="h-48 bg-muted" />
+                <CardHeader>
+                  <div className="h-6 bg-muted rounded w-3/4" />
+                  <div className="h-4 bg-muted rounded w-full mt-2" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-4 bg-muted rounded w-1/3 mb-4" />
+                  <div className="h-8 bg-muted rounded w-1/2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
       <div className="container mx-auto px-4 py-20 md:py-24 max-w-[1400px]">
@@ -215,7 +143,8 @@ export default function CourseCatalog() {
         <div className="flex flex-col gap-6 mb-12">
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <a href="/" className="hover:text-foreground transition-colors">
+            <a href="/" className="hover:text-foreground transition-colors flex items-center gap-1">
+              <Home className="h-4 w-4" />
               Inicio
             </a>
             <span>/</span>
@@ -226,7 +155,7 @@ export default function CourseCatalog() {
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <BookOpen className="h-4 w-4" />
-              <span>{allCourses.length} Cursos Disponibles</span>
+              <span>{courses.length} Cursos Disponibles</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
               Catálogo de Cursos
@@ -242,71 +171,21 @@ export default function CourseCatalog() {
           <FeaturedCoursesSlider />
         </div>
 
-        {/* Búsqueda y Filtros */}
+        {/* Búsqueda */}
         <div className="mb-12">
-          {/* Búsqueda y Filtros */}
           <Card className="shadow-lg border-muted/50">
             <CardContent className="pt-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Búsqueda */}
-                <div className="relative md:col-span-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar cursos..."
-                    value={search}
-                    onChange={(e) => {
-                      setSearch(e.target.value);
-                      handleFilterChange();
-                    }}
-                    className="pl-10"
-                  />
-                </div>
-
-                {/* Filtro por Categoría */}
-                <Select
-                  value={selectedCategory}
-                  onValueChange={(value) => {
-                    setSelectedCategory(value);
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar cursos..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
                     handleFilterChange();
                   }}
-                >
-                  <SelectTrigger>
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
-                      <SelectValue placeholder="Categoría" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                {/* Filtro por Nivel */}
-                <Select
-                  value={selectedLevel}
-                  onValueChange={(value) => {
-                    setSelectedLevel(value);
-                    handleFilterChange();
-                  }}
-                >
-                  <SelectTrigger>
-                    <div className="flex items-center gap-2">
-                      <Filter className="h-4 w-4" />
-                      <SelectValue placeholder="Nivel" />
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {levels.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  className="pl-10"
+                />
               </div>
 
               {/* Contador de resultados */}
@@ -315,19 +194,17 @@ export default function CourseCatalog() {
                   Mostrando <span className="font-semibold text-foreground">{currentCourses.length}</span> de{" "}
                   <span className="font-semibold text-foreground">{filteredCourses.length}</span> cursos
                 </p>
-                {(search || selectedCategory !== "Todas" || selectedLevel !== "Todos") && (
+                {search && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => {
                       setSearch("");
-                      setSelectedCategory("Todas");
-                      setSelectedLevel("Todos");
                       setCurrentPage(1);
                     }}
                     className="text-xs"
                   >
-                    Limpiar filtros
+                    Limpiar búsqueda
                   </Button>
                 )}
               </div>
@@ -344,14 +221,12 @@ export default function CourseCatalog() {
               </div>
               <h3 className="text-xl font-semibold mb-2">No se encontraron cursos</h3>
               <p className="text-muted-foreground text-center max-w-md mb-4">
-                Intenta ajustar tus filtros o realiza una búsqueda diferente para encontrar más resultados
+                Intenta realizar una búsqueda diferente para encontrar más resultados
               </p>
               <Button
                 variant="outline"
                 onClick={() => {
                   setSearch("");
-                  setSelectedCategory("Todas");
-                  setSelectedLevel("Todos");
                   setCurrentPage(1);
                 }}
               >
@@ -379,16 +254,6 @@ export default function CourseCatalog() {
                       loading="lazy"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    <div className="absolute top-3 left-3">
-                      <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm shadow-md">
-                        {course.category}
-                      </Badge>
-                    </div>
-                    <div className="absolute top-3 right-3">
-                      <Badge className="bg-primary/95 backdrop-blur-sm shadow-md">
-                        {course.level}
-                      </Badge>
-                    </div>
                   </div>
 
                   <CardHeader>
@@ -399,44 +264,20 @@ export default function CourseCatalog() {
                   </CardHeader>
 
                   <CardContent className="flex-1 flex flex-col">
-                    {/* Estadísticas del curso */}
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4 text-primary" />
-                        <span>{course.duration}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Users className="h-4 w-4 text-primary" />
-                        <span>{course.students}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
-                        <span>{course.rating}</span>
-                      </div>
+                    {/* Versión */}
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                      <Tag className="h-4 w-4 text-primary" />
+                      <span>{course.version_name}</span>
                     </div>
 
-                    {/* Módulos */}
-                    <div className="mb-4 pb-4 border-b">
-                      <p className="text-sm text-muted-foreground">
-                        <BookOpen className="h-4 w-4 inline mr-1" />
-                        {course.modules} módulos
-                      </p>
-                    </div>
-
-                    {/* Precio y CTA */}
-                    <div className="mt-auto space-y-3">
+                    {/* Precio */}
+                    <div className="mt-auto pt-4 border-t">
                       <div className="flex items-baseline gap-2">
                         <span className="text-3xl font-bold text-primary">
-                          S/ {course.price}
+                          S/ {parseFloat(course.price).toFixed(0)}
                         </span>
                         <span className="text-sm text-muted-foreground">por curso</span>
                       </div>
-                      <Button className="w-full gap-2 group/btn" asChild>
-                        <a href={`/academico/grupos/disponible?course=${course.id}`}>
-                          Ver detalles
-                          <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                        </a>
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

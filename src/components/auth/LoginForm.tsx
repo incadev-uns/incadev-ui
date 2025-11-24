@@ -23,14 +23,14 @@ const {
   IconUserCheck,
   IconSearch,
   IconUsers,
-  IconDollarSign,
+  IconCurrencyDollar,
   IconEye,
   IconUserPlus,
   IconTrendingUp,
-  IconMegaphone,
+  IconSpeakerphone,
   IconPresentation,
-  IconGraduationCap,
-  IconBookOpen,
+  IconSchool,
+  IconBook,
   IconHeart,
   IconFileText,
   IconCalendar,
@@ -59,14 +59,14 @@ const iconMap: Record<string, any> = {
   UserCheck: IconUserCheck,
   Search: IconSearch,
   Users: IconUsers,
-  DollarSign: IconDollarSign,
+  DollarSign: IconCurrencyDollar,
   Eye: IconEye,
   UserPlus: IconUserPlus,
   TrendingUp: IconTrendingUp,
-  Megaphone: IconMegaphone,
+  Megaphone: IconSpeakerphone,
   Presentation: IconPresentation,
-  GraduationCap: IconGraduationCap,
-  BookOpen: IconBookOpen,
+  GraduationCap: IconSchool,
+  BookOpen: IconBook,
   Heart: IconHeart,
   FileText: IconFileText,
   Calendar: IconCalendar,
@@ -201,7 +201,16 @@ export function LoginForm({
                       {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>}
                     </Field>
 
-                    <div className="flex items-center gap-2 -mt-2">
+                    <div className="flex justify-end -mt-2">
+                      <a
+                        href="/tecnologico/forgot-password"
+                        className="text-sm text-primary hover:underline"
+                      >
+                        ¿Olvidaste tu contraseña?
+                      </a>
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       <Button type="button" variant="ghost" size="sm" onClick={onBackToRoles} className="text-sm flex-1">
                         <IconArrowLeft className="mr-2 h-4 w-4" />
                         Cambiar rol

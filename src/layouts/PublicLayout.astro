@@ -2,6 +2,7 @@
 import "@/styles/global.css";
 import { Navbar } from "@/components/core/Navbar";
 import { Footer } from "@/components/core/Footer";
+import { AnnouncementManager } from "@/components/announcements/AnnouncementManager";
 
 export interface SEOFields {
 	robots: string[];
@@ -13,11 +14,11 @@ export interface SEOFields {
 	imagetwt: string;
 }
 
-const { 
+const {
 	robots = [],
-	title = "", 
-	description = "", 
-	keywords = [], 
+	title = "",
+	description = "",
+	keywords = [],
 	url="",
 	imageOG = "",
     imagetwt = ""
@@ -69,6 +70,23 @@ const {
 			<slot />
 		</main>
 		<Footer client:load/>
+
+		<!-- Announcement Manager -->
+		<AnnouncementManager client:load />
+
+		<script>
+			import { GlobalIdleDetector } from '@/components/security/GlobalIdleDetector';
+			import { createRoot } from 'react-dom/client';
+			import React from 'react';
+
+			// Montar el detector de inactividad global
+			const idleDetectorContainer = document.createElement('div');
+			idleDetectorContainer.id = 'global-idle-detector';
+			document.body.appendChild(idleDetectorContainer);
+
+			const root = createRoot(idleDetectorContainer);
+			root.render(React.createElement(GlobalIdleDetector, { enabled: true }));
+		</script>
 	</body>
 </html>
 

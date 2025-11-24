@@ -34,10 +34,10 @@ const FormSchema = z.object({
     .max(20, {
       message: "La contraseña no debe exceder los 20 caracteres.",
     }),
-  role: z.enum(["student", "teacher"], {
-    required_error: "Debes seleccionar un tipo de sesión.",
-  })
-});
+  role: z.enum(["student", "teacher"] as const, {
+    error: "Debes seleccionar un tipo de sesión.",
+  }),
+})
 
 export function LoginForm({
   className,
@@ -49,17 +49,17 @@ export function LoginForm({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(FormSchema as any) as any,
     defaultValues: {
       email: "",
       password: "",
       role: "student",
     },
-  })
+  });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
-      const response = await fetch(`${config.endpoints.auth.login}`, {
+      const response = await fetch(`${config.endpoints.auth.register}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

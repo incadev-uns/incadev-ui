@@ -39,7 +39,7 @@ export const ROLE_ROUTES: Record<string, string> = {
   // ========================================
   // 📋 GRUPO 06 - AUDITORÍA Y ENCUESTAS
   // ========================================
-  survey_admin: "/evaluacion/survey_admin/dashboard",
+  survey_admin: "/evaluacion/encuestas",
   audit_manager: "/evaluacion/audit_manager/dashboard",
   auditor: "/evaluacion/auditor/dashboard",
 
@@ -61,8 +61,8 @@ export const ROLE_ROUTES: Record<string, string> = {
   // ========================================
   // 🎓 GRUPO VÁSQUEZ - ACADÉMICO
   // ========================================
-  teacher: "/academico/teacher/dashboard",
-  student: "/academico/student/dashboard",
+  teacher: "/academico/dashboard",
+  student: "/academico/dashboard",
 
   // ========================================
   // 🧠 GRUPO DE LEYTON - TUTORÍAS Y ADMINISTRACIÓN

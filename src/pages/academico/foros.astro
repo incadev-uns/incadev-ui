@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import ForosPage from '@/process/academic/dasboard/foros/ForosPage';
+const robots = ["noindex", "nofollow"];
+
+const title = "Foros | Incadev";
+const description = "Participa en las encuestas de Incadev para evaluar cursos, docentes y servicios. Tu opinión es anónima y nos ayuda a mejorar la calidad educativa.";
+const keywords = ["encuestas Incadev", "encuestas estudiantiles", "satisfacción estudiantil", "evaluación docente", "retroalimentación académica", "sondeos online", "mejora continua", "plataforma educativa", "experiencia del estudiante"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/encuesta";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<ForosPage client:load/>
+</DashboardLayout>

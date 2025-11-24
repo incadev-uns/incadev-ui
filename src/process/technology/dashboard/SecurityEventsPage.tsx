@@ -4,6 +4,7 @@ import { useTechnologyAuth } from "../hooks/useTechnologyAuth"
 import { technologyApi } from "@/services/tecnologico/api"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -37,10 +38,8 @@ import {
 import { toast } from "sonner"
 import type { SecurityEvent, SecurityEventStatistics, SecurityEventSeverity } from "@/types/security"
 import {
-  SecurityEventSeverityColors,
   SecurityEventSeverityLabels,
   SecurityEventTypeLabels,
-  SecurityEventTypeColors,
 } from "@/types/security"
 
 export default function SecurityEventsPage() {
@@ -70,7 +69,6 @@ export default function SecurityEventsPage() {
   const fetchEvents = async () => {
     setLoading(true)
     try {
-      // Usar el endpoint list() que obtiene TODOS los eventos si eres admin
       const response = await technologyApi.security.events.list(perPage, page)
       if (response.success && response.data) {
         setEvents(response.data)
@@ -101,17 +99,28 @@ export default function SecurityEventsPage() {
 
   const getEventIcon = (eventType: string) => {
     switch (eventType) {
-      case "login_success": return <CheckCircle className="w-4 h-4 text-green-600" />
-      case "login_failed": return <XCircle className="w-4 h-4 text-red-600" />
-      case "logout": return <LogOut className="w-4 h-4 text-gray-600" />
-      case "token_created": return <Key className="w-4 h-4 text-blue-600" />
-      case "token_revoked": return <Key className="w-4 h-4 text-orange-600" />
-      case "session_terminated": return <UserX className="w-4 h-4 text-purple-600" />
-      case "password_reset_requested": return <MailWarning className="w-4 h-4 text-yellow-600" />
-      case "password_changed": return <Lock className="w-4 h-4 text-indigo-600" />
-      case "suspicious_activity": return <AlertTriangle className="w-4 h-4 text-red-600" />
-      case "anomaly_detected": return <ShieldAlert className="w-4 h-4 text-red-600" />
-      default: return <Activity className="w-4 h-4 text-gray-600" />
+      case "login_success": return <CheckCircle className="w-4 h-4 text-green-500 dark:text-green-400" />
+      case "login_failed": return <XCircle className="w-4 h-4 text-destructive" />
+      case "logout": return <LogOut className="w-4 h-4 text-muted-foreground" />
+      case "token_created": return <Key className="w-4 h-4 text-primary" />
+      case "token_revoked": return <Key className="w-4 h-4 text-orange-500 dark:text-orange-400" />
+      case "session_terminated": return <UserX className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+      case "password_reset_requested": return <MailWarning className="w-4 h-4 text-yellow-500 dark:text-yellow-400" />
+      case "password_changed": return <Lock className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
+      case "suspicious_activity": return <AlertTriangle className="w-4 h-4 text-destructive" />
+      case "anomaly_detected": return <ShieldAlert className="w-4 h-4 text-destructive" />
+      default: return <Activity className="w-4 h-4 text-muted-foreground" />
+    }
+  }
+
+  const getSeverityVariant = (severity: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (severity) {
+      case "critical":
+        return "destructive"
+      case "warning":
+        return "secondary"
+      default:
+        return "outline"
     }
   }
 
@@ -123,7 +132,7 @@ export default function SecurityEventsPage() {
     return (
       <TechnologyLayout title="Eventos de Seguridad">
         <div className="flex items-center justify-center h-96">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       </TechnologyLayout>
     )
@@ -135,11 +144,11 @@ export default function SecurityEventsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-              <Activity className="w-8 h-8 text-blue-600" />
+            <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
+              <Activity className="w-8 h-8 text-primary" />
               Eventos de Seguridad
             </h1>
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-muted-foreground mt-1">
               Historial completo de eventos de seguridad del sistema
             </p>
           </div>
@@ -154,7 +163,7 @@ export default function SecurityEventsPage() {
         {statistics && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Resumen de Eventos</h2>
+              <h2 className="text-lg font-semibold text-foreground">Resumen de Eventos</h2>
               <Select
                 value={statsPeriod.toString()}
                 onValueChange={(value) => setStatsPeriod(parseInt(value))}
@@ -163,9 +172,9 @@ export default function SecurityEventsPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="7">Últimos 7 días</SelectItem>
-                  <SelectItem value="30">Últimos 30 días</SelectItem>
-                  <SelectItem value="90">Últimos 90 días</SelectItem>
+                  <SelectItem value="7">Ultimos 7 dias</SelectItem>
+                  <SelectItem value="30">Ultimos 30 dias</SelectItem>
+                  <SelectItem value="90">Ultimos 90 dias</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -173,27 +182,27 @@ export default function SecurityEventsPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
                     Total de Eventos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold">{statistics.total_events}</div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Últimos {statsPeriod} días
+                  <div className="text-3xl font-bold text-foreground">{statistics.total_events}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Ultimos {statsPeriod} dias
                   </p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">
-                    Eventos Críticos
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Eventos Criticos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-red-600">{statistics.critical_count}</div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <div className="text-3xl font-bold text-destructive">{statistics.critical_count}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {statistics.total_events > 0
                       ? `${Math.round((statistics.critical_count / statistics.total_events) * 100)}% del total`
                       : "0% del total"
@@ -204,13 +213,13 @@ export default function SecurityEventsPage() {
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
                     Advertencias
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-yellow-600">{statistics.warning_count}</div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <div className="text-3xl font-bold text-yellow-500 dark:text-yellow-400">{statistics.warning_count}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {statistics.total_events > 0
                       ? `${Math.round((statistics.warning_count / statistics.total_events) * 100)}% del total`
                       : "0% del total"
@@ -221,13 +230,13 @@ export default function SecurityEventsPage() {
 
               <Card>
                 <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-600">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
                     Informativos
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-blue-600">{statistics.info_count}</div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <div className="text-3xl font-bold text-primary">{statistics.info_count}</div>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {statistics.total_events > 0
                       ? `${Math.round((statistics.info_count / statistics.total_events) * 100)}% del total`
                       : "0% del total"
@@ -247,7 +256,7 @@ export default function SecurityEventsPage() {
           <CardContent>
             <div className="flex items-center gap-4">
               <div className="flex-1">
-                <label className="text-sm font-medium mb-2 block">Severidad:</label>
+                <label className="text-sm font-medium mb-2 block text-foreground">Severidad:</label>
                 <Select
                   value={filterSeverity}
                   onValueChange={(value) => setFilterSeverity(value as SecurityEventSeverity | "all")}
@@ -257,9 +266,9 @@ export default function SecurityEventsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todas las Severidades</SelectItem>
-                    <SelectItem value="critical">Crítico</SelectItem>
+                    <SelectItem value="critical">Critico</SelectItem>
                     <SelectItem value="warning">Advertencia</SelectItem>
-                    <SelectItem value="info">Información</SelectItem>
+                    <SelectItem value="info">Informacion</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -270,7 +279,7 @@ export default function SecurityEventsPage() {
         {/* Tabla de Eventos */}
         {loading ? (
           <div className="flex items-center justify-center h-96">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : filteredEvents.length > 0 ? (
           <Card>
@@ -295,7 +304,7 @@ export default function SecurityEventsPage() {
                 <TableBody>
                   {filteredEvents.map((event) => (
                     <TableRow key={event.id}>
-                      <TableCell className="text-sm">
+                      <TableCell className="text-sm text-foreground">
                         {new Date(event.created_at).toLocaleString("es-ES", {
                           year: "numeric",
                           month: "short",
@@ -307,46 +316,46 @@ export default function SecurityEventsPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           {getEventIcon(event.event_type)}
-                          <span className="text-sm font-medium">
+                          <span className="text-sm font-medium text-foreground">
                             {SecurityEventTypeLabels[event.event_type]}
                           </span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded-md text-xs font-medium border ${SecurityEventSeverityColors[event.severity]}`}>
+                        <Badge variant={getSeverityVariant(event.severity)}>
                           {SecurityEventSeverityLabels[event.severity]}
-                        </span>
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-sm">
                         {event.user ? (
                           <div>
-                            <div className="font-medium">{event.user.name}</div>
-                            <div className="text-xs text-gray-500">{event.user.email}</div>
+                            <div className="font-medium text-foreground">{event.user.name}</div>
+                            <div className="text-xs text-muted-foreground">{event.user.email}</div>
                           </div>
                         ) : event.user_id ? (
                           <div>
-                            <div className="font-medium">Usuario ID: {event.user_id}</div>
-                            <div className="text-xs text-gray-500">Sin datos de usuario</div>
+                            <div className="font-medium text-foreground">Usuario ID: {event.user_id}</div>
+                            <div className="text-xs text-muted-foreground">Sin datos de usuario</div>
                           </div>
                         ) : (
-                          <span className="text-gray-400">N/A</span>
+                          <span className="text-muted-foreground">N/A</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-sm font-mono">
-                        {event.ip_address || <span className="text-gray-400">N/A</span>}
+                      <TableCell className="text-sm font-mono text-foreground">
+                        {event.ip_address || <span className="text-muted-foreground">N/A</span>}
                       </TableCell>
                       <TableCell className="text-sm">
                         {event.metadata && Object.keys(event.metadata).length > 0 ? (
                           <details className="cursor-pointer">
-                            <summary className="text-blue-600 hover:text-blue-700">
+                            <summary className="text-primary hover:text-primary/80">
                               Ver metadata
                             </summary>
-                            <pre className="text-xs mt-2 p-2 bg-gray-100 rounded max-w-xs overflow-auto">
+                            <pre className="text-xs mt-2 p-2 bg-muted rounded max-w-xs overflow-auto text-foreground">
                               {JSON.stringify(event.metadata, null, 2)}
                             </pre>
                           </details>
                         ) : (
-                          <span className="text-gray-400">Sin detalles</span>
+                          <span className="text-muted-foreground">Sin detalles</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -356,9 +365,9 @@ export default function SecurityEventsPage() {
 
               {/* Paginación */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                  <div className="text-sm text-gray-600">
-                    Página {page} de {totalPages}
+                <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+                  <div className="text-sm text-muted-foreground">
+                    Pagina {page} de {totalPages}
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
@@ -386,8 +395,8 @@ export default function SecurityEventsPage() {
           </Card>
         ) : (
           <div className="text-center py-12">
-            <Activity className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 font-medium">
+            <Activity className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
+            <p className="text-muted-foreground font-medium">
               {filterSeverity !== "all"
                 ? `No hay eventos con severidad "${SecurityEventSeverityLabels[filterSeverity as SecurityEventSeverity]}"`
                 : "No hay eventos de seguridad"

@@ -6,6 +6,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 import { useTechnologyAuth } from "@/process/technology/hooks/useTechnologyAuth";
+import { GlobalIdleDetector } from "@/components/security/GlobalIdleDetector";
 
 interface TechnologyLayoutProps {
   children: React.ReactNode;
@@ -24,19 +25,22 @@ export default function TechnologyLayout({ children, title = "Dashboard: Proceso
   }
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" token={token} user={user}/>
-      <SidebarInset>
-        <SiteHeader title={title}/>
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <>
+      <GlobalIdleDetector enabled={true} />
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar variant="inset" token={token} user={user}/>
+        <SidebarInset>
+          <SiteHeader title={title}/>
+          {children}
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   )
 }

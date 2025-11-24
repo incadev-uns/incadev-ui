@@ -29,7 +29,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { toast } from "react-toastify"
-import { config } from "@/config/academic-config"
+import { config } from "@/config/technology-config"
 import { routes } from "@/process/academic/academic-site";
 export function NavUser({
   user
@@ -46,7 +46,7 @@ export function NavUser({
     try {
       const tokenWithoutQuotes = user.token.replace(/^"|"$/g, '');
 
-      const response = await fetch(`${config.endpoints.auth.logout}`, {
+      const response = await fetch(`${config.apiUrl}${config.endpoints.auth.logout}`, {
         method: "POST",
         headers: {
           "Accept": "application/json",

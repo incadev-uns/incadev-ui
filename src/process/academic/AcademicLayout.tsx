@@ -5,6 +5,7 @@ import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
+import { GlobalIdleDetector } from "@/components/security/GlobalIdleDetector";
 
 interface AcademicLayoutProps {
   children: React.ReactNode;
@@ -13,23 +14,26 @@ interface AcademicLayoutProps {
 import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
 export default function AcademicLayout({ children, title = "Dashboard: Procesos Académicos" }: AcademicLayoutProps) {
   const { token, user, mounted } = useAcademicAuth();
-  
+
   if (!mounted) return null;
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" token={token} user={user}/>
-      <SidebarInset>
-        <SiteHeader title={title}/>
-        {children}
-      </SidebarInset>
-    </SidebarProvider>
+    <>
+      <GlobalIdleDetector enabled={true} />
+      <SidebarProvider
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 72)",
+            "--header-height": "calc(var(--spacing) * 12)",
+          } as React.CSSProperties
+        }
+      >
+        <AppSidebar variant="inset" token={token} user={user}/>
+        <SidebarInset>
+          <SiteHeader title={title}/>
+          {children}
+        </SidebarInset>
+      </SidebarProvider>
+    </>
   )
 }

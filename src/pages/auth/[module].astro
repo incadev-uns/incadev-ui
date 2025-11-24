@@ -1,14 +1,17 @@
 ---
 import AuthLayout from '@/layouts/AuthLayout.astro';
 import { UniversalLogin } from '@/components/auth/UniversalLogin';
-import { getModuleById, isValidModule } from '@/config/auth/module-mapping';
+import { getModuleById, getAllModuleIds } from '@/config/auth/module-mapping';
+
+// Generar todas las rutas estáticas para los módulos
+export function getStaticPaths() {
+  const moduleIds = getAllModuleIds();
+  return moduleIds.map((moduleId) => ({
+    params: { module: moduleId },
+  }));
+}
 
 const { module } = Astro.params;
-
-// Validar que el módulo existe
-if (!module || !isValidModule(module)) {
-  return Astro.redirect('/auth');
-}
 
 const moduleInfo = getModuleById(module);
 if (!moduleInfo) {
