@@ -95,6 +95,7 @@ export {
     generateDraft,
     updatePost,
     deletePost,
+    publishPost,
     fetchPostMetrics
 } from './postService';
 

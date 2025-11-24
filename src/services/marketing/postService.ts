@@ -178,6 +178,37 @@ export async function deletePost(id: number): Promise<void> {
     }
 }
 
+/**
+ * Publish an existing post (calls backend which forwards to socialmediaapi)
+ */
+export async function publishPost(id: number): Promise<PostForUI> {
+    try {
+        const base = marketingConfig.apiUrl;
+        const url = `${base}/api/posts/${id}/publish`;
+
+        console.log('[postService] Publishing post:', url);
+
+        const response = await authenticatedFetch(url, {
+            method: 'POST',
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+        }
+
+        const data: any = await response.json();
+
+        // backend returns { success: true, post: {...} }
+        const postData = data.post ?? data;
+
+        return mapPostFromAPI(postData as PostFromAPI);
+    } catch (error) {
+        console.error('[postService] Error publishing post:', error);
+        throw error;
+    }
+}
+
 // ============================================
 // API FUNCTIONS - METRICS
 // ============================================

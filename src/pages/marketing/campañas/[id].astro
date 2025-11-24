@@ -18,21 +18,9 @@ const mockTitle = "Detalle de Campaña";
         <div class="flex items-center gap-4 mb-6">
             <a
                 href="/marketing/campañas"
-                class="p-2 hover:bg-gray-100
-            dark:hover:bg-gray-900 rounded-lg smooth-transition"
-            ></a>
-            <svg
-                class="w-6 h-6 text-gray-600 dark:text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M15 19l-7-7 7-7"></path>
-            </svg>
+                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
+            >Back</a>
+            <!-- Campaign level actions are rendered per-post below; avoid referencing `p` here which is only defined per-post in the list -->
         </div>
         <div class="flex-1">
             <h1
@@ -62,6 +50,14 @@ const mockTitle = "Detalle de Campaña";
                     d="M12 4v16m8-8H4"></path>
             </svg>
             Nueva Publicación
+        </button>
+        <button
+            id="btnPublishSelected"
+            disabled
+            title="Publicar la publicación seleccionada (debe estar en modo edición)"
+            class="px-4 py-2 ml-2 border border-green-600 text-green-600 dark:text-green-400 bg-white dark:bg-gray-950 rounded-lg text-sm font-medium hover:bg-green-50 dark:hover:bg-green-950/30 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+            🚀 Publicar Seleccionado
         </button>
     </div>
 
@@ -552,6 +548,7 @@ const mockTitle = "Detalle de Campaña";
         fetchCampaignPosts,
         fetchCampaignMetrics,
         createPost,
+        publishPost,
         generateDraft,
         updatePost,
         deletePost,
@@ -839,12 +836,24 @@ const mockTitle = "Detalle de Campaña";
               `
                       : ""
               }
-              <button
-                onclick="editarPost(${p.id})"
-                class="flex-1 px-3 py-2 text-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg smooth-transition text-sm font-medium"
-              >
-                Editar
-              </button>
+                            <button
+                                onclick="editarPost(${p.id})"
+                                class="flex-1 px-3 py-2 text-center text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-lg smooth-transition text-sm font-medium"
+                            >
+                                Editar
+                            </button>
+                            ${
+                                    p.estado !== 'published'
+                                            ? `
+                            <button
+                                onclick="publicarPost(${p.id})"
+                                class="flex-1 px-3 py-2 text-center text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 rounded-lg smooth-transition text-sm font-medium"
+                            >
+                                🚀 Publicar
+                            </button>
+                            `
+                                            : ''
+                            }
               <button
                 onclick="eliminarPost(${p.id})"
                 class="px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg smooth-transition text-sm font-medium"
@@ -1067,6 +1076,10 @@ const mockTitle = "Detalle de Campaña";
 
         document.getElementById("modalPost")?.classList.remove("hidden");
         document.getElementById("modalPost")?.classList.add("flex");
+
+        // Enable the header-level publish button when a post is selected for editing
+        const publishBtn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
+        if (publishBtn) publishBtn.disabled = false;
     };
 
     (window as any).eliminarPost = async function (postId: number) {
@@ -1081,6 +1094,27 @@ const mockTitle = "Detalle de Campaña";
         } catch (error) {
             console.error("Error deleting post:", error);
             alert("❌ Error al eliminar la publicación");
+        }
+    };
+
+    (window as any).publicarPost = async function (postId: number) {
+        if (!confirm('¿Deseas publicar esta publicación ahora?')) return;
+
+        try {
+            const updated = await publishPost(postId);
+            const idx = posts.findIndex((p) => p.id === postId);
+            if (idx !== -1) posts[idx] = updated;
+            // If the published post is the one currently selected for editing, disable the header publish button
+            if (editingPostId === postId) {
+                const publishBtn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
+                if (publishBtn) publishBtn.disabled = true;
+            }
+            updateStats();
+            renderPosts();
+            alert('✅ Publicación publicada correctamente');
+        } catch (error) {
+            console.error('Error publishing post:', error);
+            alert('❌ Error al publicar la publicación');
         }
     };
 
@@ -1158,7 +1192,29 @@ const mockTitle = "Detalle de Campaña";
                     .getElementById("modalPost")
                     ?.classList.remove("hidden");
                 document.getElementById("modalPost")?.classList.add("flex");
+
+                // When creating a new post, no selection is active
+                const publishBtn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
+                if (publishBtn) publishBtn.disabled = true;
             });
+
+        // Header-level publish button triggers publicarPost on the currently-selected editingPostId
+        const headerPublish = document.getElementById('btnPublishSelected');
+        headerPublish?.addEventListener('click', async () => {
+            if (!editingPostId) return alert('Selecciona una publicación para publicar (haz clic en Editar)');
+
+            // Confirm and call existing publicarPost handler
+            if (!confirm('¿Deseas publicar la publicación seleccionada ahora?')) return;
+
+            try {
+                const updated = await (window as any).publicarPost(editingPostId);
+                // publicarPost already updates posts/ui inside the function; ensure header button disabled afterwards
+                const btn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
+                if (btn) btn.disabled = true;
+            } catch (err) {
+                // publicarPost shows alerts on error; no-op here
+            }
+        });
 
         // Generar con IA (botón dentro del modal)
         document.getElementById('btnGenerateAI')?.addEventListener('click', async () => {
