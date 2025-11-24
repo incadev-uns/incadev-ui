@@ -26,20 +26,13 @@ export type {
     UpdateCampaignDTO,
 
     // Campaign Metrics
+    PostMetricFromAPI,
     CampaignMetricsFromAPI,
     CampaignMetricsForUI,
 
     // Posts
     PostFromAPI,
-    PostForUI,
-    CreatePostDTO,
-    UpdatePostDTO,
-
-    // Post Metrics (NUEVO SISTEMA)
-    MetricFromAPI,
-    MetricForUI,
-    PostMetricsResponseFromAPI,
-    PostMetricsForUI
+    PostForUI
 } from './types';
 
 // ============================================
@@ -68,7 +61,6 @@ export {
 export {
     fetchCampaignsByProposal,
     fetchCampaignById,
-    fetchAllCampaigns,
     createCampaign,
     updateCampaign,
     deleteCampaign,
@@ -76,10 +68,19 @@ export {
     fetchCampaignPosts
 } from './campaignService';
 
-// Posts
+// Course Detail (nuevas funciones para detalle de curso)
 export {
-    createPost,
-    updatePost,
-    deletePost,
-    fetchPostMetrics
-} from './postService';
+    fetchCourseById,
+    fetchCourseVersions,
+    fetchCourseCampaigns
+} from './courseService';
+
+// Re-export tipos adicionales para detalle de curso
+export type {
+    CourseDetailFromAPI,
+    CourseDetailForUI,
+    CampaignWithMetricsFromAPI,
+    CampaignWithMetricsForUI,
+    CourseCampaignsFromAPI,
+    CourseCampaignsForUI
+} from './types';

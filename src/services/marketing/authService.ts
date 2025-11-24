@@ -1,5 +1,5 @@
-// src/services/authService.ts
-import { config } from '../../config/technology-config';
+// src/services/marketing/authService.ts
+import { config } from '../../config/marketing-config';
 
 const TOKEN_KEY = 'token';
 const USER_KEY = 'user';
@@ -7,8 +7,12 @@ const USER_KEY = 'user';
 export interface User {
   id: number;
   name: string;
+  fullname?: string;
   email: string;
-  role: string;
+  avatar?: string;
+  avatar_url?: string;
+  roles?: string[];
+  permissions?: string[];
   [key: string]: any;
 }
 
@@ -17,7 +21,8 @@ export interface User {
  */
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+  return token ? token.replace(/^"|"$/g, '') : null;
 }
 
 /**
@@ -37,13 +42,33 @@ export function isAuthenticated(): boolean {
 }
 
 /**
- * Cierra sesión y limpia el storage
+ * Cierra sesión: llama al backend y limpia el storage
  */
-export function logout(): void {
+export async function logout(): Promise<void> {
   if (typeof window === 'undefined') return;
+
+  const token = getToken();
+
+  // Intentar cerrar sesión en el backend
+  if (token) {
+    try {
+      await fetch(`${config.authApiUrl}${config.endpoints.auth.logout}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    } catch (error) {
+      console.error('[authService] Error al cerrar sesión en backend:', error);
+    }
+  }
+
+  // Siempre limpiar localStorage y redirigir
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
-  window.location.href = '/auth';
+  window.location.href = '/auth/marketing';
 }
 
 /**

@@ -23,11 +23,16 @@ function mapCourseToUI(course: CourseFromAPI): CourseForUI {
  * Mapea los datos de versión de curso de la API a la estructura que necesita la UI
  */
 function mapVersionToUI(version: CourseVersionFromAPI): CourseVersionForUI {
+    // Manejar imagen: puede ser null, undefined, o string vacío
+    const imagePath = version.course?.image_path;
+    const cursoImagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
+
     return {
         id: version.id,
         cursoId: version.course_id,
         cursoNombre: version.course?.name || 'Curso desconocido',
         cursoDescripcion: version.course?.description || 'Sin descripción',
+        cursoImagen,
         nombre: version.name,
         version: version.version || '',
         precio: parseFloat(version.price) || 0,
@@ -107,4 +112,136 @@ export async function fetchVersions(): Promise<CourseVersionForUI[]> {
 
         return [];
     }
+}
+
+// ============================================
+// FUNCIONES PARA DETALLE DE CURSO (marketing-backend)
+// ============================================
+
+import { config as marketingConfig } from '../../config/marketing-config';
+import type {
+    CourseDetailFromAPI,
+    CourseDetailForUI,
+    CourseCampaignsFromAPI,
+    CourseCampaignsForUI,
+    CampaignWithMetricsFromAPI,
+    CampaignWithMetricsForUI
+} from './types';
+
+/**
+ * Mapea el detalle de curso de la API a la estructura de UI
+ */
+function mapCourseDetailToUI(course: CourseDetailFromAPI): CourseDetailForUI {
+    // Manejar imagen: puede ser null, undefined, o string vacío
+    const imagePath = course.image_path;
+    const imagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
+
+    return {
+        id: course.id,
+        nombre: course.name,
+        descripcion: course.description || 'Sin descripción',
+        imagen,
+        fechaCreacion: course.created_at,
+        fechaActualizacion: course.updated_at,
+        versiones: (course.versions || []).map(mapVersionToUI)
+    };
+}
+
+/**
+ * Mapea una campaña con métricas de la API a UI
+ */
+function mapCampaignWithMetricsToUI(campaign: CampaignWithMetricsFromAPI): CampaignWithMetricsForUI {
+    const now = new Date();
+    const endDate = new Date(campaign.end_date);
+    const estado = endDate >= now ? 'activa' : 'finalizada';
+
+    return {
+        id: campaign.id,
+        nombre: campaign.name,
+        objetivo: campaign.objective,
+        inicio: campaign.start_date,
+        fin: campaign.end_date,
+        proposalId: campaign.proposal_id,
+        courseVersionId: campaign.course_version_id,
+        versionNombre: campaign.course_version?.name || null,
+        estado,
+        fechaCreacion: campaign.created_at,
+        metricas: {
+            totalPosts: campaign.metrics.total_posts,
+            totalReach: campaign.metrics.total_reach,
+            totalInteractions: campaign.metrics.total_interactions,
+            totalPreRegistrations: campaign.metrics.total_pre_registrations,
+            averageCtr: campaign.metrics.average_ctr || 0
+        }
+    };
+}
+
+/**
+ * Obtiene el detalle de un curso por ID desde marketing-backend
+ */
+export async function fetchCourseById(courseId: number): Promise<CourseDetailForUI> {
+    const url = `${marketingConfig.apiUrl}/api/courses/${courseId}`;
+
+    console.log('[courseService] Fetching course detail from:', url);
+
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Error al cargar el curso: ${response.statusText}`);
+    }
+
+    const data: CourseDetailFromAPI = await response.json();
+    console.log('[courseService] Course detail response:', data);
+
+    return mapCourseDetailToUI(data);
+}
+
+/**
+ * Obtiene las versiones de un curso específico desde marketing-backend
+ */
+export async function fetchCourseVersions(courseId: number): Promise<CourseVersionForUI[]> {
+    const url = `${marketingConfig.apiUrl}/api/courses/${courseId}/versions`;
+
+    console.log('[courseService] Fetching course versions from:', url);
+
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Error al cargar las versiones: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('[courseService] Course versions response:', data);
+
+    const versions: CourseVersionFromAPI[] = data.versions || [];
+    return versions.map(mapVersionToUI);
+}
+
+/**
+ * Obtiene las campañas relacionadas a un curso desde marketing-backend
+ */
+export async function fetchCourseCampaigns(courseId: number): Promise<CourseCampaignsForUI> {
+    const url = `${marketingConfig.apiUrl}/api/courses/${courseId}/campaigns`;
+
+    console.log('[courseService] Fetching course campaigns from:', url);
+
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Error al cargar las campañas del curso: ${response.statusText}`);
+    }
+
+    const data: CourseCampaignsFromAPI = await response.json();
+    console.log('[courseService] Course campaigns response:', data);
+
+    return {
+        curso: {
+            id: data.course.id,
+            nombre: data.course.name,
+            descripcion: data.course.description || 'Sin descripción'
+        },
+        totalVersiones: data.total_versions,
+        totalCampañas: data.total_campaigns,
+        campañas: data.campaigns.map(mapCampaignWithMetricsToUI)
+    };
 }

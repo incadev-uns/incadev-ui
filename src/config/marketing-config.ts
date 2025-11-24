@@ -6,9 +6,17 @@
 export const config = {
   //apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api"
   apiUrl: "http://127.0.0.1:8002",
+  authApiUrl: "http://127.0.0.1:8001/api", // Backend principal para autenticación
   environment: "development",
 
   endpoints: {
+    // Authentication (usa authApiUrl)
+    auth: {
+      me: "/auth/me",
+      logout: "/auth/logout",
+      profile: "/auth/profile",
+    },
+
     // Proposals
     proposals: {
       list: "/proposals",
@@ -56,12 +64,15 @@ export const config = {
       detail: "/metrics/:id",
     },
 
-    // Cursos
-    cursos: {
-      list: "/cursos",
-      detail: "/cursos/:id",
+    // Cursos (desde marketing-backend)
+    courses: {
+      list: "/courses",
+      detail: "/courses/:id",
       proximos: "/cursos/proximos",
+      versions: "/courses/:id/versions",
+      campaigns: "/courses/:id/campaigns",
     },
+
 
     // Alumnos
     alumnos: {

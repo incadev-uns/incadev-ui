@@ -1,8 +1,9 @@
 // src/components/marketing/Sidebar.tsx
 import React from 'react';
-import { LayoutDashboard, FileText, Calendar, Users, TrendingUp, MessageSquare, Bot, Inbox, Plug, BarChart3, ChevronDown, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FileText, Calendar, Users, TrendingUp, MessageSquare, Bot, Inbox, Plug, BarChart3, ChevronDown, ChevronRight, LogOut, User } from 'lucide-react';
 import { ModeToggle } from '@/components/core/ModeToggle';
 import { Button } from '@/components/ui/button';
+import { getUser, logout, type User as UserType } from '@/services/marketing/authService';
 
 interface NavItem {
   href: string;
@@ -34,6 +35,8 @@ const navItems: NavItem[] = [
 export default function Sidebar() {
   const [currentPath, setCurrentPath] = React.useState('/marketing/dashboard');
   const [openItems, setOpenItems] = React.useState<string[]>(['/marketing/chatbot']);
+  const [user, setUser] = React.useState<UserType | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
 
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -44,8 +47,27 @@ export default function Sidebar() {
           setOpenItems(prev => prev.includes(item.href) ? prev : [...prev, item.href]);
         }
       });
+      // Obtener datos del usuario
+      const userData = getUser();
+      setUser(userData);
     }
   }, []);
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    await logout();
+  };
+
+  // Obtener iniciales del usuario para el avatar
+  const getUserInitials = () => {
+    if (!user) return 'MK';
+    const name = user.fullname || user.name || '';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase() || 'MK';
+  };
 
   const toggleItem = (href: string) => {
     setOpenItems(prev =>
@@ -143,14 +165,35 @@ export default function Sidebar() {
       <div className="absolute bottom-6 left-6 right-6">
         <div className="p-4 rounded-lg bg-muted border border-border">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-              <span className="text-primary-foreground font-semibold text-sm">MK</span>
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Marketing Team</p>
-              <p className="text-xs text-muted-foreground">Equipo activo</p>
+            {user?.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt={user.fullname || user.name}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                <span className="text-primary-foreground font-semibold text-sm">{getUserInitials()}</span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-foreground truncate">
+                {user?.fullname || user?.name || 'Usuario'}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email || 'Marketing'}
+              </p>
             </div>
           </div>
+          <Button
+            onClick={handleLogout}
+            disabled={isLoggingOut}
+            variant="ghost"
+            className="w-full mt-3 justify-start gap-2 text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>{isLoggingOut ? 'Cerrando sesión...' : 'Cerrar sesión'}</span>
+          </Button>
         </div>
       </div>
     </nav>

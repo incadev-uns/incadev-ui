@@ -98,6 +98,7 @@ export interface CourseFromAPI {
     id: number;
     name: string;
     description: string | null;
+    image_path: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -106,6 +107,7 @@ export interface CourseForUI {
     id: number;
     nombre: string;
     descripcion: string;
+    imagen: string | null;
     fechaCreacion: string;
     fechaActualizacion: string;
 }
@@ -131,6 +133,7 @@ export interface CourseVersionForUI {
     cursoId: number;
     cursoNombre: string;
     cursoDescripcion: string;
+    cursoImagen: string | null;
     nombre: string;
     version: string;
     precio: number;
@@ -165,12 +168,9 @@ export interface CampaignForUI {
     objetivo: string;
     inicio: string;
     fin: string;
-    estado: 'proxima' | 'activa' | 'finalizada';
+    estado: 'activa' | 'finalizada';
     fechaCreacion: string;
     fechaActualizacion: string;
-    tipo: 'propuesta' | 'curso';
-    propuestaTitulo?: string;
-    cursoVersionNombre?: string;
 }
 
 export interface CreateCampaignDTO {
@@ -187,6 +187,68 @@ export interface UpdateCampaignDTO {
     objective?: string;
     start_date?: string;
     end_date?: string;
+}
+
+// ============================================
+// CAMPAIGN METRICS
+// ============================================
+
+export interface PostMetricFromAPI {
+    post_id: number;
+    platform: string;
+    messages_received: number;
+    pre_registrations: number;
+    intention_percentage: string;
+    total_reach: number;
+    total_interactions: number;
+    ctr_percentage: string;
+    likes: number;
+    comments: number;
+    private_messages: number;
+    expected_enrollments: number;
+    cpa_cost: string;
+}
+
+export interface CampaignMetricsFromAPI {
+    campaign_id: number;
+    campaign_name: string;
+    metrics_summary: {
+        total_messages_received: number;
+        total_pre_registrations: number;
+        average_intention_percentage: number;
+        total_reach: number;
+        total_interactions: number;
+        average_ctr_percentage: number;
+        total_likes: number;
+        total_comments: number;
+        total_private_messages: number;
+        expected_enrollments: number;
+        average_cpa_cost: number;
+    };
+    posts_metrics: PostMetricFromAPI[];
+}
+
+export interface CampaignMetricsForUI {
+    campaignId: number;
+    campaignName: string;
+    totalReach: number;
+    totalInteractions: number;
+    totalLikes: number;
+    totalComments: number;
+    totalMessages: number;
+    totalPreRegistrations: number;
+    averageIntention: number;
+    averageCtr: number;
+    expectedEnrollments: number;
+    averageCpa: number;
+    postMetrics: {
+        postId: number;
+        platform: string;
+        reach: number;
+        interactions: number;
+        likes: number;
+        comments: number;
+    }[];
 }
 
 // ============================================
@@ -226,150 +288,93 @@ export interface PostForUI {
     fechaCreacion: string;
 }
 
-export interface CreatePostDTO {
-    campaign_id: number;
-    title: string;
-    platform: 'facebook' | 'instagram';
-    content: string;
-    content_type: 'image' | 'video' | 'text';
-    image_path: string;
-    link_url: string;
-    status: 'draft' | 'scheduled' | 'published';
-    scheduled_at: string | null;
-    published_at: string | null;
-    created_by: number;
+// ============================================
+// COURSE DETAIL 
+// ============================================
+
+export interface CourseDetailFromAPI {
+    id: number;
+    name: string;
+    description: string | null;
+    image_path: string | null;
+    created_at: string;
+    updated_at: string;
+    versions: CourseVersionFromAPI[];
 }
 
-export interface UpdatePostDTO {
-    title?: string;
-    platform?: 'facebook' | 'instagram';
-    content?: string;
-    content_type?: 'image' | 'video' | 'text';
-    image_path?: string;
-    link_url?: string;
-    status?: 'draft' | 'scheduled' | 'published';
-    scheduled_at?: string | null;
-    published_at?: string | null;
+export interface CourseDetailForUI {
+    id: number;
+    nombre: string;
+    descripcion: string;
+    imagen: string | null;
+    fechaCreacion: string;
+    fechaActualizacion: string;
+    versiones: CourseVersionForUI[];
 }
 
 // ============================================
-// POST METRICS (NUEVO SISTEMA)
+// COURSE CAMPAIGNS (campañas relacionadas a un curso)
 // ============================================
 
-export interface MetricFromAPI {
+export interface CampaignWithMetricsFromAPI {
     id: number;
-    post_id: number;
-    platform: 'facebook' | 'instagram';
-    meta_post_id: string | null;
-    views: number;
-    likes: number;
-    comments: number;
-    shares: number;
-    engagement: number;
-    reach: number;
-    impressions: number;
-    saves: number;
-    metric_date: string;
-    metric_type: 'daily' | 'weekly' | 'monthly' | 'cumulative';
-    created_at: string | null;
-    updated_at: string | null;
-}
-
-export interface MetricForUI {
-    id: number;
-    postId: number;
-    plataforma: 'facebook' | 'instagram';
-    metaPostId: string | null;
-    vistas: number;
-    likes: number;
-    comentarios: number;
-    compartidos: number;
-    engagement: number;
-    alcance: number;
-    impresiones: number;
-    guardados: number;
-    fecha: string;
-    tipo: 'daily' | 'weekly' | 'monthly' | 'cumulative';
-}
-
-export interface PostMetricsResponseFromAPI {
-    success: boolean;
-    post_id: number;
-    post_title: string;
-    platform: string;
-    metrics: MetricFromAPI[];
-}
-
-export interface PostMetricsForUI {
-    postId: number;
-    postTitle: string;
-    platform: string;
-    metricas: MetricForUI[];
-    // Totales agregados (suma de todas las plataformas)
-    totales: {
-        vistas: number;
-        likes: number;
-        comentarios: number;
-        compartidos: number;
-        engagement: number;
-        alcance: number;
-        impresiones: number;
-        guardados: number;
+    name: string;
+    objective: string;
+    start_date: string;
+    end_date: string;
+    proposal_id: number | null;
+    course_version_id: number | null;
+    course_version: CourseVersionFromAPI | null;
+    proposal: ProposalFromAPI | null;
+    created_at: string;
+    updated_at: string;
+    metrics: {
+        total_posts: number;
+        total_reach: number;
+        total_interactions: number;
+        total_pre_registrations: number;
+        average_ctr: number;
     };
 }
 
-// ============================================
-// CAMPAIGN METRICS (ACTUALIZADO)
-// ============================================
-
-export interface CampaignMetricsFromAPI {
-    campaign_id: number;
-    campaign_name: string;
-    metrics_summary: {
-        total_reach: number;
-        total_interactions: number;
-        total_likes: number;
-        total_comments: number;
-        // Campos obsoletos (mantenemos por compatibilidad con respuestas viejas)
-        total_messages_received?: number;
-        total_pre_registrations?: number;
-        average_intention_percentage?: number;
-        average_ctr_percentage?: number;
-        total_private_messages?: number;
-        expected_enrollments?: number;
-        average_cpa_cost?: number;
+export interface CourseCampaignsFromAPI {
+    course: {
+        id: number;
+        name: string;
+        description: string | null;
     };
-    posts_metrics: Array<{
-        post_id: number;
-        platform: string;
-        total_reach: number;
-        total_interactions: number;
-        likes: number;
-        comments: number;
-        // Campos obsoletos
-        messages_received?: number;
-        pre_registrations?: number;
-        intention_percentage?: number;
-        ctr_percentage?: number;
-        private_messages?: number;
-        expected_enrollments?: number;
-        cpa_cost?: number;
-    }>;
+    total_versions: number;
+    total_campaigns: number;
+    campaigns: CampaignWithMetricsFromAPI[];
 }
 
-export interface CampaignMetricsForUI {
-    campaignId: number;
-    campaignName: string;
-    totalReach: number;
-    totalInteractions: number;
-    totalLikes: number;
-    totalComments: number;
-    postMetrics: {
-        postId: number;
-        platform: string;
-        reach: number;
-        interactions: number;
-        likes: number;
-        comments: number;
-    }[];
+export interface CampaignWithMetricsForUI {
+    id: number;
+    nombre: string;
+    objetivo: string;
+    inicio: string;
+    fin: string;
+    proposalId: number | null;
+    courseVersionId: number | null;
+    versionNombre: string | null;
+    estado: 'activa' | 'finalizada';
+    fechaCreacion: string;
+    metricas: {
+        totalPosts: number;
+        totalReach: number;
+        totalInteractions: number;
+        totalPreRegistrations: number;
+        averageCtr: number;
+    };
+}
+
+export interface CourseCampaignsForUI {
+    curso: {
+        id: number;
+        nombre: string;
+        descripcion: string;
+    };
+    totalVersiones: number;
+    totalCampañas: number;
+    campañas: CampaignWithMetricsForUI[];
 }
