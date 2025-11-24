@@ -30,10 +30,7 @@ export const config = {
     reports: {
       pdf: "/api/reports/survey/:surveyId/pdf",
       excel: "/api/reports/survey/:surveyId/excel",
-<<<<<<< Updated upstream
       analysis: "/api/surveys/:surveyId/analysis",
-    }
-=======
     },
 
     audits: {
@@ -65,7 +62,6 @@ export const config = {
       dashboardStats: "/api/audits/dashboard"
 
     },
->>>>>>> Stashed changes
   },
 
 };
