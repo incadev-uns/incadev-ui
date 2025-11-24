@@ -150,7 +150,7 @@ export default function AnnouncementsPage() {
   }
 
   return (
-    <TechnologyLayout breadcrumbs={[{ label: "Anuncios" }]}>
+    <TechnologyLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

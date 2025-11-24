@@ -3,7 +3,8 @@ import type {
   Survey, 
   SurveyFormData, 
   SurveyResponse, 
-  PaginatedSurveyResponse 
+  PaginatedSurveyResponse,
+  SurveyAnalysis
 } from "@/process/evaluation/surveys/types/survey"
 
 const getAuthToken = (): string => {
@@ -56,6 +57,7 @@ export const surveyService = {
     return res.json()
   },
 
+  // Métodos para reportes
   async downloadPdfReport(surveyId: number): Promise<Blob> {
     const url = `${config.apiUrl}${config.endpoints.reports.pdf}`.replace(":surveyId", String(surveyId))
     const res = await fetch(url, { 
@@ -74,5 +76,15 @@ export const surveyService = {
     })
     if (!res.ok) throw new Error("Error al descargar reporte Excel")
     return res.blob()
+  },
+
+  async getAnalysis(surveyId: number): Promise<SurveyAnalysis> {
+    const url = `${config.apiUrl}${config.endpoints.reports.analysis}`.replace(":surveyId", String(surveyId))
+    const res = await fetch(url, { 
+      method: "GET", 
+      headers: headers() 
+    })
+    if (!res.ok) throw new Error("Error al obtener análisis")
+    return res.json()
   },
 }

@@ -31,7 +31,8 @@ import {
   Eye, 
   ListChecks, 
   FileText, 
-  Table as TableIcon 
+  Table as TableIcon,
+  TrendingUp 
 } from "lucide-react"
 import type { Survey, SurveyEvent } from "@/process/evaluation/surveys/types/survey"
 
@@ -61,6 +62,7 @@ interface Props {
   onManageQuestions: (survey: Survey) => void
   onDownloadPdf: (surveyId: number) => Promise<boolean>
   onDownloadExcel: (surveyId: number) => Promise<boolean>
+  onViewAnalysis: (survey: Survey) => void
   onPageChange: (page: number) => void
   loading?: boolean
 }
@@ -81,6 +83,7 @@ export function SurveyTable({
   onManageQuestions,
   onDownloadPdf,
   onDownloadExcel,
+  onViewAnalysis,
   onPageChange,
   loading = false 
 }: Props) {
@@ -212,7 +215,10 @@ export function SurveyTable({
                         <ListChecks className="mr-2 h-4 w-4" />
                         Gestionar Preguntas
                       </DropdownMenuItem>
-                      
+                      <DropdownMenuItem onClick={() => onViewAnalysis(survey)}>
+                        <TrendingUp className="mr-2 h-4 w-4" />
+                        Ver Análisis
+                      </DropdownMenuItem>
                       {/* Sección de Reportes */}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={() => handleDownloadPdf(survey.id)}>

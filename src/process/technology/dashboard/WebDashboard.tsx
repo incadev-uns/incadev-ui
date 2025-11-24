@@ -71,7 +71,7 @@ export default function WebDashboard() {
 
   if (authLoading) {
     return (
-      <TechnologyLayout breadcrumbs={[{ label: "Dashboard Web" }]}>
+      <TechnologyLayout>
         <div className="flex items-center justify-center h-96">
           <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
         </div>
@@ -84,11 +84,7 @@ export default function WebDashboard() {
   const alertStats = getContentStats('alerts')
 
   return (
-    <TechnologyLayout
-      breadcrumbs={[
-        { label: "Desarrollo Web", href: "/tecnologico/web/dashboard" },
-      ]}
-    >
+    <TechnologyLayout>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

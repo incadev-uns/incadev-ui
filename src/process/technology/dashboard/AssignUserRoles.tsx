@@ -6,19 +6,31 @@ import { IconArrowLeft, IconDeviceFloppy } from "@tabler/icons-react"
 import { technologyApi, type User, type Role } from "@/services/tecnologico/api"
 import { toast } from "sonner"
 
-interface AssignUserRolesProps {
-  userId: number
-}
-
-export default function AssignUserRoles({ userId }: AssignUserRolesProps) {
+export default function AssignUserRoles() {
+  const [userId, setUserId] = useState<number | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [availableRoles, setAvailableRoles] = useState<Role[]>([])
   const [selectedRoles, setSelectedRoles] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
+  // Obtener el ID del usuario desde la URL (query param ?id=123)
   useEffect(() => {
-    loadData()
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const id = params.get("id")
+      if (id) {
+        setUserId(parseInt(id, 10))
+      } else {
+        setLoading(false)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (userId) {
+      loadData()
+    }
   }, [userId])
 
   const loadData = async () => {

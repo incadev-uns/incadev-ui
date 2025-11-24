@@ -6,6 +6,7 @@ import { SurveyTable } from "@/process/evaluation/surveys/components/SurveyTable
 import { SurveyFormDialog } from "@/process/evaluation/surveys/components/SurveyFormDialog"
 import { SurveyDeleteDialog } from "@/process/evaluation/surveys/components/SurveyDeleteDialog"
 import { SurveyQuestionsDialog } from "@/process/evaluation/surveys/components/SurveyQuestionsDialog"
+import { SurveyAnalysisDialog } from "@/process/evaluation/surveys/components/SurveyAnalysisDialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
 import type { Survey, SurveyFormData } from "@/process/evaluation/surveys/types/survey"
@@ -23,7 +24,8 @@ export default function PanelSurveyPage() {
     updateSurvey, 
     deleteSurvey,
     downloadPdfReport,
-    downloadExcelReport 
+    downloadExcelReport,
+    getAnalysis 
   } = useSurveys()
 
   const [search, setSearch] = useState("")
@@ -34,6 +36,9 @@ export default function PanelSurveyPage() {
   const [questionsOpen, setQuestionsOpen] = useState(false)
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null)
 
+  const [analysisOpen, setAnalysisOpen] = useState(false)
+  const [analysisSurveyId, setAnalysisSurveyId] = useState<number | null>(null)
+
   const filtered = useMemo(() => {
     return surveys.filter((s) => {
       const matchSearch = !search || 
@@ -43,6 +48,11 @@ export default function PanelSurveyPage() {
       return matchSearch && matchEvent
     })
   }, [surveys, search, eventFilter])
+
+  const handleViewAnalysis = (survey: Survey) => {
+    setAnalysisSurveyId(survey.id)
+    setAnalysisOpen(true)
+  }
 
   const handleCreate = () => {
     setSelectedSurvey(null)
@@ -122,12 +132,18 @@ export default function PanelSurveyPage() {
           loading={loading}
         />
 
+        <SurveyAnalysisDialog
+          open={analysisOpen}
+          onOpenChange={setAnalysisOpen}
+          surveyId={analysisSurveyId}
+          onGetAnalysis={getAnalysis}
+        />
+        
         {loading && surveys.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : (
-          // En el PanelSurveyPage, actualiza el uso del SurveyTable:
           <SurveyTable
             surveys={filtered}
             meta={meta || defaultMeta}
@@ -137,6 +153,7 @@ export default function PanelSurveyPage() {
             onManageQuestions={handleManageQuestions}
             onDownloadPdf={downloadPdfReport}
             onDownloadExcel={downloadExcelReport}
+            onViewAnalysis={handleViewAnalysis}
             onPageChange={handlePageChange}
             loading={loading}
           />

@@ -4,7 +4,8 @@ import type {
   Survey, 
   SurveyFormData, 
   PaginationMeta, 
-  PaginationLinks 
+  PaginationLinks,
+  SurveyAnalysis 
 } from "@/process/evaluation/surveys/types/survey"
 
 interface UseSurveysReturn {
@@ -20,6 +21,7 @@ interface UseSurveysReturn {
   deleteSurvey: (id: number) => Promise<boolean>
   downloadPdfReport: (surveyId: number) => Promise<boolean>
   downloadExcelReport: (surveyId: number) => Promise<boolean>
+  getAnalysis: (surveyId: number) => Promise<SurveyAnalysis | null>
 }
 
 export function useSurveys(): UseSurveysReturn {
@@ -86,12 +88,10 @@ export function useSurveys(): UseSurveysReturn {
     }
   }
 
-  // Nuevas funciones para descargar reportes
   const downloadPdfReport = async (surveyId: number): Promise<boolean> => {
     try {
       const blob = await surveyService.downloadPdfReport(surveyId)
       
-      // Crear URL para descarga
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.style.display = "none"
@@ -130,6 +130,15 @@ export function useSurveys(): UseSurveysReturn {
     }
   }
 
+  const getAnalysis = async (surveyId: number): Promise<SurveyAnalysis | null> => {
+    try {
+      return await surveyService.getAnalysis(surveyId)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al obtener análisis")
+      return null
+    }
+  }
+
   return { 
     surveys, 
     meta, 
@@ -142,6 +151,7 @@ export function useSurveys(): UseSurveysReturn {
     updateSurvey, 
     deleteSurvey,
     downloadPdfReport,
-    downloadExcelReport
+    downloadExcelReport,
+    getAnalysis
   }
 }

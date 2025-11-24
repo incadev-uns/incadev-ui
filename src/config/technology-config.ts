@@ -72,6 +72,7 @@ export const config = {
       // Tickets
       tickets: {
         list: "/support/tickets",
+        myTickets: "/support/my-tickets",
         create: "/support/tickets",
         getById: "/support/tickets/:id",
         update: "/support/tickets/:id",
@@ -225,6 +226,112 @@ export const config = {
         newsDetail: "/developer-web/landing/news/:slug",
         announcements: "/developer-web/landing/announcements",
         alerts: "/developer-web/landing/alerts",
+      },
+    },
+
+    // Academic Analysis Module
+    academicAnalysis: {
+      // Dashboard
+      dashboard: {
+        main: "/data-analyst/dashboard",
+        charts: "/data-analyst/dashboard/charts"
+      },
+      // BigQuery Sync
+      bigquery: {
+        syncFull: "/data-analyst/bigquery/sync-full",
+        syncIncremental: "/data-analyst/bigquery/sync-incremental"
+      },
+      // Attendance
+      attendance: {
+        general: "/data-analyst/attendance",
+        local: "/data-analyst/local/attendance/summary",
+        statusDistribution: "/data-analyst/charts/attendance-status",
+        weeklyTrends: "/data-analyst/charts/weekly-absence-trends",
+        attendanceCalendar: "/data-analyst/charts/attendance-calendar",
+        export: "/data-analyst/export/attendance",
+      },
+      // Performance
+      performance: {
+        general: "/data-analyst/performance",
+        gradeDistribution: "/data-analyst/charts/grade-distribution",
+        attendanceGradeCorrelation: "/data-analyst/charts/attendance-grade-correlation",
+        groupPerformance: "/data-analyst/charts/group-performance-radar",
+        export: "/data-analyst/export/performance",
+      },
+      // Progress
+      progress: {
+        general: "/data-analyst/progress",
+        activeStudents: "/data-analyst/local/students/active",
+        gradeEvolution: "/data-analyst/charts/grade-evolution",
+        export: "/data-analyst/export/progress",
+      },
+    },
+    // Dropout Prediction Module
+    dropoutPrediction: {
+      // System Status & Overview
+      systemStatus: "/data-analyst/dropout-prediction/system-status",
+      // Predictions
+      predictions: "/data-analyst/dropout-prediction/predictions",
+      predictionsDetailed: "/data-analyst/dropout-prediction/predictions/detailed",
+      predictionsByGroup: "/data-analyst/dropout-prediction/predictions/group/:groupId",
+      // High Risk
+      highRisk: "/data-analyst/dropout-prediction/high-risk",
+
+      export: {
+        predictions: "/data-analyst/dropout-prediction/export/predictions",
+        highRisk: "/data-analyst/dropout-prediction/export/high-risk"
+      }
+    },
+    groups: {
+      active: "/data-analyst/groups/active",
+    },
+
+    // Infrastructure Module
+    infrastructure: {
+      // Dashboard
+      dashboard: {
+        stats: "/infrastructure/dashboard/stats",
+        summary: "/infrastructure/dashboard/summary",
+      },
+      // Tech Assets
+      assets: {
+        list: "/infrastructure/assets",
+        show: "/infrastructure/assets/:id",
+        store: "/infrastructure/assets",
+        update: "/infrastructure/assets/:id",
+        destroy: "/infrastructure/assets/:id",
+      },
+      // Hardware
+      hardware: {
+        list: "/infrastructure/hardwares",
+        show: "/infrastructure/hardwares/:id",
+        store: "/infrastructure/hardwares",
+        update: "/infrastructure/hardwares/:id",
+        destroy: "/infrastructure/hardwares/:id",
+      },
+      // Software
+      software: {
+        list: "/infrastructure/softwares",
+        show: "/infrastructure/softwares/:id",
+        store: "/infrastructure/softwares",
+        update: "/infrastructure/softwares/:id",
+        destroy: "/infrastructure/softwares/:id",
+      },
+      // Licenses
+      licenses: {
+        list: "/infrastructure/licenses",
+        show: "/infrastructure/licenses/:id",
+        store: "/infrastructure/licenses",
+        update: "/infrastructure/licenses/:id",
+        destroy: "/infrastructure/licenses/:id",
+      },
+      // License Assignments
+      assignments: {
+        list: "/infrastructure/assignments",
+        show: "/infrastructure/assignments/:id",
+        store: "/infrastructure/assignments",
+        update: "/infrastructure/assignments/:id",
+        destroy: "/infrastructure/assignments/:id",
       },
     },
   }

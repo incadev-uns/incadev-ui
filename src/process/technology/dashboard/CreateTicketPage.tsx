@@ -77,7 +77,7 @@ export default function CreateTicketPage() {
         toast.success("Ticket creado exitosamente")
         const ticketId = response.data?.ticket?.id
         if (ticketId) {
-          window.location.href = `/tecnologico/support/tickets/${ticketId}`
+          window.location.href = `/tecnologico/support/tickets/detail?id=${ticketId}`
         } else {
           window.location.href = "/tecnologico/support/tickets"
         }

@@ -6,19 +6,31 @@ import { IconArrowLeft, IconDeviceFloppy } from "@tabler/icons-react"
 import { technologyApi, type User, type Permission } from "@/services/tecnologico/api"
 import { toast } from "sonner"
 
-interface AssignUserPermissionsProps {
-  userId: number
-}
-
-export default function AssignUserPermissions({ userId }: AssignUserPermissionsProps) {
+export default function AssignUserPermissions() {
+  const [userId, setUserId] = useState<number | null>(null)
   const [user, setUser] = useState<User | null>(null)
   const [availablePermissions, setAvailablePermissions] = useState<Permission[]>([])
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
+  // Obtener el ID del usuario desde la URL (query param ?id=123)
   useEffect(() => {
-    loadData()
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const id = params.get("id")
+      if (id) {
+        setUserId(parseInt(id, 10))
+      } else {
+        setLoading(false)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (userId) {
+      loadData()
+    }
   }, [userId])
 
   const loadData = async () => {

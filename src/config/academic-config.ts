@@ -9,6 +9,10 @@ export const config = {
   //apiUrl:"http://127.0.0.1:8000",
   environment:"development",
   endpoints: {
+    users: {
+      updateDNI: "/api/update-dni-and-fullname",
+      checkDNI: "/api/get-fullname-by-dni",
+    },
     auth: {
       register: "/api/auth/register",
       redirect: "/auth/google/redirect",

@@ -168,7 +168,7 @@ export default function FAQsPage() {
   }
 
   return (
-    <TechnologyLayout breadcrumbs={[{ label: "Chatbot", href: "/tecnologico/web/chatbot/dashboard" }, { label: "FAQs" }]}>
+    <TechnologyLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>

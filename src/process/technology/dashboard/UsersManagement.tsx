@@ -190,7 +190,7 @@ export default function UsersManagement() {
                                   asChild
                                   title="Editar usuario"
                                 >
-                                  <a href={`/tecnologico/admin/usuarios/${user.id}/editar`}>
+                                  <a href={`/tecnologico/admin/usuarios/editar?id=${user.id}`}>
                                     <IconEdit className="h-4 w-4" />
                                   </a>
                                 </Button>
@@ -200,7 +200,7 @@ export default function UsersManagement() {
                                   asChild
                                   title="Asignar roles"
                                 >
-                                  <a href={`/tecnologico/admin/usuarios/${user.id}/roles`}>
+                                  <a href={`/tecnologico/admin/usuarios/roles?id=${user.id}`}>
                                     <IconShieldLock className="h-4 w-4" />
                                   </a>
                                 </Button>
@@ -210,7 +210,7 @@ export default function UsersManagement() {
                                   asChild
                                   title="Asignar permisos"
                                 >
-                                  <a href={`/tecnologico/admin/usuarios/${user.id}/permisos`}>
+                                  <a href={`/tecnologico/admin/usuarios/permisos?id=${user.id}`}>
                                     <IconKey className="h-4 w-4" />
                                   </a>
                                 </Button>

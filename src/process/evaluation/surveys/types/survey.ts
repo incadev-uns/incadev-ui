@@ -34,6 +34,23 @@ export interface SurveyResponse<T> {
   message?: string
 }
 
+export interface SurveyAnalysis {
+  survey: {
+    id: number
+    title: string
+    description: string
+  }
+  kpis: Array<{
+    label: string
+    value: number | string
+  }>
+  chartData: Array<{
+    label: string
+    value: number
+  }>
+  recommendation: string
+}
+
 export interface PaginationMeta {
   current_page: number
   from: number

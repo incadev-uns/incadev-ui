@@ -32,14 +32,24 @@ const UserFormSchema = z.object({
 
 type UserFormData = z.infer<typeof UserFormSchema>
 
-interface UserFormProps {
-  userId?: number
-}
-
-export default function UserForm({ userId }: UserFormProps) {
+export default function UserForm() {
+  const [userId, setUserId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
-  const [initialLoading, setInitialLoading] = useState(!!userId)
+  const [initialLoading, setInitialLoading] = useState(true)
   const isEditMode = !!userId
+
+  // Obtener el ID del usuario desde la URL (query param ?id=123)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search)
+      const id = params.get("id")
+      if (id) {
+        setUserId(parseInt(id, 10))
+      } else {
+        setInitialLoading(false)
+      }
+    }
+  }, [])
 
   const {
     register,

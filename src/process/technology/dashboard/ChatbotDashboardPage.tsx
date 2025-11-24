@@ -83,7 +83,7 @@ export default function ChatbotDashboardPage() {
 
   if (loading) {
     return (
-      <TechnologyLayout breadcrumbs={[{ label: "Chatbot" }]}>
+      <TechnologyLayout>
         <div className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <span className="ml-2">Cargando dashboard...</span>
@@ -93,7 +93,7 @@ export default function ChatbotDashboardPage() {
   }
 
   return (
-    <TechnologyLayout breadcrumbs={[{ label: "Chatbot" }]}>
+    <TechnologyLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
