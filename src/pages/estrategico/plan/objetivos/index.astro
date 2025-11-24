@@ -1,37 +1,21 @@
 ---
-import ObjetivoPage from "@/process/strategic/dashboard/plan/ObjetivoPage";
+import ObjetivosPage from "@/process/strategic/dashboard/plan/ObjetivoPage";
 import PlanLayout from "@/process/strategic/layouts/PlanLayout.astro";
 import '@/styles/global.css';
 
-const title = "Dashboard Gestion de Planes - Objetivos | INCADEV Estrategico";
-const description = "Panel de control de los objetivos de un plan estrategico";
+const title = "Dashboard - Gestión de Objetivos";
+const description = "Panel de objetivos del plan seleccionado";
 const robots = ["noindex", "nofollow"];
-const keywords = ["INCADEV", "estrategico", "administración", "dashboard", "gestión"];
-const url = "https://instituto.cetivirgendelapuerta.com/estrategico";
+const keywords = ["INCADEV", "estrategico", "objetivos", "dashboard", "gestión"];
+const url = "http://localhost:4321/estrategico/plan/objetivos";
 const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
 const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
-
-const urlParams = new URLSearchParams(Astro.request.url.split("?")[1]);
-const planId = Number(urlParams.get("id")) || 0;
-
-// Datos de ejemplo
-const planes = [
-  { id: 1, nombre: "Plan Estratégico 2025" },
-  { id: 2, nombre: "Plan Estratégico 2026" },
-];
-
-//buscar el plan por medio del id de la url
-const plan = planes.find((p) => p.id === planId);
-
-//buscar los objetivos de ese plan
-const objetivos = [
-  { id: 1, nombre: "Optimizar procesos académicos" },
-  { id: 2, nombre: "Incrementar la satisfacción estudiantil" },
-];
 ---
+
 <PlanLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
-  <ObjetivoPage client:load plan={plan} objetivos={objetivos}/>
-<PlanLayout />
+  <ObjetivosPage client:load />
+</PlanLayout>
+
 
 
 

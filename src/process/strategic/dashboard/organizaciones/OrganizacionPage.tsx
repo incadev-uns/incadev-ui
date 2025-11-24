@@ -20,37 +20,64 @@ import {
 
 export default function OrganizacionesPage() {
   // 📊 Datos simulados
-  const organizaciones = [
+  const [organizaciones, setOrganizaciones] = useState([
     {
       ruc: "20123456789",
+      nombre: "Universidad X",
       tipo: "Universidad",
       telefono: "987654321",
       email: "contacto@universidadx.edu.pe",
     },
     {
       ruc: "20567891234",
+      nombre: "Empresa Y SAC",
       tipo: "Empresa Privada",
       telefono: "956789123",
       email: "rrhh@empresay.com",
     },
     {
       ruc: "20876543210",
+      nombre: "Ministerio Z",
       tipo: "Gobierno",
       telefono: "912345678",
       email: "info@ministerioz.gob.pe",
     },
-  ];
+  ]);
 
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
 
+  // 🧾 Estado para el nuevo registro
+  const [formData, setFormData] = useState({
+    ruc: "",
+    nombre: "",
+    tipo: "",
+    telefono: "",
+    email: "",
+  });
+
   // 🔍 Filtro de búsqueda
   const filtered = organizaciones.filter(
     (o) =>
+      o.nombre.toLowerCase().includes(search.toLowerCase()) ||
       o.tipo.toLowerCase().includes(search.toLowerCase()) ||
       o.email.toLowerCase().includes(search.toLowerCase()) ||
       o.ruc.includes(search)
   );
+
+  // 💾 Guardar nueva organización
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.ruc || !formData.nombre || !formData.tipo) {
+      alert("Por favor, completa todos los campos requeridos.");
+      return;
+    }
+
+    setOrganizaciones([...organizaciones, formData]);
+    setFormData({ ruc: "", nombre: "", tipo: "", telefono: "", email: "" });
+    setShowModal(false);
+  };
 
   return (
     <StrategicLayout title="Dashboard - Gestión de Organizaciones">
@@ -67,7 +94,7 @@ export default function OrganizacionesPage() {
               placeholder="Buscar organización..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-[200px]"
+              className="w-[220px]"
             />
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -79,11 +106,45 @@ export default function OrganizacionesPage() {
                   <DialogTitle>Agregar nueva organización</DialogTitle>
                 </DialogHeader>
 
-                <form className="space-y-3 mt-3">
-                  <Input placeholder="RUC" />
-                  <Input placeholder="Tipo" />
-                  <Input placeholder="Teléfono de contacto" />
-                  <Input placeholder="Email de contacto" />
+                <form className="space-y-3 mt-3" onSubmit={handleSubmit}>
+                  <Input
+                    placeholder="RUC"
+                    value={formData.ruc}
+                    onChange={(e) =>
+                      setFormData({ ...formData, ruc: e.target.value })
+                    }
+                    required
+                  />
+                  <Input
+                    placeholder="Nombre"
+                    value={formData.nombre}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nombre: e.target.value })
+                    }
+                    required
+                  />
+                  <Input
+                    placeholder="Tipo (Ej: Universidad, Empresa, etc.)"
+                    value={formData.tipo}
+                    onChange={(e) =>
+                      setFormData({ ...formData, tipo: e.target.value })
+                    }
+                    required
+                  />
+                  <Input
+                    placeholder="Teléfono de contacto"
+                    value={formData.telefono}
+                    onChange={(e) =>
+                      setFormData({ ...formData, telefono: e.target.value })
+                    }
+                  />
+                  <Input
+                    placeholder="Email de contacto"
+                    value={formData.email}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
+                  />
                   <Button type="submit" className="w-full">
                     Guardar
                   </Button>
@@ -94,20 +155,22 @@ export default function OrganizacionesPage() {
         </div>
 
         {/* 📋 Tabla de organizaciones */}
-        <div className="border rounded-md overflow-x-auto">
+        <div className="border rounded-md overflow-x-auto mt-4">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>RUC</TableHead>
+                <TableHead>Nombre</TableHead>
                 <TableHead>Tipo</TableHead>
-                <TableHead>Teléfono de contacto</TableHead>
-                <TableHead>Email de contacto</TableHead>
+                <TableHead>Teléfono</TableHead>
+                <TableHead>Correo</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((o, i) => (
                 <TableRow key={i}>
                   <TableCell>{o.ruc}</TableCell>
+                  <TableCell>{o.nombre}</TableCell>
                   <TableCell>{o.tipo}</TableCell>
                   <TableCell>{o.telefono}</TableCell>
                   <TableCell>{o.email}</TableCell>
@@ -116,7 +179,7 @@ export default function OrganizacionesPage() {
               {filtered.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={4}
+                    colSpan={5}
                     className="text-center text-muted-foreground py-4"
                   >
                     No se encontraron organizaciones.

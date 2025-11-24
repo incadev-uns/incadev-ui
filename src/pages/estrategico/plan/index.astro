@@ -3,22 +3,16 @@ import PlanPage from "@/process/strategic/dashboard/plan/PlanPage";
 import PlanLayout from "@/process/strategic/layouts/PlanLayout.astro";
 import '@/styles/global.css';
 
-const title = "Dashboard - Gestion de planes";
-const description = "Panel de gestion de planes estrategicos";
+const title = "Dashboard - Gestión de Planes";
+const description = "Panel de gestión de planes estratégicos";
 const robots = ["noindex", "nofollow"];
 const keywords = ["INCADEV", "estrategico", "administración", "dashboard", "gestión"];
 const url = "https://instituto.cetivirgendelapuerta.com/estrategico";
 const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
 const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
-
-
-// hacer fetch para la lista de planes
-const planes = [
-  { id: 1, nombre: "Plan Estratégico 2025" },
-  { id: 2, nombre: "Plan Estratégico 2026" },
-];
-
 ---
+
 <PlanLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
-    <PlanPage client:load planes={planes}/>
-<PlanLayout />
+  <!-- El componente React se monta en el cliente -->
+  <PlanPage client:load />
+</PlanLayout>
