@@ -1,0 +1,672 @@
+---
+// src/pages/marketing/cursos/[id].astro
+import Layout from "../../../layouts/MarketingLayout.astro";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const mockTitle = "Curso - INCADEV UI";
+---
+
+<Layout title={mockTitle}>
+  <div class="space-y-6" data-course-id={id}>
+    <!-- Breadcrumb -->
+    <nav
+      class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+    >
+      <a
+        href="/marketing/dashboard"
+        class="hover:text-blue-600 dark:hover:text-blue-400 smooth-transition"
+        >Dashboard</a
+      >
+      <span>/</span>
+      <a
+        href="/marketing/cursos"
+        class="hover:text-blue-600 dark:hover:text-blue-400 smooth-transition"
+        >Cursos</a
+      >
+      <span>/</span>
+      <span id="breadcrumbTitle" class="text-gray-900 dark:text-white"
+        >Cargando...</span
+      >
+    </nav>
+
+    <!-- Loading State -->
+    <div
+      id="loadingState"
+      class="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center"
+    >
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"
+      >
+      </div>
+      <p class="text-gray-600 dark:text-gray-400">Cargando curso...</p>
+    </div>
+
+    <!-- Error State -->
+    <div
+      id="errorState"
+      class="hidden bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center"
+    >
+      <div
+        class="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <svg
+          class="w-10 h-10 text-red-600 dark:text-red-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        Error al cargar el curso
+      </h3>
+      <p id="errorMessage" class="text-gray-600 dark:text-gray-400 mb-4"></p>
+      <button
+        onclick="window.location.reload()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="hidden space-y-6">
+      <!-- Header del Curso -->
+      <div
+        class="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3 flex-wrap">
+              <h1
+                id="cursoNombre"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+              </h1>
+              <span
+                id="cursoBadge"
+                class="px-3 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 rounded-full text-sm font-medium"
+              >
+                Curso
+              </span>
+            </div>
+
+            <p
+              id="cursoDescripcion"
+              class="text-gray-600 dark:text-gray-400 mb-4"
+            >
+            </p>
+
+            <!-- Info del curso -->
+            <div id="cursoInfo" class="flex flex-wrap gap-4 text-sm">
+            </div>
+          </div>
+
+          <div class="flex gap-2">
+            <a
+              href="/marketing/cursos"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 smooth-transition"
+            >
+              Volver
+            </a>
+          </div>
+        </div>
+
+        <!-- Métricas Rápidas -->
+        <div
+          id="quickMetricsContainer"
+          class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800"
+        >
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="quickMetrics">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div
+        class="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800"
+      >
+        <div class="border-b border-gray-200 dark:border-gray-800">
+          <nav class="flex gap-1 p-2 overflow-x-auto">
+            <button
+              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 whitespace-nowrap"
+              data-tab="campanas"
+            >
+              Campañas
+            </button>
+            <button
+              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
+              data-tab="versiones"
+            >
+              Versiones
+            </button>
+            <button
+              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
+              data-tab="metricas"
+            >
+              Métricas
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content: Campañas -->
+        <div id="tab-campanas" class="tab-content p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                Campañas del Curso
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Campañas de marketing asociadas a las versiones de este curso
+              </p>
+            </div>
+          </div>
+
+          <!-- Campañas Grid -->
+          <div id="campanasList" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyCampanas" class="hidden text-center py-12">
+            <div
+              class="w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-10 h-10 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                ></path>
+              </svg>
+            </div>
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
+            >
+              No hay campañas para este curso
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+              Aún no se han creado campañas para las versiones de este curso
+            </p>
+          </div>
+        </div>
+
+        <!-- Tab Content: Versiones -->
+        <div id="tab-versiones" class="tab-content hidden p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            Versiones del Curso
+          </h2>
+
+          <div id="versionesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          </div>
+
+          <div id="emptyVersiones" class="hidden text-center py-12">
+            <p class="text-gray-600 dark:text-gray-400">
+              No hay versiones registradas para este curso
+            </p>
+          </div>
+        </div>
+
+        <!-- Tab Content: Métricas -->
+        <div id="tab-metricas" class="tab-content hidden p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            Métricas de Campañas
+          </h2>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div
+              class="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-900/50"
+            >
+              <p
+                class="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2"
+              >
+                Total Alcance
+              </p>
+              <p
+                id="metricaAlcance"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Personas alcanzadas
+              </p>
+            </div>
+            <div
+              class="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 rounded-xl border border-green-200 dark:border-green-900/50"
+            >
+              <p
+                class="text-sm font-medium text-green-600 dark:text-green-400 mb-2"
+              >
+                Engagement Rate
+              </p>
+              <p
+                id="metricaCTR"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+                --%
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Tasa de interacción
+              </p>
+            </div>
+            <div
+              class="p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-900/50"
+            >
+              <p
+                class="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2"
+              >
+                Interacciones
+              </p>
+              <p
+                id="metricaInteracciones"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Total</p>
+            </div>
+          </div>
+
+          <!-- Resumen -->
+          <div
+            class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+          >
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
+              Resumen de Rendimiento
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400"
+                  >Total de Campañas</span
+                >
+                <span
+                  id="metricaTotalCampanas"
+                  class="text-sm font-bold text-gray-900 dark:text-white"
+                  >--</span
+                >
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400"
+                  >Total de Posts</span
+                >
+                <span
+                  id="metricaTotalPosts"
+                  class="text-sm font-bold text-gray-900 dark:text-white"
+                  >--</span
+                >
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400"
+                  >Versiones del Curso</span
+                >
+                <span
+                  id="metricaTotalVersiones"
+                  class="text-sm font-bold text-gray-900 dark:text-white"
+                  >--</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import {
+      fetchCourseById,
+      fetchCourseCampaigns,
+      type CourseDetailForUI,
+      type CourseCampaignsForUI,
+      type CampaignWithMetricsForUI,
+    } from "../../../services/marketing";
+
+    // ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    const mainDiv = document.querySelector("[data-course-id]") as HTMLElement;
+    const courseId = parseInt(mainDiv?.dataset.courseId || "0", 10);
+
+    let cursoData: CourseDetailForUI | null = null;
+    let campaignsData: CourseCampaignsForUI | null = null;
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+
+    function mostrarError(mensaje: string) {
+      document.getElementById("loadingState")?.classList.add("hidden");
+      document.getElementById("mainContent")?.classList.add("hidden");
+      const errorState = document.getElementById("errorState");
+      const errorMessage = document.getElementById("errorMessage");
+      if (errorState && errorMessage) {
+        errorState.classList.remove("hidden");
+        errorMessage.textContent = mensaje;
+      }
+    }
+
+    function mostrarContenido() {
+      document.getElementById("loadingState")?.classList.add("hidden");
+      document.getElementById("errorState")?.classList.add("hidden");
+      document.getElementById("mainContent")?.classList.remove("hidden");
+    }
+
+    function getEstadoBadgeHTML(estado: "activa" | "finalizada") {
+      if (estado === "activa") {
+        return `<span class="px-3 py-1 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-full text-xs font-medium">Activa</span>`;
+      }
+      return `<span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-full text-xs font-medium">Finalizada</span>`;
+    }
+
+    function getVersionEstadoBadge(estado: string) {
+      const configs: Record<string, { bg: string; text: string; label: string }> = {
+        published: {
+          bg: "bg-green-50 dark:bg-green-950/30",
+          text: "text-green-700 dark:text-green-400",
+          label: "Publicado",
+        },
+        draft: {
+          bg: "bg-yellow-50 dark:bg-yellow-950/30",
+          text: "text-yellow-700 dark:text-yellow-400",
+          label: "Borrador",
+        },
+        archived: {
+          bg: "bg-gray-100 dark:bg-gray-800",
+          text: "text-gray-600 dark:text-gray-400",
+          label: "Archivado",
+        },
+      };
+      const config = configs[estado] || configs.draft;
+      return `<span class="px-2 py-1 ${config.bg} ${config.text} rounded text-xs font-medium">${config.label}</span>`;
+    }
+
+    // ============================================
+    // RENDERIZAR CURSO
+    // ============================================
+
+    function renderCurso(curso: CourseDetailForUI) {
+      // Breadcrumb
+      const breadcrumb = document.getElementById("breadcrumbTitle");
+      if (breadcrumb) breadcrumb.textContent = curso.nombre;
+
+      // Nombre
+      const nombre = document.getElementById("cursoNombre");
+      if (nombre) nombre.textContent = curso.nombre;
+
+      // Descripcion
+      const descripcion = document.getElementById("cursoDescripcion");
+      if (descripcion) descripcion.textContent = curso.descripcion;
+
+      // Info
+      const info = document.getElementById("cursoInfo");
+      if (info) {
+        info.innerHTML = `
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span class="text-gray-600 dark:text-gray-400">${curso.versiones.length} versiones</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-gray-600 dark:text-gray-400">Creado: ${new Date(curso.fechaCreacion).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}</span>
+          </div>
+        `;
+      }
+    }
+
+    // ============================================
+    // RENDERIZAR CAMPAÑAS
+    // ============================================
+
+    function renderCampanas(data: CourseCampaignsForUI) {
+      const container = document.getElementById("campanasList");
+      const emptyState = document.getElementById("emptyCampanas");
+
+      if (!container || !emptyState) return;
+
+      if (data.campañas.length === 0) {
+        container.classList.add("hidden");
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      container.classList.remove("hidden");
+      emptyState.classList.add("hidden");
+
+      container.innerHTML = data.campañas
+        .map((c) => {
+          return `
+          <div class="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl hover:shadow-lg smooth-transition group">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 smooth-transition">
+                  ${c.nombre}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">${c.objetivo}</p>
+                ${c.versionNombre ? `<span class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 rounded">Version: ${c.versionNombre}</span>` : ""}
+              </div>
+              ${getEstadoBadgeHTML(c.estado)}
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-4">
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">${c.metricas.totalPosts}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Posts</p>
+              </div>
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">${c.metricas.totalReach > 1000 ? (c.metricas.totalReach / 1000).toFixed(1) + "K" : c.metricas.totalReach}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Alcance</p>
+              </div>
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">${c.metricas.totalInteractions}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Interacciones</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
+              <span>${new Date(c.inicio).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>
+              <span>→</span>
+              <span>${new Date(c.fin).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>
+            </div>
+
+            <div class="flex gap-2">
+              <a href="/marketing/campañas/${c.id}" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium smooth-transition text-center">
+                Ver Detalles
+              </a>
+            </div>
+          </div>
+        `;
+        })
+        .join("");
+    }
+
+    // ============================================
+    // RENDERIZAR VERSIONES
+    // ============================================
+
+    function renderVersiones(curso: CourseDetailForUI) {
+      const container = document.getElementById("versionesList");
+      const emptyState = document.getElementById("emptyVersiones");
+
+      if (!container || !emptyState) return;
+
+      if (curso.versiones.length === 0) {
+        container.classList.add("hidden");
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      container.classList.remove("hidden");
+      emptyState.classList.add("hidden");
+
+      container.innerHTML = curso.versiones
+        .map((v) => {
+          return `
+          <div class="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl">
+            <div class="flex items-start justify-between mb-3">
+              <h3 class="font-semibold text-gray-900 dark:text-white">${v.nombre}</h3>
+              ${getVersionEstadoBadge(v.estado)}
+            </div>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Version</span>
+                <span class="text-gray-900 dark:text-white">${v.version || "N/A"}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-600 dark:text-gray-400">Precio</span>
+                <span class="text-gray-900 dark:text-white font-semibold">S/ ${v.precio.toFixed(2)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        })
+        .join("");
+    }
+
+    // ============================================
+    // ACTUALIZAR MÉTRICAS
+    // ============================================
+
+    function actualizarMetricas(data: CourseCampaignsForUI, curso: CourseDetailForUI) {
+      // Calcular totales
+      let totalReach = 0;
+      let totalInteractions = 0;
+      let totalPosts = 0;
+      let sumCtr = 0;
+
+      data.campañas.forEach((c) => {
+        totalReach += c.metricas.totalReach;
+        totalInteractions += c.metricas.totalInteractions;
+        totalPosts += c.metricas.totalPosts;
+        sumCtr += c.metricas.averageCtr;
+      });
+
+      const avgCtr = data.campañas.length > 0 ? sumCtr / data.campañas.length : 0;
+
+      // Quick Metrics
+      const quickMetrics = document.getElementById("quickMetrics");
+      if (quickMetrics) {
+        quickMetrics.innerHTML = `
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Versiones</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${curso.versiones.length}</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Campañas</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${data.totalCampañas}</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Alcance Total</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${totalReach > 1000 ? (totalReach / 1000).toFixed(1) + "K" : totalReach}</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Interacciones</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${totalInteractions}</p>
+          </div>
+        `;
+      }
+
+      // Tab Métricas
+      const metricaAlcance = document.getElementById("metricaAlcance");
+      const metricaCTR = document.getElementById("metricaCTR");
+      const metricaInteracciones = document.getElementById("metricaInteracciones");
+      const metricaTotalCampanas = document.getElementById("metricaTotalCampanas");
+      const metricaTotalPosts = document.getElementById("metricaTotalPosts");
+      const metricaTotalVersiones = document.getElementById("metricaTotalVersiones");
+
+      if (metricaAlcance) metricaAlcance.textContent = totalReach > 1000 ? (totalReach / 1000).toFixed(1) + "K" : String(totalReach);
+      if (metricaCTR) metricaCTR.textContent = avgCtr.toFixed(1) + "%";
+      if (metricaInteracciones) metricaInteracciones.textContent = String(totalInteractions);
+      if (metricaTotalCampanas) metricaTotalCampanas.textContent = String(data.totalCampañas);
+      if (metricaTotalPosts) metricaTotalPosts.textContent = String(totalPosts);
+      if (metricaTotalVersiones) metricaTotalVersiones.textContent = String(curso.versiones.length);
+    }
+
+    // ============================================
+    // INICIALIZACION
+    // ============================================
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      console.log("[Curso Detail] Loading course:", courseId);
+
+      try {
+        // 1. Cargar curso
+        cursoData = await fetchCourseById(courseId);
+        console.log("[Curso Detail] Course loaded:", cursoData);
+
+        // 2. Renderizar curso
+        renderCurso(cursoData);
+
+        // 3. Cargar campañas del curso
+        campaignsData = await fetchCourseCampaigns(courseId);
+        console.log("[Curso Detail] Campaigns loaded:", campaignsData);
+
+        // 4. Renderizar campañas
+        renderCampanas(campaignsData);
+
+        // 5. Renderizar versiones
+        renderVersiones(cursoData);
+
+        // 6. Actualizar métricas
+        actualizarMetricas(campaignsData, cursoData);
+
+        // 7. Mostrar contenido
+        mostrarContenido();
+      } catch (error) {
+        console.error("[Curso Detail] Error loading data:", error);
+        mostrarError(
+          error instanceof Error ? error.message : "Error desconocido"
+        );
+      }
+
+      // ============================================
+      // TABS
+      // ============================================
+
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tab = btn.getAttribute("data-tab");
+
+          document.querySelectorAll(".tab-btn").forEach((b) => {
+            b.classList.remove(
+              "bg-blue-50",
+              "dark:bg-blue-950/30",
+              "text-blue-600",
+              "dark:text-blue-400"
+            );
+            b.classList.add("text-gray-600", "dark:text-gray-400");
+          });
+          btn.classList.add(
+            "bg-blue-50",
+            "dark:bg-blue-950/30",
+            "text-blue-600",
+            "dark:text-blue-400"
+          );
+          btn.classList.remove("text-gray-600", "dark:text-gray-400");
+
+          document.querySelectorAll(".tab-content").forEach((content) => {
+            content.classList.add("hidden");
+          });
+          document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
+        });
+      });
+    });
+  </script>
+</Layout>

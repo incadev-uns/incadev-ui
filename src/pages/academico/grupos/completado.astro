@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import FinishGroup from '@/process/academic/dasboard/groups/finish-groups/FinishGroup';
+const robots = ["noindex", "nofollow"];
+
+const title = "Grupos Terminados | Incadev";
+const description = "Consulta los grupos académicos que ya han finalizado en Incadev. Revisa materiales, evaluaciones finales y resultados de los cursos que completaste.";
+const keywords = [ "grupos terminados Incadev","grupos finalizados","cursos terminados","resultados de grupos","evaluaciones finales","materiales de cierre","cursos concluidos","plataforma educativa","educación en línea"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/grupos/completado";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<FinishGroup client:load/>
+</DashboardLayout>

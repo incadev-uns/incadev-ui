@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import AccountProfile from '@/process/academic/dasboard/account/AccountProfile';
+const robots = ["noindex", "nofollow"];
+const title = "Mi Cuenta | Perfil de Usuario Académico en Incadev";
+const description = "Accede y gestiona tu perfil académico en Incadev. Actualiza tu información personal, configuración de cuenta y preferencias de aprendizaje fácilmente.";
+const keywords = ["Incadev", "perfil de usuario académico", "cuenta Incadev", "gestionar cuenta", "información personal", "configuración de cuenta", "plataforma educativa virtual", "capacitación profesional online"];
+const url = "https://icv-procesos-academicos-frontend.vercel.app/academico/account";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<AccountProfile client:load/>
+</DashboardLayout>

@@ -1,0 +1,23 @@
+---
+import LicensesPage from '@/process/technology/dashboard/LicensesPage';
+import '@/styles/global.css';
+
+const title = "Licencias | INCADEV Tecnológico";
+const description = "Gestión de licencias";
+const robots = ["noindex", "nofollow"];
+---
+<!DOCTYPE html>
+<html lang="es" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Licencias</title>
+    <meta name="description" content="{description}" />
+    <meta name="robots" content={robots.join(",")} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen bg-background font-sans antialiased">
+    <LicensesPage client:load/>
+  </body>
+
+</html>

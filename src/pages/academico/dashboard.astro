@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import  DashboardICV  from '@/process/academic/dasboard/Dashboard';
+const robots = ["noindex", "nofollow"];
+const title = "Panel Académico | Incadev";
+const description = "Accede a tu panel académico de Incadev para gestionar cursos, progreso de aprendizaje, materiales y actividades de capacitación profesional.";
+const keywords = ["panel académico", "dashboard académico", "gestión de cursos", "educación virtual", "capacitación profesional", "instituto de desarrollo virtual", "plataforma educativa"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/dashboard";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<DashboardICV client:load/>
+</DashboardLayout>

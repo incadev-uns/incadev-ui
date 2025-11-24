@@ -1,0 +1,5 @@
+Creación de Anuncio:
+tipo: Banner, Popup, Modal, Notificación
+Prioridad
+imagen: url
+página destino

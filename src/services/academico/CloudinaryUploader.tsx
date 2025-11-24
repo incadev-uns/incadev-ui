@@ -3,12 +3,12 @@
 import React, { useState, type ChangeEvent } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
-import { Upload, Loader2, ImageIcon, Video } from "lucide-react"
+import { Upload, Loader2, ImageIcon, Video, ChevronDown, ChevronUp, Eye } from "lucide-react"
 
 interface CloudinaryUploaderProps {
   onUpload?: (url: string) => void
   label?: string
-  acceptType?: "image" | "video" | "both" // control de tipos permitidos
+  acceptType?: "image" | "video" | "both"
 }
 
 const CloudinaryUploader: React.FC<CloudinaryUploaderProps> = ({
@@ -22,8 +22,8 @@ const CloudinaryUploader: React.FC<CloudinaryUploaderProps> = ({
   const [fileUrl, setFileUrl] = useState<string>("")
   const [fileType, setFileType] = useState<string>("")
   const [loading, setLoading] = useState<boolean>(false)
+  const [showPreview, setShowPreview] = useState<boolean>(false)
 
-  // Determinar el "accept" del input según la prop
   const getAcceptString = () => {
     if (acceptType === "image") return "image/*"
     if (acceptType === "video") return "video/*"
@@ -37,7 +37,6 @@ const CloudinaryUploader: React.FC<CloudinaryUploaderProps> = ({
     const file = files[0]
     setFileType(file.type)
 
-    // Validación según la prop
     if (
       (acceptType === "image" && !file.type.startsWith("image/")) ||
       (acceptType === "video" && !file.type.startsWith("video/"))
@@ -92,6 +91,10 @@ const CloudinaryUploader: React.FC<CloudinaryUploaderProps> = ({
     return null
   }
 
+  const togglePreview = () => {
+    setShowPreview(!showPreview)
+  }
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -144,24 +147,49 @@ const CloudinaryUploader: React.FC<CloudinaryUploaderProps> = ({
 
       {fileUrl && !loading && (
         <Card className="overflow-hidden">
-          <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              {fileType.startsWith("image/") ? (
-                <ImageIcon className="h-5 w-5 text-primary" />
-              ) : (
-                <Video className="h-5 w-5 text-red-500" />
-              )}
-              <span>Vista previa</span>
+          <CardContent className="p-0">
+            {/* Header del preview - siempre visible */}
+            <div 
+              className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={togglePreview}
+            >
+              <div className="flex items-center gap-2">
+                {fileType.startsWith("image/") ? (
+                  <ImageIcon className="h-5 w-5 text-primary" />
+                ) : (
+                  <Video className="h-5 w-5 text-red-500" />
+                )}
+                <span className="text-sm font-medium">
+                  {fileType.startsWith("image/") ? "Imagen cargada" : "Video cargado"}
+                </span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <a 
+                  href={fileUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-xs text-primary hover:underline flex items-center gap-1"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Eye className="h-3 w-3" />
+                  Ver original
+                </a>
+                {showPreview ? (
+                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
             </div>
 
-            {getPreview()}
-
-            <div className="flex items-center justify-between text-xs text-muted-foreground pt-2">
-              <span>Archivo cargado exitosamente</span>
-              <a href={fileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                Ver original
-              </a>
-            </div>
+            {showPreview && (
+              <div className="px-4 pb-4 border-t">
+                <div className="pt-3">
+                  {getPreview()}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

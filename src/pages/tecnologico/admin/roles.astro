@@ -1,0 +1,22 @@
+---
+import RolesPage from '@/process/technology/dashboard/RolesPage';
+import '@/styles/global.css';
+
+const title = "Gestión de Roles | INCADEV Tecnológico";
+const description = "Administración de roles del módulo tecnológico";
+const robots = ["noindex", "nofollow"];
+const keywords = ["INCADEV", "tecnológico", "roles", "gestión"];
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="min-h-screen bg-background font-sans antialiased">
+  <RolesPage client:load />
+</body>
+</html>

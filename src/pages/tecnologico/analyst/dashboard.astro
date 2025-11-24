@@ -1,0 +1,155 @@
+---
+import TechDashboardLayout from '@/process/technology/layouts/TechDashboardLayout.astro';
+
+const title = "Dashboard Analista Académico | INCADEV Tecnológico";
+const description = "Panel de control del analista académico";
+---
+
+<TechDashboardLayout {title} {description}>
+  <div class="min-h-screen bg-linear-to-br from-teal-500/5 via-background to-teal-500/10">
+    <!-- Contenedor principal -->
+    <div class="container mx-auto px-4 py-8">
+      <!-- Header del dashboard -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-4xl font-bold text-foreground mb-2">
+              Dashboard Analista Académico
+            </h1>
+            <p class="text-lg text-muted-foreground">
+              Análisis de Notas, Asistencias y Predicción de Deserción
+            </p>
+          </div>
+          <div class="flex items-center gap-4">
+            <a
+              href="/tecnologico/login"
+              class="px-6 py-3 rounded-xl bg-muted hover:bg-muted/80 text-foreground font-semibold transition-all hover:scale-105 shadow-md"
+            >
+              Cerrar Sesión
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarjeta de bienvenida -->
+      <div class="bg-linear-to-br from-teal-500/10 via-teal-500/5 to-transparent border-2 border-teal-500/20 rounded-2xl p-10 mb-8 shadow-xl">
+        <div class="flex items-center gap-6">
+          <div class="w-20 h-20 rounded-2xl bg-linear-to-br from-teal-500/30 to-teal-500/10 flex items-center justify-center shadow-lg">
+            <svg class="w-10 h-10 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-3xl font-bold text-foreground mb-2">
+              ¡Bienvenido, Analista Académico!
+            </h2>
+            <p class="text-lg text-muted-foreground">
+              Panel de control para análisis de datos académicos y KPIs
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid de funcionalidades -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Card 1: Análisis de Notas -->
+        <div class="bg-background/50 backdrop-blur-sm border-2 rounded-xl p-6 hover:shadow-lg hover:border-teal-500/30 transition-all">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground">Análisis de Notas</h3>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Estadísticas y tendencias de calificaciones
+          </p>
+        </div>
+
+        <!-- Card 2: Asistencias -->
+        <div class="bg-background/50 backdrop-blur-sm border-2 rounded-xl p-6 hover:shadow-lg hover:border-teal-500/30 transition-all">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center">
+              <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground">Asistencias</h3>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Análisis de asistencia estudiantil
+          </p>
+        </div>
+
+        <!-- Card 3: Predicción de Deserción -->
+        <div class="bg-background/50 backdrop-blur-sm border-2 rounded-xl p-6 hover:shadow-lg hover:border-teal-500/30 transition-all">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+              <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground">Predicción de Deserción</h3>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Identificación de estudiantes en riesgo
+          </p>
+        </div>
+
+        <!-- Card 4: Reportes Académicos -->
+        <div class="bg-background/50 backdrop-blur-sm border-2 rounded-xl p-6 hover:shadow-lg hover:border-teal-500/30 transition-all">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground">Reportes Académicos</h3>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Generación de reportes personalizados
+          </p>
+        </div>
+
+        <!-- Card 5: KPIs Académicos -->
+        <div class="bg-background/50 backdrop-blur-sm border-2 rounded-xl p-6 hover:shadow-lg hover:border-teal-500/30 transition-all">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-teal-500/10 flex items-center justify-center">
+              <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground">KPIs Académicos</h3>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Indicadores clave de rendimiento
+          </p>
+        </div>
+
+        <!-- Card 6: Dashboards Visuales -->
+        <div class="bg-background/50 backdrop-blur-sm border-2 rounded-xl p-6 hover:shadow-lg hover:border-teal-500/30 transition-all">
+          <div class="flex items-center gap-4 mb-4">
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+              <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-foreground">Dashboards Visuales</h3>
+          </div>
+          <p class="text-sm text-muted-foreground">
+            Visualización de datos académicos
+          </p>
+        </div>
+      </div>
+
+      <!-- Footer info -->
+      <div class="mt-12 pt-8 border-t-2 border-dashed">
+        <p class="text-center text-sm text-muted-foreground">
+          Panel de análisis académico. Las funcionalidades se irán agregando progresivamente.
+        </p>
+      </div>
+    </div>
+  </div>
+</TechDashboardLayout>

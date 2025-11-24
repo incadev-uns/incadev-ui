@@ -1,0 +1,16 @@
+---
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import { ModuleSelector } from '@/components/auth/ModuleSelector';
+
+const robots = ["noindex", "nofollow"];
+const title = "Selecciona tu Módulo | INCADEV";
+const description = "Selecciona tu módulo e inicia sesión en la plataforma INCADEV. Sistema de autenticación centralizado para todos los módulos institucionales.";
+const keywords = ["INCADEV", "inicio de sesión", "módulos", "autenticación", "sistema educativo", "plataforma virtual", "LMS"];
+const url = "https://instituto.cetivirgendelapuerta.com/auth";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<AuthLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+  <ModuleSelector client:load />
+</AuthLayout>

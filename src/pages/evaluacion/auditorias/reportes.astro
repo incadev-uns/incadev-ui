@@ -1,0 +1,42 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import PanelReportesPage from "@/process/evaluation/audits/panel/PanelReportesPage";
+const robots = ["noindex", "nofollow"];
+
+const title = "Reportes | Plataforma Virtual Incadev";
+
+const description =
+    "Crea, gestiona y analiza reportes de auditorias en la plataforma virtual de Incadev.";
+
+const keywords = [
+    "reportes de auditorias",
+    "reportes de auditorias plataforma virtual",
+    "reportes de auditorias educativas",
+    "reportes de auditorias Incadev",
+    "reportes de auditorias educativas",
+    "reportes de auditorias educativas",
+    "formularios online educativos",
+    "reportes de auditorias para e-learning",
+    "reportes de auditorias para clases virtuales",
+    "reportes de auditorias Incadev",
+    "analítica de auditorias educativas",
+    "reportes de auditorias en plataforma virtual",
+];
+
+const url =
+    "https://instituto.cetivirgendelapuerta.com/evaluacion/auditorias/reportes";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout
+    {robots}
+    {title}
+    {description}
+    {keywords}
+    {url}
+    {imageOG}
+    {imagetwt}
+>
+    <PanelReportesPage client:load />
+</DashboardLayout>

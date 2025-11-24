@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DetailGroup from '@/process/academic/dasboard/groups/details-groups/DetailGroup';
+const robots = ["noindex", "nofollow"];
+
+const title = "Detalles del Curso | Incadev";
+const description = "Consulta toda la información de tu curso en Incadev: materiales de estudio, módulos disponibles, evaluaciones, progreso y recursos complementarios para tu aprendizaje.";
+const keywords = ["curso Incadev", "información del curso", "módulos del curso", "materiales de estudio", "evaluaciones en línea", "progreso académico", "recursos educativos", "plataforma Incadev", "educación virtual", "aprendizaje en línea"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/grupos/informacion";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<DetailGroup client:load/>
+</DashboardLayout>

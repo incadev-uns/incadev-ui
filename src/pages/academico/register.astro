@@ -1,0 +1,16 @@
+---
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { AuthPage } from '@/process/academic/auth/AuthPage';
+const robots = ["noindex", "nofollow"];
+
+const title = "Crear Cuenta Académica | Incadev";
+const description = "Regístrate en Incadev para acceder a cursos virtuales, programas de capacitación profesional y herramientas académicas en línea.";
+const keywords = ["registro académico", "crear cuenta Incadev", "educación virtual", "formación profesional", "capacitación online", "instituto de desarrollo virtual", "estudios en línea", "plataforma educativa"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/register";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<PublicLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<AuthPage mode='register' client:load/>
+</PublicLayout>

@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import TeachGroup from '@/process/academic/dasboard/groups/teach-groups/TeachGroup';
+const robots = ["noindex", "nofollow"];
+
+const title = "Grupos Académicos | Incadev";
+const description = "Descubre los grupos académicos asociados a los cursos de Incadev. Accede a los horarios y detalles de cada grupo para organizar tu aprendizaje de manera efectiva.";
+const keywords = ["grupos académicos Incadev", "grupos de curso Incadev", "cursos y grupos académicos", "grupos de estudio online", "cursos y docentes", "horarios de grupos", "grupos de aprendizaje", "educación virtual", "plataforma educativa"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/grupos/teach";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<TeachGroup client:load/>
+</DashboardLayout>

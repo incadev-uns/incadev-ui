@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import JoinedGroup from '@/process/academic/dasboard/groups/joined-groups/JoinedGroup';
+const robots = ["noindex", "nofollow"];
+
+const title = "Mis Grupos Académicos | Incadev";
+const description = "Consulta los grupos académicos a los que has ingresado en Incadev. Accede a tus horarios, detalles del curso y más para organizar tu aprendizaje de manera efectiva.";
+const keywords = ["mis grupos académicos Incadev", "grupos a los que he ingresado", "grupos de estudio en línea", "mis cursos Incadev", "horarios de mis grupos", "grupos de clase", "cursos académicos", "plataforma educativa", "educación en línea"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/grupos/joined";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<JoinedGroup client:load/>
+</DashboardLayout>

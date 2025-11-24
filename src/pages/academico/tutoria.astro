@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import TutoringPage from '@/process/academic/dasboard/audits/TutoringPage';
+const robots = ["noindex", "nofollow"];
+
+const title = "Tutorías Académicas | Incadev";
+const description = "Accede a las tutorías académicas de Incadev. Mejora tu aprendizaje con la ayuda de tutores expertos y resuelve tus dudas en tiempo real.";
+const keywords = [ "tutorías Incadev","tutorías académicas","tutorías online","asesoría educativa","ayuda académica","tutores expertos","mejora del rendimiento académico","plataforma educativa","educación en línea"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/tutoria";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<TutoringPage client:load/>
+</DashboardLayout>

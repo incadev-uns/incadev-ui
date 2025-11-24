@@ -1,0 +1,22 @@
+---
+import AssetsPage from "@/process/technology/dashboard/AssetsPage.tsx";
+import '@/styles/global.css';
+
+const title = "Activos Tecnológicos | INCADEV Tecnológico";
+const description = "Gestión de activos tecnológicos y recursos de hardware";
+const robots = ["noindex", "nofollow"];
+---
+<!DOCTYPE html>
+<html lang="es" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={robots.join(", ")} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen bg-background font-sans antialiased">
+    <AssetsPage client:load />
+  </body>
+</html>

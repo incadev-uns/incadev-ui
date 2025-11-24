@@ -1,0 +1,15 @@
+---
+import PublicLayout from '@/layouts/PublicLayout.astro';
+import { AuthPage } from '@/process/academic/auth/AuthPage';
+const robots = ["noindex", "nofollow"];
+const title = "Iniciar Sesión Académica | Incadev";
+const description = "Accede a tu cuenta académica en Incadev para gestionar tus cursos, clases virtuales y materiales de capacitación profesional.";
+const keywords = ["Incadev", "inicio de sesión académico", "plataforma virtual", "cursos online", "capacitación profesional", "instituto de desarrollo virtual", "educación en línea"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/login";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<PublicLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<AuthPage mode='login' client:load/>
+</PublicLayout>

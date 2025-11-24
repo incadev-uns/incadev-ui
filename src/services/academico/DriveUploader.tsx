@@ -90,7 +90,7 @@ const DriveUploader: React.FC<DriveUploaderProps> = ({ onUpload, label = "Subir 
             id="drive-upload"
             type="file"
             name="file"
-            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xlsx"
+            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.xlsx,.jpg,.png,.webp"
             onChange={handleUpload}
             className="sr-only"
             disabled={loading}

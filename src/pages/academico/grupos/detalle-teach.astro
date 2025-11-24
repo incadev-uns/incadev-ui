@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DetailTeachGroup from '@/process/academic/dasboard/groups/details-teach/DetailTeachGroup';
+const robots = ["noindex", "nofollow"];
+
+const title = "Editar Grupo Académico | Incadev";
+const description = "Gestiona y actualiza la información de tus grupos académicos en Incadev. Modifica horarios, materiales, descripción y detalles del curso para mantener tus clases organizadas y actualizadas.";
+const keywords = ["editar grupo académico", "gestionar grupos Incadev", "configurar grupo docente", "modificar detalles de curso", "actualizar materiales del grupo", "gestión de clases virtuales", "plataforma docente Incadev", "educación en línea", "administrar grupos académicos", "cursos y grupos docentes"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/grupos/detalle-teach";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<DetailTeachGroup client:load/>
+</DashboardLayout>

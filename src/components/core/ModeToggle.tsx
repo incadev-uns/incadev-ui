@@ -10,21 +10,36 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function ModeToggle() {
-  const [theme, setThemeState] = React.useState<
-    "theme-light" | "dark" | "system"
-  >("theme-light")
+  const [theme, setThemeState] = React.useState<"light" | "dark" | "system">("light")
 
   React.useEffect(() => {
-    const isDarkMode = document.documentElement.classList.contains("dark")
-    setThemeState(isDarkMode ? "dark" : "theme-light")
+    // Leer tema desde localStorage al montar
+    const storedTheme = localStorage.getItem("theme") as "light" | "dark" | null
+
+    if (storedTheme) {
+      setThemeState(storedTheme)
+    } else {
+      // Si no hay tema guardado, usar preferencia del sistema
+      const isDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
+      setThemeState(isDarkMode ? "dark" : "light")
+    }
   }, [])
 
   React.useEffect(() => {
+    // Aplicar tema
     const isDark =
       theme === "dark" ||
-      (theme === "system" &&
-        window.matchMedia("(prefers-color-scheme: dark)").matches)
+      (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
+
     document.documentElement.classList[isDark ? "add" : "remove"]("dark")
+
+    // Guardar en localStorage
+    if (theme !== "system") {
+      localStorage.setItem("theme", theme)
+    } else {
+      // Si es system, guardar el tema actual resuelto
+      localStorage.setItem("theme", isDark ? "dark" : "light")
+    }
   }, [theme])
 
   return (
@@ -37,7 +52,7 @@ export function ModeToggle() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setThemeState("theme-light")}>
+        <DropdownMenuItem onClick={() => setThemeState("light")}>
           Light
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setThemeState("dark")}>

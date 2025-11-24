@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import AvailableGroup from '@/process/academic/dasboard/groups/available-groups/AvailableGroup';
+const robots = ["noindex", "nofollow"];
+
+const title = "Grupos Disponibles | Incadev";
+const description = "Explora los grupos académicos disponibles en Incadev y únete al que más se ajuste a tu horario y preferencias. Accede a diferentes cursos y áreas de estudio en línea.";
+const keywords = [ "grupos disponibles Incadev","grupos académicos abiertos","grupos para unirse Incadev","grupos de estudio en línea","cursos disponibles Incadev","inscripción en grupos","plataforma educativa","educación en línea","nuevos grupos académicos"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/grupos/disponible";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<AvailableGroup client:load/>
+</DashboardLayout>

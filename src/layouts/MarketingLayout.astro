@@ -1,0 +1,194 @@
+---
+// src/layouts/MarketingLayout.astro
+import "../styles/global.css";
+import Sidebar from "../process/marketing/Sidebar";
+
+interface Props {
+  title: string;
+  allowedRoles?: string[]; // Roles permitidos (opcional)
+}
+
+const { title, allowedRoles = ["marketing", "marketing_admin"] } = Astro.props;
+
+// Este script se ejecuta en el servidor (build time) y en el cliente
+// Para protección real, usamos un script en el cliente
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta
+      name="description"
+      content="Dashboard de Marketing para INCADEV - Gestión de propuestas, cursos y campañas"
+    />
+  </head>
+  <body class="min-h-screen transition-all duration-200 ease-in-out">
+    <!-- Loading mientras verifica auth -->
+    <div
+      id="auth-loading"
+      class="fixed inset-0 bg-white dark:bg-gray-950 flex items-center justify-center z-50"
+    >
+      <div class="text-center">
+        <div
+          class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"
+        >
+        </div>
+        <p class="text-gray-600 dark:text-gray-400">
+          Verificando autenticación...
+        </p>
+      </div>
+    </div>
+
+    <!-- Contenido principal (oculto hasta verificar auth) -->
+    <div id="app-content" class="hidden">
+      <div class="flex">
+        <!-- Sidebar -->
+        <Sidebar client:load />
+
+        <!-- Main Content -->
+        <main
+          class="flex-1 p-6 lg:p-10 ml-0 lg:ml-64 transition-all duration-200 ease-in-out"
+        >
+          <slot />
+        </main>
+      </div>
+    </div>
+
+    <!-- Toast container for notifications -->
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2">
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  html {
+    scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background-color: #2563eb;
+    color: white;
+  }
+
+  *:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+
+  .dark *:focus-visible {
+    outline-offset: 2px;
+  }
+</style>
+
+<!-- Script de autenticación (se ejecuta en el cliente) -->
+<script define:vars={{ allowedRoles }}>
+  // Este script se ejecuta ANTES de mostrar el contenido
+  (function () {
+    // Funciones helper
+    function getToken() {
+      return localStorage.getItem("token");
+    }
+
+    function getUser() {
+      const userStr = localStorage.getItem("user");
+      return userStr ? JSON.parse(userStr) : null;
+    }
+
+    function redirectToLogin() {
+      window.location.href = "/auth/marketing";
+    }
+
+    function showContent() {
+      const loading = document.getElementById("auth-loading");
+      const content = document.getElementById("app-content");
+
+      if (loading) loading.style.display = "none";
+      if (content) content.classList.remove("hidden");
+    }
+
+    function showUnauthorized() {
+      const loading = document.getElementById("auth-loading");
+      if (loading) {
+        loading.innerHTML = `
+          <div class="text-center max-w-md mx-auto p-8">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+              Acceso No Autorizado
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+              No tienes permisos para acceder a esta sección.
+            </p>
+            <button 
+              onclick="window.location.href='/auth'"
+              class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all"
+            >
+              Volver al Login
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // Verificar autenticación
+    const token = getToken();
+    const user = getUser();
+
+    // Si no hay token, redirigir a login
+    if (!token) {
+      redirectToLogin();
+      return;
+    }
+
+    // Si no hay usuario, redirigir a login
+    if (!user) {
+      localStorage.removeItem("token"); // Limpiar token huérfano
+      redirectToLogin();
+      return;
+    }
+
+    // Verificar si el usuario tiene un rol permitido
+    const userRoles = user.roles || []; // ✅ CORRECTO (es un array)
+    const isAllowed = userRoles.some((role) => allowedRoles.includes(role));
+
+    if (!isAllowed) {
+      showUnauthorized();
+      return;
+    }
+
+    // Todo OK, mostrar contenido
+    showContent();
+  })();
+</script>
+
+<!-- Script de tema (dark mode) -->
+<script is:inline>
+  const getThemePreference = () => {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+      return localStorage.getItem("theme");
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  };
+
+  const isDark = getThemePreference() === "dark";
+  document.documentElement.classList[isDark ? "add" : "remove"]("dark");
+
+  if (typeof localStorage !== "undefined") {
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains("dark");
+      localStorage.setItem("theme", isDark ? "dark" : "light");
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+  }
+</script>

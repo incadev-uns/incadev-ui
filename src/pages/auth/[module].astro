@@ -1,0 +1,32 @@
+---
+import AuthLayout from '@/layouts/AuthLayout.astro';
+import { UniversalLogin } from '@/components/auth/UniversalLogin';
+import { getModuleById, getAllModuleIds } from '@/config/auth/module-mapping';
+
+// Generar todas las rutas estáticas para los módulos
+export function getStaticPaths() {
+  const moduleIds = getAllModuleIds();
+  return moduleIds.map((moduleId) => ({
+    params: { module: moduleId },
+  }));
+}
+
+const { module } = Astro.params;
+
+const moduleInfo = getModuleById(module);
+if (!moduleInfo) {
+  return Astro.redirect('/auth');
+}
+
+const robots = ["noindex", "nofollow"];
+const title = `Iniciar Sesión - ${moduleInfo.name} | INCADEV`;
+const description = `Inicia sesión en el módulo ${moduleInfo.name} de INCADEV. ${moduleInfo.description}`;
+const keywords = ["INCADEV", "inicio de sesión", moduleInfo.name, "autenticación", "sistema educativo", "plataforma virtual", "LMS"];
+const url = `https://instituto.cetivirgendelapuerta.com/auth/${module}`;
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<AuthLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+  <UniversalLogin moduleId={module} client:load />
+</AuthLayout>

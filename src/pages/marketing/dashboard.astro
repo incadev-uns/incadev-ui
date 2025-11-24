@@ -1,0 +1,200 @@
+---
+// src/pages/marketing/dashboard.astro
+import Layout from "../../layouts/MarketingLayout.astro";
+import DashboardStats, { ApprovalRateSection } from "../../process/marketing/DashboardStats.tsx";
+import PropuestasPreview from "../../process/marketing/PropuestasPreview.tsx";
+import AlumnosResumen from "../../process/marketing/AlumnosResumen.tsx";
+---
+
+<Layout title="Dashboard Marketing - INCADEV UI">
+  <div class="space-y-8">
+    <!-- Header Section con fecha -->
+    <section>
+      <div class="mb-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Dashboard de Marketing
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+              Bienvenido de nuevo. Aquí está el resumen de hoy.
+            </p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm font-medium text-gray-900 dark:text-white">
+              {
+                new Date().toLocaleDateString("es-ES", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              }
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+              Última actualización: {
+                new Date().toLocaleTimeString("es-ES", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              }
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Grid - DATOS REALES -->
+      <DashboardStats client:load />
+    </section>
+
+    <!-- KPI Destacado: Tasa de Aprobación - DATOS REALES -->
+    <ApprovalRateSection client:load />
+
+    <!-- Main Content Grid: Propuestas + Alumnos -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Propuestas -->
+      <section>
+        <PropuestasPreview client:load />
+      </section>
+
+      <!-- Seguimiento de Alumnos -->
+      <section>
+        <AlumnosResumen client:load />
+      </section>
+    </div>
+
+    <!-- Quick Actions -->
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <a
+        href="/marketing/propuestas"
+        class="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-900/50 hover:shadow-lg smooth-transition group"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-12 h-12 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center group-hover:scale-110 smooth-transition"
+          >
+            <svg
+              class="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-1">
+              Nueva Propuesta
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Validar idea de curso
+            </p>
+          </div>
+        </div>
+      </a>
+
+      <a
+        href="/marketing/campañas"
+        class="p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-900/50 hover:shadow-lg smooth-transition group"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-12 h-12 bg-orange-600 dark:bg-orange-500 rounded-lg flex items-center justify-center group-hover:scale-110 smooth-transition"
+          >
+            <svg
+              class="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+              ></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-1">
+              Ver Campañas
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Gestionar todas
+            </p>
+          </div>
+        </div>
+      </a>
+
+      <a
+        href="/marketing/cursos"
+        class="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 rounded-xl border border-green-200 dark:border-green-900/50 hover:shadow-lg smooth-transition group"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-12 h-12 bg-green-600 dark:bg-green-500 rounded-lg flex items-center justify-center group-hover:scale-110 smooth-transition"
+          >
+            <svg
+              class="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              ></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-1">
+              Gestionar Cursos
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Captación activa
+            </p>
+          </div>
+        </div>
+      </a>
+
+      <a
+        href="/marketing/alumnos"
+        class="p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-900/50 hover:shadow-lg smooth-transition group"
+      >
+        <div class="flex items-center gap-4">
+          <div
+            class="w-12 h-12 bg-purple-600 dark:bg-purple-500 rounded-lg flex items-center justify-center group-hover:scale-110 smooth-transition"
+          >
+            <svg
+              class="w-6 h-6 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+              ></path>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-1">
+              Ver Alumnos
+            </h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Leads y seguimiento
+            </p>
+          </div>
+        </div>
+      </a>
+    </section>
+  </div>
+</Layout>

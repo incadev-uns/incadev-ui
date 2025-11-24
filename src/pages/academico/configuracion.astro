@@ -1,0 +1,126 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+
+const robots = ["index", "follow"];
+const title = "Configuración - Incadev";
+const description = "Configuración y información del sistema académico";
+const keywords = ["configuración", "sistema", "plataforma", "información"];
+const url = "https://instituto.cetivirgendelapuerta.com/academico/configuracion";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+  <div class="container mx-auto p-6">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold">Configuración del Sistema</h1>
+      <p class="text-muted-foreground mt-2">Información sobre la configuración y funcionamiento de la plataforma</p>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-2">
+      <div class="space-y-6">
+        <section class="bg-card rounded-lg border p-6">
+          <h2 class="text-2xl font-semibold mb-4">Sobre la Plataforma</h2>
+          <div class="space-y-4">
+            <div>
+              <h3 class="font-semibold text-lg text-primary">Incadev - Instituto de Capacitación Virtual</h3>
+              <p class="text-muted-foreground mt-1">Plataforma educativa diseñada para la gestión académica integral.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg text-green-400">Tecnología</h3>
+              <p class="text-muted-foreground mt-1">Desarrollada con React, Astro y Laravel para un rendimiento óptimo.</p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-lg text-purple-400">Seguridad</h3>
+              <p class="text-muted-foreground mt-1">Sistema seguro con autenticación y autorización por roles.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-card rounded-lg border p-6">
+          <h2 class="text-2xl font-semibold mb-4">Configuración General</h2>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between py-2 border-b">
+              <span>Versión de la Plataforma</span>
+              <span class="font-semibold">1.0</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b">
+              <span>Última Actualización</span>
+              <span class="font-semibold">Octubre 2025</span>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b">
+              <span>Soporte Técnico</span>
+              <span class="font-semibold text-green-400">Activo</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="space-y-6">
+        <section class="bg-card rounded-lg border p-6">
+          <h2 class="text-2xl font-semibold mb-4">Características</h2>
+          <ul class="space-y-3">
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>Gestión completa de cursos y grupos</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>Sistema de asistencia integrado</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>Seguimiento de egresados</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>Panel administrativo avanzado</span>
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>Reportes y estadísticas</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="bg-card rounded-lg border p-6">
+          <h2 class="text-2xl font-semibold mb-4">Requisitos del Sistema</h2>
+          <div class="space-y-2 text-sm text-muted-foreground">
+            <p>• Navegador web moderno (Chrome, Firefox, Safari, Edge)</p>
+            <p>• Conexión a internet estable</p>
+            <p>• JavaScript habilitado</p>
+            <p>• Resolución mínima recomendada: 1024x768</p>
+          </div>
+        </section>
+
+        <section class="bg-primary/10 rounded-lg p-6 border border-primary/20">
+          <h3 class="font-semibold text-lg mb-3 text-primary">Información de Contacto</h3>
+          <div class="space-y-2 text-sm text-primary">
+            <div class="flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+              <span>soporte@incadev.com</span>
+            </div>
+            <div class="flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+              </svg>
+              <span>+51 999999123</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</DashboardLayout>

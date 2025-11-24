@@ -1,0 +1,42 @@
+---
+import DashboardLayout from "@/layouts/DashboardLayout.astro";
+import PanelAuditPage from "@/process/evaluation/audits/panel/PanelAuditPage";
+const robots = ["noindex", "nofollow"];
+
+const title = "Auditorias | Plataforma Virtual Incadev";
+
+const description =
+    "Crea, gestiona y analiza auditorias online en la plataforma virtual de Incadev.";
+
+const keywords = [
+    "auditorias online",
+    "auditorias plataforma virtual",
+    "auditorias educativas",
+    "evaluación de cursos virtuales",
+    "feedback de estudiantes",
+    "satisfacción de estudiantes",
+    "formularios online educativos",
+    "auditorias para e-learning",
+    "auditorias para clases virtuales",
+    "auditorias Incadev",
+    "analítica de auditorias educativas",
+    "retroalimentación en plataforma virtual",
+];
+
+const url =
+    "https://instituto.cetivirgendelapuerta.com/evaluacion/auditorias/panel-audit";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout
+    {robots}
+    {title}
+    {description}
+    {keywords}
+    {url}
+    {imageOG}
+    {imagetwt}
+>
+    <PanelAuditPage client:load />
+</DashboardLayout>
