@@ -3,8 +3,6 @@ import { SiteHeader } from "@/process/administrative/components/main-content/sit
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { useAdministrativeAuth } from "@/process/administrative/hooks/useAdministrativeAuth";
 
-
-// IMPORTAR NavItems dinámicos
 import { adminNavItems } from "@/process/administrative/administrative-site";
 
 interface AdministrativeLayoutProps {
@@ -16,10 +14,45 @@ export default function AdministrativeLayout({
   children,
   title = "Dashboard: Administrativo",
 }: AdministrativeLayoutProps) {
-
-  const { token, user, mounted } = useAdministrativeAuth();
+  
+  const { token, user, role, mounted } = useAdministrativeAuth();
 
   if (!mounted) return <></>;
+
+  // =====================================================
+  // ROLES DEL USUARIO (string "role" + array "roles")
+  // =====================================================
+  const arrayRoles =
+    user?.roles?.map((r: any) => r.name) ?? [];
+
+  const allUserRoles = [
+    role,        // string principal
+    ...arrayRoles // roles del backend
+  ].filter(Boolean);
+
+  // =====================================================
+  // FILTRADO DEL MENÚ
+  // =====================================================
+  const filteredNavItems = adminNavItems
+    .filter((item) => {
+      if (item.allowedRoles) {
+        return item.allowedRoles.some((allowed) =>
+          allUserRoles.includes(allowed)
+        );
+      }
+      return true; // si no tiene restricciones, mostrar
+    })
+    .map((item) => ({
+      ...item,
+      items: item.items?.filter((sub) => {
+        if (sub.allowedRoles) {
+          return sub.allowedRoles.some((allowed) =>
+            allUserRoles.includes(allowed)
+          );
+        }
+        return true;
+      }),
+    }));
 
   return (
     <SidebarProvider
@@ -34,7 +67,7 @@ export default function AdministrativeLayout({
         variant="inset"
         token={token}
         user={user}
-        navItems={adminNavItems}
+        navItems={filteredNavItems}
       />
 
       <SidebarInset>

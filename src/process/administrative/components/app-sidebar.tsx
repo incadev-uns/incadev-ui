@@ -35,6 +35,16 @@ const data = {
   ],
 };
 
+const ROLE_LABELS: Record<string, string> = {
+  financial_manager: "Gestor Financiero",
+  enrollment_manager: "Gestor de Matrículas",
+  data_analyst: "Analista de Datos",
+  system_viewer: "Visualizador del Sistema",
+  human_resources: "Recursos Humanos",
+  guest: "Invitado",
+};
+
+
 export function AppSidebar({
   navItems,
   user,
@@ -59,7 +69,7 @@ export function AppSidebar({
           <div className="flex flex-col leading-tight group-data-[collapsible=icon]:hidden">
             <span className="font-bold text-base tracking-wide">INCADEV</span>
             <span className="text-[11px] text-muted-foreground uppercase tracking-widest">
-              {user?.role ?? "INVITADO"}
+              {ROLE_LABELS[user?.role] ?? "INVITADO"}
             </span>
           </div>
         </div>

@@ -50,6 +50,7 @@ import {
 import { config } from "@/config/administrative-config";
 import { mockData } from "@/process/administrative/dashboard/mockData";
 
+
 // Datos de ejemplo para el dashboard
 
 interface Course {

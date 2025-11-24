@@ -27,6 +27,8 @@ export const config = {
 
     //finanzas
     balance_general: "/api/finanzas/balance-general",
+    financialReports: "/api/financial-reports/report",
+
 
     //estudiantes
 
@@ -39,6 +41,9 @@ export const config = {
     documentsExportCsv: '/api/gestion-documentaria/documentos/export/csv',
     documentsExportData: '/api/gestion-documentaria/documentos/export-data',
     documentsDownload: '/api/gestion-documentaria/documentos',
+
+    //Firmas del director
+    instituteDirectors: "/api/gestion-documentaria/institute-directors",
 
 
     // Historial Académico

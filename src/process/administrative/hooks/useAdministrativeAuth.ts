@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 export function useAdministrativeAuth() {
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<any | null>(null);
+  const [role, setRole] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -15,37 +16,57 @@ export function useAdministrativeAuth() {
 
     if (authDataStr) {
       const authData = JSON.parse(authDataStr);
+
       localStorage.setItem('token', JSON.stringify(authData.access_token));
       localStorage.setItem('user', JSON.stringify(authData.user));
+
+      // PRIORIDAD 1: user.roles[] del backend
+      if (Array.isArray(authData.user?.roles) && authData.user.roles.length > 0) {
+        localStorage.setItem('role', authData.user.roles[0].name);
+      }
+      // PRIORIDAD 2: user.role directo
+      else if (authData.user?.role) {
+        localStorage.setItem('role', authData.user.role);
+      }
+      // PRIORIDAD 3: rol enviado desde el login
+      else if (authData.role) {
+        localStorage.setItem('role', authData.role);
+      }
+      // Caso final
+      else {
+        localStorage.setItem('role', 'guest');
+      }
+
       document.cookie = "auth_data=; path=/; max-age=0";
     }
 
-    const t = window.localStorage.getItem("token");
-    const u = window.localStorage.getItem("user");
+    const storedToken = localStorage.getItem("token");
+    const storedUser = localStorage.getItem("user");
+    const storedRole = localStorage.getItem("role");
 
-    // Token real
-    setToken(t ?? null);
+    let parsedUser: any = null;
 
-    // Usuario real
-    if (u) {
-      try {
-        setUser(JSON.parse(u));
-      } catch {
-        setUser(null);
-      }
+    try {
+      parsedUser = storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      parsedUser = null;
     }
 
+    setToken(storedToken ?? null);
+    setUser(parsedUser);
+    setRole(storedRole ?? "guest");
     setMounted(true);
   }, []);
 
-  //MODO INVITADO
   const guestUser = {
     name: "Invitado",
     email: "guest@incadev.com",
     role: "guest",
+    roles: []
   };
 
   const finalUser = user ?? guestUser;
+  finalUser.role = role;
 
-  return { token, user: finalUser, mounted };
+  return { token, user: finalUser, role, mounted };
 }

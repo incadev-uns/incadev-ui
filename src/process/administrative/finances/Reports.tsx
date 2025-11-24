@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { config } from "@/config/administrative-config";
 
 import AdministrativeLayout from "@/process/administrative/AdministrativeLayout";
 
@@ -41,7 +42,7 @@ const FinancialReportsView = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const url = `/api/financial-reports/report?time_range=${filters.timeRange}&report_type=${reportType}`;
+      const url = `${config.apiUrl}${config.endpoints.financialReports}?time_range=${filters.timeRange}&report_type=${reportType}`;
 
       const res = await fetch(url);
       const json = await res.json();
@@ -74,7 +75,10 @@ const FinancialReportsView = () => {
     window.open(`/administrativo/finanzas/reportpdf`, "_blank");
   };
 
-  const hasData = !!reportData?.summary;
+  // const hasData = !!reportData?.summary;
+  const hasData = Number(reportData?.summary?.total_revenue ?? 0) > 0
+             || Number(reportData?.summary?.total_payroll_expenses ?? 0) > 0;
+
 
   return (
     <AdministrativeLayout title="Finanzas | Reportes Financieros">
@@ -137,6 +141,7 @@ const FinancialReportsView = () => {
                       </option>
                       <option value="payroll">👥 Nómina y Costos</option>
                       <option value="profitability">💰 Rentabilidad</option>
+                      <option value="financial">📘 Reporte Financiero General</option>
                     </select>
                   </div>
 
