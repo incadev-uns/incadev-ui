@@ -241,7 +241,7 @@ export function AuditDetailDialog({
         const variants = {
             pending: "secondary",
             in_progress: "default",
-            completed: "success",
+            completed: "outline",
             cancelled: "destructive"
         } as const
         return variants[status as keyof typeof variants] || "secondary"
@@ -271,7 +271,7 @@ export function AuditDetailDialog({
         const variants = {
             open: "secondary",
             in_progress: "default",
-            resolved: "success",
+            resolved: "outline",
             wont_fix: "destructive"
         } as const
         return variants[status as keyof typeof variants] || "secondary"
