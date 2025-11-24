@@ -1,6 +1,6 @@
 // src/components/marketing/metricas/PublicacionesTable.tsx
-import React, { useState } from 'react';
-import { ThumbsUp, MessageCircle, Share2, Eye, Calendar, Image as ImageIcon } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ThumbsUp, MessageCircle, Share2, Eye, Calendar, Bookmark, TrendingUp } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,299 +14,287 @@ import {
 
 interface Publicacion {
   id: number;
-  propuesta: string;
+  titulo: string;
   contenido: string;
-  canal: 'facebook' | 'instagram';
-  tipo: 'post' | 'video' | 'imagen';
-  campania?: string; // Nombre de la campaña si pertenece a una
+  plataforma: string;
+  tipo: string;
+  campaignId: number;
+  campaignNombre: string;
   fecha: string;
+  estado: string;
+  // Métricas (solo si está publicado)
   alcance: number;
   impresiones: number;
+  vistas: number;
+  engagement: number;
   likes: number;
   comentarios: number;
   compartidos: number;
-  clics: number;
-  guardados?: number;
+  guardados: number;
   engagement_rate: number;
 }
 
-const publicacionesMock: Publicacion[] = [
-  {
-    id: 1,
-    propuesta: 'Kotlin Avanzado',
-    contenido: '¿Quieres aprender Kotlin? 🚀 Descubre nuestro nuevo curso avanzado para desarrolladores Android...',
-    canal: 'facebook',
-    tipo: 'post',
-    campania: 'Campaña Noviembre 2025',
-    fecha: '2025-11-05 14:30',
-    alcance: 4200,
-    impresiones: 5300,
-    likes: 234,
-    comentarios: 45,
-    compartidos: 12,
-    clics: 89,
-    guardados: 23,
-    engagement_rate: 9.8
-  },
-  {
-    id: 2,
-    propuesta: 'Kotlin Avanzado',
-    contenido: 'Kotlin para Android Developers - Aprende las mejores prácticas 📱',
-    canal: 'instagram',
-    tipo: 'imagen',
-    campania: 'Campaña Noviembre 2025',
-    fecha: '2025-11-06 10:15',
-    alcance: 5800,
-    impresiones: 7200,
-    likes: 389,
-    comentarios: 67,
-    compartidos: 28,
-    clics: 124,
-    guardados: 45,
-    engagement_rate: 11.2
-  },
-  {
-    id: 3,
-    propuesta: 'Python ML',
-    contenido: 'Machine Learning con Python desde cero 🤖 Conviértete en Data Scientist',
-    canal: 'facebook',
-    tipo: 'video',
-    campania: 'Black Friday Tech',
-    fecha: '2025-11-07 16:00',
-    alcance: 8500,
-    impresiones: 10200,
-    likes: 512,
-    comentarios: 89,
-    compartidos: 45,
-    clics: 234,
-    guardados: 67,
-    engagement_rate: 12.5
-  },
-  {
-    id: 4,
-    propuesta: 'React Native',
-    contenido: 'Desarrollo móvil multiplataforma con React Native 📲',
-    canal: 'facebook',
-    tipo: 'post',
-    fecha: '2025-11-04 09:00',
-    alcance: 2100,
-    impresiones: 2800,
-    likes: 123,
-    comentarios: 18,
-    compartidos: 8,
-    clics: 45,
-    engagement_rate: 7.5
-  },
-  {
-    id: 5,
-    propuesta: 'Flutter',
-    contenido: 'Flutter: Crea apps hermosas para iOS y Android con un solo código 🎨',
-    canal: 'instagram',
-    tipo: 'imagen',
-    campania: 'Campaña Noviembre 2025',
-    fecha: '2025-11-03 13:30',
-    alcance: 3400,
-    impresiones: 4100,
-    likes: 187,
-    comentarios: 23,
-    compartidos: 11,
-    clics: 56,
-    guardados: 34,
-    engagement_rate: 6.8
-  },
-];
-
-const canalConfig = {
-  facebook: { icon: '📘', color: 'bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400' },
-  instagram: { icon: '📷', color: 'bg-pink-100 text-pink-700 dark:bg-pink-950/30 dark:text-pink-400' },
-};
-
-const tipoConfig = {
-  post: { icon: '📝', label: 'Post' },
-  video: { icon: '🎥', label: 'Video' },
-  imagen: { icon: '🖼️', label: 'Imagen' },
-};
-
 const formatNumber = (num: number) => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
   if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
   return num.toString();
 };
 
 export default function PublicacionesTable() {
-  const [filtroCanal, setFiltroCanal] = useState('todos');
-  const [filtroTipo, setFiltroTipo] = useState('todos');
-  const [filtroCampania, setFiltroCampania] = useState('todas');
+  const [publicaciones, setPublicaciones] = useState<Publicacion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [filtroPlataforma, setFiltroPlataforma] = useState('todos');
+  const [filtroEstado, setFiltroEstado] = useState('todos');
+  const [filtroCampaign, setFiltroCampaign] = useState('todas');
 
-  const publicacionesFiltradas = publicacionesMock.filter((pub) => {
-    const matchCanal = filtroCanal === 'todos' || pub.canal === filtroCanal;
-    const matchTipo = filtroTipo === 'todos' || pub.tipo === filtroTipo;
-    const matchCampania = filtroCampania === 'todas' ||
-      (filtroCampania === 'sin_campania' && !pub.campania) ||
-      (filtroCampania !== 'sin_campania' && pub.campania === filtroCampania);
-    return matchCanal && matchTipo && matchCampania;
+  useEffect(() => {
+    async function loadPublicaciones() {
+      try {
+        setLoading(true);
+
+        const {
+          fetchAllCampaigns,
+          fetchCampaignPosts,
+          fetchPostMetrics
+        } = await import('../../../services/marketing');
+
+        const campaigns = await fetchAllCampaigns();
+        const allPosts: Publicacion[] = [];
+
+        for (const campaign of campaigns) {
+          try {
+            const posts = await fetchCampaignPosts(campaign.id);
+
+            for (const post of posts) {
+              let metricas = {
+                alcance: 0,
+                impresiones: 0,
+                vistas: 0,
+                likes: 0,
+                comentarios: 0,
+                compartidos: 0,
+                guardados: 0,
+                engagement: 0,
+              };
+
+              if (post.estado === 'published') {
+                try {
+                  const postMetrics = await fetchPostMetrics(post.id);
+                  metricas = postMetrics.totales;
+                } catch (error) {
+                  console.warn(`No metrics for post ${post.id}`);
+                }
+              }
+
+              const engagement_rate = metricas.alcance > 0
+                ? (metricas.engagement / metricas.alcance) * 100
+                : 0;
+
+              allPosts.push({
+                id: post.id,
+                titulo: post.titulo,
+                contenido: post.contenido,
+                plataforma: post.plataforma,
+                tipo: post.tipo,
+                campaignId: campaign.id,
+                campaignNombre: campaign.nombre,
+                fecha: post.publicadoEn || post.programadoPara || post.fechaCreacion,
+                estado: post.estado,
+                ...metricas,
+                engagement_rate,
+              });
+            }
+          } catch (error) {
+            console.warn(`No posts for campaign ${campaign.id}`);
+          }
+        }
+
+        allPosts.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime());
+        setPublicaciones(allPosts);
+
+      } catch (error) {
+        console.error('Error loading posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPublicaciones();
+  }, []);
+
+  const publicacionesFiltradas = publicaciones.filter((pub) => {
+    const matchPlataforma = filtroPlataforma === 'todos' || pub.plataforma.toLowerCase() === filtroPlataforma;
+    const matchEstado = filtroEstado === 'todos' || pub.estado === filtroEstado;
+    const matchCampaign = filtroCampaign === 'todas' || String(pub.campaignId) === filtroCampaign;
+    return matchPlataforma && matchEstado && matchCampaign;
   });
 
-  // Obtener lista única de campañas
-  const campanias = Array.from(new Set(publicacionesMock.map(p => p.campania).filter(Boolean)));
+  const campaigns = Array.from(new Set(publicaciones.map(p => JSON.stringify({ id: p.campaignId, nombre: p.campaignNombre })))).map(c => JSON.parse(c));
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400">Cargando publicaciones...</p>
+      </div>
+    );
+  }
+
+  if (publicaciones.length === 0) {
+    return (
+      <Card className="p-12 text-center">
+        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4">
+          <MessageCircle className="w-10 h-10 text-gray-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No hay publicaciones</h3>
+        <p className="text-gray-600 dark:text-gray-400">Crea campañas y publicaciones para verlas aquí</p>
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Filtros */}
       <div className="flex gap-3 flex-wrap">
-        <Select value={filtroCanal} onValueChange={setFiltroCanal}>
+        <Select value={filtroPlataforma} onValueChange={setFiltroPlataforma}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Canal" />
+            <SelectValue placeholder="Plataforma" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="todos">Todos los canales</SelectItem>
-            <SelectItem value="facebook">📘 Facebook</SelectItem>
-            <SelectItem value="instagram">📷 Instagram</SelectItem>
+            <SelectItem value="todos">Todas</SelectItem>
+            <SelectItem value="facebook">Facebook</SelectItem>
+            <SelectItem value="instagram">Instagram</SelectItem>
           </SelectContent>
         </Select>
 
-        <Select value={filtroTipo} onValueChange={setFiltroTipo}>
+        <Select value={filtroEstado} onValueChange={setFiltroEstado}>
           <SelectTrigger className="w-[200px]">
-            <SelectValue placeholder="Tipo" />
+            <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="todos">Todos los tipos</SelectItem>
-            <SelectItem value="post">📝 Post</SelectItem>
-            <SelectItem value="video">🎥 Video</SelectItem>
-            <SelectItem value="imagen">🖼️ Imagen</SelectItem>
+            <SelectItem value="todos">Todos</SelectItem>
+            <SelectItem value="draft">Borrador</SelectItem>
+            <SelectItem value="scheduled">Programado</SelectItem>
+            <SelectItem value="published">Publicado</SelectItem>
           </SelectContent>
         </Select>
 
-        <Select value={filtroCampania} onValueChange={setFiltroCampania}>
+        <Select value={filtroCampaign} onValueChange={setFiltroCampaign}>
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Campaña" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="todas">Todas las campañas</SelectItem>
-            <SelectItem value="sin_campania">Sin campaña</SelectItem>
-            {campanias.map((campania) => (
-              <SelectItem key={campania} value={campania!}>
-                {campania}
-              </SelectItem>
+            <SelectItem value="todas">Todas</SelectItem>
+            {campaigns.map((c) => (
+              <SelectItem key={c.id} value={String(c.id)}>{c.nombre}</SelectItem>
             ))}
           </SelectContent>
         </Select>
       </div>
 
-      {/* Grid de publicaciones */}
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        Mostrando {publicacionesFiltradas.length} de {publicaciones.length}
+      </p>
+
+      {/* Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {publicacionesFiltradas.map((pub) => (
           <Card key={pub.id} className="p-6 hover:shadow-lg transition-shadow">
-            {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
-                  <Badge className={canalConfig[pub.canal].color}>
-                    {canalConfig[pub.canal].icon} {pub.canal.charAt(0).toUpperCase() + pub.canal.slice(1)}
-                  </Badge>
-                  <Badge variant="outline">
-                    {tipoConfig[pub.tipo].icon} {tipoConfig[pub.tipo].label}
-                  </Badge>
-                  {pub.campania && (
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400">
-                      📢 {pub.campania}
-                    </Badge>
-                  )}
+                  <Badge>{pub.plataforma}</Badge>
+                  <Badge variant="outline">{pub.tipo}</Badge>
+                  <Badge>{pub.estado}</Badge>
                 </div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                  {pub.propuesta}
-                </p>
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{pub.titulo}</h3>
                 <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
                   <Calendar className="w-3 h-3" />
-                  {new Date(pub.fecha).toLocaleString('es-ES', {
-                    day: 'numeric',
-                    month: 'short',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
+                  {new Date(pub.fecha).toLocaleString('es-ES')}
                 </p>
               </div>
-
               <div className="text-right">
-                <p className={`text-xl font-bold ${
-                  pub.engagement_rate >= 10
-                    ? 'text-green-600 dark:text-green-400'
-                    : pub.engagement_rate >= 7
-                    ? 'text-yellow-600 dark:text-yellow-400'
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {pub.engagement_rate}%
+                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                  {pub.engagement_rate.toFixed(1)}%
                 </p>
                 <p className="text-xs text-gray-500">Engagement</p>
               </div>
             </div>
 
-            {/* Contenido */}
             <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4">
-              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">
-                {pub.contenido}
-              </p>
+              <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{pub.contenido}</p>
             </div>
 
-            {/* Métricas principales */}
-            <div className="grid grid-cols-3 gap-3 mb-4">
-              <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
-                <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">
-                  {formatNumber(pub.alcance)}
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Alcance</p>
-              </div>
-
-              <div className="text-center p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
-                <Eye className="w-4 h-4 text-purple-600 dark:text-purple-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-purple-600 dark:text-purple-400">
-                  {formatNumber(pub.impresiones)}
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Impresiones</p>
-              </div>
-
-              <div className="text-center p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
-                <ImageIcon className="w-4 h-4 text-orange-600 dark:text-orange-400 mx-auto mb-1" />
-                <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                  {pub.clics}
-                </p>
-                <p className="text-xs text-gray-600 dark:text-gray-400">Clics</p>
-              </div>
-            </div>
-
-            {/* Interacciones */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800">
-              <div className="flex items-center gap-4 text-sm">
-                <div className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                  <ThumbsUp className="w-4 h-4 text-blue-600" />
-                  <span className="font-semibold">{pub.likes}</span>
-                </div>
-
-                <div className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                  <MessageCircle className="w-4 h-4 text-green-600" />
-                  <span className="font-semibold">{pub.comentarios}</span>
-                </div>
-
-                <div className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                  <Share2 className="w-4 h-4 text-purple-600" />
-                  <span className="font-semibold">{pub.compartidos}</span>
-                </div>
-
-                {pub.guardados && (
-                  <div className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                    <ImageIcon className="w-4 h-4 text-orange-600" />
-                    <span className="font-semibold">{pub.guardados}</span>
+            {pub.estado === 'published' && (
+              <>
+                <div className="grid grid-cols-4 gap-2 mb-4">
+                  <div className="text-center p-2 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                    <Eye className="w-4 h-4 text-blue-600 mx-auto mb-1" />
+                    <p className="text-sm font-bold text-blue-600">{formatNumber(pub.alcance)}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Alcance</p>
                   </div>
-                )}
-              </div>
+                  <div className="text-center p-2 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                    <TrendingUp className="w-4 h-4 text-purple-600 mx-auto mb-1" />
+                    <p className="text-sm font-bold text-purple-600">{formatNumber(pub.impresiones)}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Impresiones</p>
+                  </div>
+                  <div className="text-center p-2 bg-indigo-50 dark:bg-indigo-950/30 rounded-lg">
+                    <Eye className="w-4 h-4 text-indigo-600 mx-auto mb-1" />
+                    <p className="text-sm font-bold text-indigo-600">{formatNumber(pub.vistas)}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Vistas</p>
+                  </div>
+                  <div className="text-center p-2 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
+                    <TrendingUp className="w-4 h-4 text-orange-600 mx-auto mb-1" />
+                    <p className="text-sm font-bold text-orange-600">{formatNumber(pub.engagement)}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Engagement</p>
+                  </div>
+                </div>
 
-              <Button variant="outline" size="sm">
-                Ver detalles
-              </Button>
-            </div>
+                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-800">
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="flex items-center gap-1">
+                      <ThumbsUp className="w-4 h-4 text-pink-600" />
+                      <span className="font-semibold">{formatNumber(pub.likes)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="w-4 h-4 text-blue-600" />
+                      <span className="font-semibold">{formatNumber(pub.comentarios)}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Share2 className="w-4 h-4 text-green-600" />
+                      <span className="font-semibold">{formatNumber(pub.compartidos)}</span>
+                    </div>
+                    {pub.guardados > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Bookmark className="w-4 h-4 text-yellow-600" />
+                        <span className="font-semibold">{formatNumber(pub.guardados)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => window.location.href = `/marketing/campañas/${pub.campaignId}`}>
+                    Ver campaña
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {pub.estado !== 'published' && (
+              <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+                Sin métricas - {pub.estado === 'draft' ? 'Borrador' : 'Pendiente de publicación'}
+              </div>
+            )}
           </Card>
         ))}
       </div>
+
+      {publicacionesFiltradas.length === 0 && publicaciones.length > 0 && (
+        <Card className="p-12 text-center">
+          <h3 className="text-lg font-semibold mb-2">No se encontraron publicaciones</h3>
+          <Button variant="outline" onClick={() => { setFiltroPlataforma('todos'); setFiltroEstado('todos'); setFiltroCampaign('todas'); }}>
+            Limpiar filtros
+          </Button>
+        </Card>
+      )}
     </div>
   );
 }

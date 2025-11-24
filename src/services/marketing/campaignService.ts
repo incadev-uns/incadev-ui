@@ -339,3 +339,84 @@ export async function fetchCampaignPosts(campaignId: number): Promise<PostForUI[
         throw error;
     }
 }
+
+// ============================================
+// API FUNCTIONS - GLOBAL METRICS
+// ============================================
+
+/**
+ * Obtener métricas globales de todas las campañas
+ */
+export async function fetchGlobalMetrics(): Promise<{
+    totalCampaigns: number;
+    activeCampaigns: number;
+    totalPosts: number;
+    publishedPosts: number;
+    totalReach: number;
+    totalImpressions: number;
+    totalViews: number;
+    totalEngagement: number;
+    totalLikes: number;
+    totalComments: number;
+    totalShares: number;
+    totalSaves: number;
+}> {
+    try {
+        console.log('[campaignService] Fetching global metrics');
+
+        // Obtener todas las campañas
+        const campaigns = await fetchAllCampaigns();
+
+        // Inicializar totales
+        let totalReach = 0;
+        let totalImpressions = 0;
+        let totalViews = 0;
+        let totalEngagement = 0;
+        let totalLikes = 0;
+        let totalComments = 0;
+        let totalShares = 0;
+        let totalSaves = 0;
+        let totalPosts = 0;
+        let publishedPosts = 0;
+
+        // Iterar sobre cada campaña y obtener sus métricas
+        for (const campaign of campaigns) {
+            try {
+                const metrics = await fetchCampaignMetrics(campaign.id);
+                totalReach += metrics.totalReach;
+                totalLikes += metrics.totalLikes;
+                totalComments += metrics.totalComments;
+
+                // Obtener posts para contar publicaciones
+                const posts = await fetchCampaignPosts(campaign.id);
+                totalPosts += posts.length;
+                publishedPosts += posts.filter(p => p.estado === 'published').length;
+
+            } catch (error) {
+                console.warn(`[campaignService] No metrics for campaign ${campaign.id}`);
+            }
+        }
+
+        const activeCampaigns = campaigns.filter(c => c.estado === 'activa').length;
+
+        console.log('[campaignService] Global metrics calculated');
+
+        return {
+            totalCampaigns: campaigns.length,
+            activeCampaigns,
+            totalPosts,
+            publishedPosts,
+            totalReach,
+            totalImpressions,
+            totalViews,
+            totalEngagement,
+            totalLikes,
+            totalComments,
+            totalShares,
+            totalSaves
+        };
+    } catch (error) {
+        console.error('[campaignService] Error fetching global metrics:', error);
+        throw error;
+    }
+}

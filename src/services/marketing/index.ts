@@ -73,7 +73,8 @@ export {
     updateCampaign,
     deleteCampaign,
     fetchCampaignMetrics,
-    fetchCampaignPosts
+    fetchCampaignPosts,
+    fetchGlobalMetrics
 } from './campaignService';
 
 // Posts
