@@ -118,34 +118,11 @@ export default function NewsPage() {
       } else {
         console.log('No hay datos de categorías en la respuesta')
         // Fallback a categorías por defecto
-        setCategories([
-          { id: 1, key: "technology", name: "Tecnología", slug: "technology" },
-          { id: 2, key: "science", name: "Ciencia", slug: "science" },
-          { id: 3, key: "business", name: "Negocios", slug: "business" },
-          { id: 4, key: "health", name: "Salud", slug: "health" },
-          { id: 5, key: "sports", name: "Deportes", slug: "sports" },
-          { id: 6, key: "entertainment", name: "Entretenimiento", slug: "entertainment" },
-          { id: 7, key: "politics", name: "Política", slug: "politics" },
-          { id: 8, key: "education", name: "Educación", slug: "education" },
-          { id: 9, key: "travel", name: "Viajes", slug: "travel" },
-          { id: 10, key: "lifestyle", name: "Estilo de Vida", slug: "lifestyle" },
-        ])
+
       }
     } catch (error) {
       console.error("Error al cargar categorías:", error)
       // Fallback a categorías por defecto
-      setCategories([
-        { id: 1, key: "technology", name: "Tecnología", slug: "technology" },
-        { id: 2, key: "science", name: "Ciencia", slug: "science" },
-        { id: 3, key: "business", name: "Negocios", slug: "business" },
-        { id: 4, key: "health", name: "Salud", slug: "health" },
-        { id: 5, key: "sports", name: "Deportes", slug: "sports" },
-        { id: 6, key: "entertainment", name: "Entretenimiento", slug: "entertainment" },
-        { id: 7, key: "politics", name: "Política", slug: "politics" },
-        { id: 8, key: "education", name: "Educación", slug: "education" },
-        { id: 9, key: "travel", name: "Viajes", slug: "travel" },
-        { id: 10, key: "lifestyle", name: "Estilo de Vida", slug: "lifestyle" },
-      ])
     }
   }
 
@@ -213,7 +190,10 @@ export default function NewsPage() {
               Administra las noticias del portal tecnológico
             </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)} size="lg">
+          <Button onClick={() => {
+            setSelectedNews(null) // Limpiar antes de abrir
+            setIsFormOpen(true)
+          }} size="lg">
             <Plus className="mr-2 h-5 w-5" />
             Nueva Noticia
           </Button>
@@ -475,7 +455,12 @@ export default function NewsPage() {
         </Card>
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        setIsFormOpen(open)
+        if (!open) {
+          setSelectedNews(null) // Resetear al cerrar
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>

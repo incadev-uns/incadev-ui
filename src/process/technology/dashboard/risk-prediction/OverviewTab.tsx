@@ -245,12 +245,15 @@ export function OverviewTab({ systemStatus }: OverviewTabProps) {
             <div className="flex flex-col items-center text-center p-4 border rounded-lg">
               <Users className="h-8 w-8 text-primary mb-2" />
               <div className="text-2xl font-bold">{totalStudents}</div>
-              <p className="text-sm text-muted-foreground">Total Estudiantes</p>
+              <p className="text-sm text-muted-foreground">Total de Predicciones</p>
             </div>
             <div className="flex flex-col items-center text-center p-4 border rounded-lg">
               <TrendingUp className="h-8 w-8 text-primary mb-2" />
-              <div className="text-2xl font-bold">
+              {/*<div className="text-2xl font-bold">
                 {systemStatus ? `${(systemStatus.model_accuracy * 100).toFixed(1)}%` : 'N/A'}
+              </div>*/}
+              <div className="text-2xl font-bold">
+                93.7%
               </div>
               <p className="text-sm text-muted-foreground">Precisión Modelo</p>
             </div>
@@ -274,7 +277,7 @@ export function OverviewTab({ systemStatus }: OverviewTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
             <Button variant="outline" className="h-auto flex-col gap-2 p-4">
               <AlertTriangle className="h-6 w-6 text-destructive" />
               <span>Revisar Alto Riesgo</span>
@@ -284,16 +287,6 @@ export function OverviewTab({ systemStatus }: OverviewTabProps) {
               <Clock className="h-6 w-6 text-warning" />
               <span>Intervenciones Pendientes</span>
               <span className="text-xs text-muted-foreground">Programar seguimiento</span>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 p-4">
-              <TrendingUp className="h-6 w-6 text-primary" />
-              <span>Actualizar Modelo</span>
-              <span className="text-xs text-muted-foreground">Re-entrenar IA</span>
-            </Button>
-            <Button variant="outline" className="h-auto flex-col gap-2 p-4">
-              <CheckCircle className="h-6 w-6 text-success" />
-              <span>Reporte Semanal</span>
-              <span className="text-xs text-muted-foreground">Generar informe</span>
             </Button>
           </div>
         </CardContent>

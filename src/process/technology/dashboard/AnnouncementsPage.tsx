@@ -76,14 +76,14 @@ export default function AnnouncementsPage() {
   const loadAnnouncements = async () => {
     try {
       setLoading(true)
-  
+
       const params: any = {}
       if (search && search.trim() !== '') params.search = search
       if (statusFilter !== "all") params.status = statusFilter
       if (targetPageFilter !== "all") params.target_page = targetPageFilter
-  
+
       console.log('Parámetros de búsqueda de anuncios:', params) // Para debug
-  
+
       const response = await technologyApi.developerWeb.announcements.list(params)
       if (response.success && response.data) {
         setAnnouncements(response.data.data || response.data)
@@ -159,7 +159,10 @@ export default function AnnouncementsPage() {
               Administra los anuncios del portal
             </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)} size="lg">
+          <Button onClick={() => {
+            setSelectedAnnouncement(null) // Limpiar antes de abrir
+            setIsFormOpen(true)
+          }} size="lg">
             <Plus className="mr-2 h-5 w-5" />
             Nuevo Anuncio
           </Button>
@@ -403,7 +406,12 @@ export default function AnnouncementsPage() {
         </Card>
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        setIsFormOpen(open)
+        if (!open) {
+          setSelectedAnnouncement(null) // Resetear al cerrar
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>

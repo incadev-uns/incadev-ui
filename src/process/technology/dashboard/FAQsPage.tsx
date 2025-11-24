@@ -52,7 +52,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Eye, MoreVertical, Loader2, MessageCircle, ThumbsUp, ThumbsDown } from "lucide-react"
 import { technologyApi } from "@/services/tecnologico/api"
-import type { FAQ, FAQCategory, FAQCategoryValue} from "@/types/developer-web"
+import type { FAQ, FAQCategory, FAQCategoryValue } from "@/types/developer-web"
 import { FAQForm } from "./FAQForm"
 import { FAQCategoryLabels, FAQCategoryColors, FAQStatusLabels, FAQStatusColors } from "@/types/developer-web"
 
@@ -177,7 +177,10 @@ export default function FAQsPage() {
               Administra las preguntas frecuentes del chatbot
             </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)} size="lg">
+          <Button onClick={() => {
+            setSelectedFAQ(null) // Limpiar antes de abrir
+            setIsFormOpen(true)
+          }} size="lg">
             <Plus className="mr-2 h-5 w-5" />
             Nueva FAQ
           </Button>
@@ -389,7 +392,12 @@ export default function FAQsPage() {
         </Card>
       </div>
 
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        setIsFormOpen(open)
+        if (!open) {
+          setSelectedFAQ(null) // Resetear al cerrar
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>

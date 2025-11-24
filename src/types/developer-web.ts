@@ -7,7 +7,7 @@
 export type NewsStatus = "draft" | "published" | "archived" | "scheduled"
 export type AnnouncementStatus = "active" | "inactive"
 export type AlertStatus = "active" | "inactive"
-export type NewsItemType = "article" | "press-release" | "update" | "feature"
+export type NewsItemType = "article" | "update" | "feature"
 export type AnnouncementItemType = "popup" | "banner" | "modal" | "notification"
 export type AlertItemType = "information" | "warning" | "success" | "error" | "maintenance"
 export type FAQCategoryValue = "general" | "academico" | "tecnico" | "pagos" | "soporte"
@@ -275,7 +275,6 @@ export const AlertStatusLabels: Record<AlertStatus, string> = {
 
 export const NewsItemTypeLabels: Record<NewsItemType, string> = {
   article: "Artículo",
-  "press-release": "Comunicado",
   update: "Actualización",
   feature: "Característica",
 }
@@ -343,7 +342,6 @@ export const AlertStatusColors: Record<AlertStatus, string> = {
 
 export const NewsItemTypeColors: Record<NewsItemType, string> = {
   article: "bg-blue-500/10 text-blue-600 dark:text-blue-500 border-blue-500/20",
-  "press-release": "bg-purple-500/10 text-purple-600 dark:text-purple-500 border-purple-500/20",
   update: "bg-green-500/10 text-green-600 dark:text-green-500 border-green-500/20",
   feature: "bg-orange-500/10 text-orange-600 dark:text-orange-500 border-orange-500/20",
 }
