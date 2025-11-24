@@ -473,11 +473,12 @@ export default function PaymentsHistory() {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                disabled={payment.status !== 'approved'}
                                 onClick={() => {
                                   localStorage.setItem('invoicePaymentId', String(payment.id));
                                   window.open('/administrativo/pagos/invoice', '_blank');
                                 }}
-                                title="Ver comprobante"
+                                title={payment.status === 'approved' ? "Ver comprobante" : "Solo disponible para pagos aprobados"}
                               >
                                 Ver comprobante
                               </Button>
@@ -595,11 +596,12 @@ export default function PaymentsHistory() {
                                     <Button
                                       variant="ghost"
                                       size="sm"
+                                      disabled={payment.status !== 'approved'}
                                       onClick={() => {
                                         localStorage.setItem('invoicePaymentId', String(payment.id));
                                         window.open('/administrativo/pagos/invoice', '_blank');
                                       }}
-                                      title="Ver comprobante"
+                                      title={payment.status === 'approved' ? "Ver comprobante" : "Solo disponible para pagos aprobados"}
                                     >
                                       <IconFileText className="h-4 w-4" />
                                     </Button>

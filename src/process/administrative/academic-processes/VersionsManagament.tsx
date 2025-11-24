@@ -600,7 +600,7 @@ export default function CourseVersionsManagement() {
       <div className="min-h-screen p-4 md:p-6 lg:p-8">
         <div className="mx-auto max-w-[1600px] space-y-6">
           {/* Header */}
-          <div className="rounded-3xl border border-slate-200 dark:border-slate-800/60 bg-gradient-to-br from-violet-500 to-violet-700 px-6 py-7 shadow-xl">
+          <div className="rounded-3xl border border-slate-200 dark:border-slate-800/60 bg-gradient-to-br from-sky-500 to-sky-700 px-6 py-7 shadow-xl">
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.28em] text-violet-100/90">
