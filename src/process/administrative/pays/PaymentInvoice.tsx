@@ -10,7 +10,7 @@ interface InvoiceData {
   document_number: string;
   email: string;
   agency_number: string;
-  amount: number;
+  amount: number | string | null;
 }
 
 interface PaymentInvoiceProps {
@@ -76,8 +76,9 @@ export default function PaymentInvoice({ paymentId: propPaymentId }: PaymentInvo
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
-      const invoiceData: InvoiceData = await response.json();
-      setInvoiceData(invoiceData);
+      const payload = await response.json();
+      const invoiceData: InvoiceData = (payload && payload.data) ? payload.data : payload;
+      setInvoiceData(invoiceData as InvoiceData);
       setError(null);
     } catch (err) {
       console.error('Error al cargar factura:', err);
@@ -96,8 +97,10 @@ export default function PaymentInvoice({ paymentId: propPaymentId }: PaymentInvo
     return statusMap[status] || status;
   };
 
-  const formatCurrency = (amount: number) => {
-    return `S/${amount.toFixed(2)}`;
+  const formatCurrency = (amount?: number | string | null) => {
+    const value = amount === null || amount === undefined ? 0 : Number(amount);
+    if (Number.isNaN(value)) return 'S/0.00';
+    return `S/${value.toFixed(2)}`;
   };
 
   const formatDate = (dateString: string) => {
