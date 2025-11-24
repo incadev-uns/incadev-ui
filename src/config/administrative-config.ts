@@ -23,5 +23,13 @@ export const config = {
 
     //finanzas
     balance_general: "/api/finanzas/balance-general",
+
+    // RRHH - Nuevos endpoints agregados
+    employees: "/api/rrhh/employees",
+    contracts: '/api/rrhh/employees',
+    offers: "/api/rrhh/offers",
+    applicants: "/api/rrhh/applicants",
+
+
   },
 };
