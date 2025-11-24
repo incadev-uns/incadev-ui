@@ -1,0 +1,26 @@
+---
+import PaymentInvoice from '@/process/administrative/pays/PaymentInvoice.tsx';
+const paymentId = Astro.url.searchParams.get('id') || '';
+const stream = Astro.url.searchParams.get('stream') === 'true';
+const title = `Factura ${paymentId ? `#${paymentId}` : ''}`;
+const description = 'Comprobante de pago del estudiante';
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="/src/styles/global.css" />
+  <style>
+    @media print {
+      @page {
+        margin: 1.5cm 2cm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <PaymentInvoice paymentId={paymentId} stream={stream} client:load />
+</body>
+</html>

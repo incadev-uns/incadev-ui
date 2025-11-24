@@ -2,11 +2,16 @@
 import { defineConfig } from 'astro/config';
 import tailwindcss from "@tailwindcss/vite";
 import react from '@astrojs/react';
+import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
     base: '/',
     site: "https://instituto.cetivirgendelapuerta.com",
+    output: 'server', // Habilitar SSR completo
+    adapter: node({
+        mode: 'standalone'
+    }),
     integrations: [react()],
     vite: {
         plugins: [tailwindcss()],

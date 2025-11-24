@@ -19,7 +19,20 @@ import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import {GoogleLoginButton} from "@/process/academic/auth/components/google-login-button";
 import {routes} from "@/process/academic/academic-site";
+
 const FormSchema = z.object({
+  name: z
+    .string()
+    .min(2, {
+      message: "El nombre debe tener al menos 2 caracteres.",
+    })
+    .max(100, {
+      message: "El nombre no debe exceder los 100 caracteres.",
+    })
+    .regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
+      message: "El nombre solo debe contener letras y espacios.",
+    }),
+  
   dni: z
     .string()
     .min(8, {
@@ -79,8 +92,9 @@ export function RegisterForm({
     formState: { errors, isSubmitting },
     reset,
   } = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(FormSchema as any) as any,
     defaultValues: {
+      name: "",
       dni: "",
       email: "",
       password: "",
@@ -96,6 +110,7 @@ export function RegisterForm({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          name: data.name,
           dni: data.dni,
           email: data.email,
           password: data.password,
@@ -146,6 +161,19 @@ export function RegisterForm({
             Completa los datos para registrarte en la plataforma
           </p>
         </div>
+
+        <Field>
+          <FieldLabel htmlFor="name">Nombre Completo</FieldLabel>
+          <Input 
+            id="name" 
+            type="text" 
+            placeholder="Ingresa tu nombre completo" 
+            {...register("name")}
+          />
+          {errors.name && (
+            <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>
+          )}
+        </Field>
         
         <Field>
           <FieldLabel htmlFor="dni">DNI / Documento</FieldLabel>
@@ -153,7 +181,7 @@ export function RegisterForm({
             id="dni" 
             type="text" 
             placeholder="12345678" 
-            maxLength={12}
+            maxLength={8}
             {...register("dni")}
           />
           {errors.dni && (

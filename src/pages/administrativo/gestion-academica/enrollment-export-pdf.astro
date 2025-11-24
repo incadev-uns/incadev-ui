@@ -1,0 +1,30 @@
+---
+import EnrollmentExportPDF from '@/process/administrative/academic-management/components/enrollment-export-pdf.tsx';
+const title = 'Reporte de Matrículas';
+const description = 'Reporte de matrículas del instituto';
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <link rel="stylesheet" href="/src/styles/global.css" />
+  <style>
+    @media print {
+      @page {
+        margin: 1.5cm 2cm;
+        size: landscape;
+      }
+      body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+  </style>
+</head>
+<body>
+  <EnrollmentExportPDF client:load />
+</body>
+</html>

@@ -25,31 +25,16 @@ export function PersonalInfoSection({ formData, isEditing, onChange }: PersonalI
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="first_name">Nombre(s) *</Label>
+            <Label htmlFor="fullname">Nombre(s) Completos *</Label>
             <Input
-              id="first_name"
+              id="fullname"
               placeholder="Juan"
-              value={formData.first_name}
-              onChange={(e) => onChange("first_name", e.target.value)}
+              value={formData.fullname}
+              onChange={(e) => onChange("fullname", e.target.value)}
               disabled={!isEditing}
               required
             />
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="last_name">Apellido(s) *</Label>
-            <Input
-              id="last_name"
-              placeholder="Pérez García"
-              value={formData.last_name}
-              onChange={(e) => onChange("last_name", e.target.value)}
-              disabled={!isEditing}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="dni">DNI</Label>
             <Input
@@ -60,7 +45,9 @@ export function PersonalInfoSection({ formData, isEditing, onChange }: PersonalI
               disabled={true}
             />
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="email">
               <div className="flex items-center gap-2">
@@ -78,9 +65,6 @@ export function PersonalInfoSection({ formData, isEditing, onChange }: PersonalI
               required
             />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="phone">
               <div className="flex items-center gap-2">
@@ -94,22 +78,6 @@ export function PersonalInfoSection({ formData, isEditing, onChange }: PersonalI
               placeholder="+51 999 999 999"
               value={formData.phone}
               onChange={(e) => onChange("phone", e.target.value)}
-              disabled={!isEditing}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="birth_date">
-              <div className="flex items-center gap-2">
-                <IconCalendar className="h-4 w-4" />
-                Fecha de Nacimiento
-              </div>
-            </Label>
-            <Input
-              id="birth_date"
-              type="date"
-              value={formData.birth_date}
-              onChange={(e) => onChange("birth_date", e.target.value)}
               disabled={!isEditing}
             />
           </div>

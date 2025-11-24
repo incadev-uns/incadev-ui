@@ -1,0 +1,23 @@
+---
+import ReportsPage from '@/process/technology/dashboard/ReportsPage';
+import '@/styles/global.css';
+
+const title = "Reportes | INCADEV Tecnológico";
+const description = "Reportes académicos";
+const robots = ["noindex", "nofollow"];
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="robots" content={robots.join(", ")} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="min-h-screen bg-background font-sans antialiased">
+  <ReportsPage client:load />
+</body>
+</html>

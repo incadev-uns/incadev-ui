@@ -1,0 +1,35 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import OffersPage from '@/process/administrative/humanresources/Offers.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Gestión de Ofertas Laborales | Recursos Humanos - Incadev";
+const description = "Administra las ofertas laborales de Incadev. Crea, edita y gestiona vacantes, revisa postulaciones y controla el proceso de selección de personal.";
+const keywords = [
+  "ofertas laborales",
+  "vacantes",
+  "reclutamiento",
+  "selección de personal",
+  "postulaciones",
+  "gestión de talento",
+  "bolsa de trabajo",
+  "proceso de contratación",
+  "recursos humanos",
+  "empleo"
+];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/recursoshumanos/ofertas";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout 
+  {robots} 
+  {title} 
+  {description} 
+  {keywords} 
+  {url} 
+  {imageOG} 
+  {imagetwt}
+>
+  <OffersPage client:load />
+</DashboardLayout>

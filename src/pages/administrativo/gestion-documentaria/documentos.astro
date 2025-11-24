@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DocumentsManagement from '@/process/administrative/document-management/Documents.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Documentos Administrativos | Incadev";
+const description = "Gestión de documentos institucionales y control de versiones";
+const keywords = ["documentos", "gestión documentaria", "archivos", "repositorio", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/gestion-documentaria/documentos";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<DocumentsManagement client:load />
+</DashboardLayout>

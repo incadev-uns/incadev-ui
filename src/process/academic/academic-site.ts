@@ -19,7 +19,7 @@ import {
 export const routes = {
   base: "/academico/",
   general: {
-    login: "/academico/login",
+    login: "/auth/academico",
     register: "/academico/register",
   },
   dashboard:{
@@ -49,9 +49,8 @@ export interface NavSimpleItem {
   title: string;
   url: string;
   icon: Icon;
-  adminOnly?: boolean;
   type?: 'link' | 'search';
-
+  allowedRoles?: string[];
 }
 
 export const siteConfig = {
@@ -66,31 +65,37 @@ export const navSimpleMain: NavSimpleItem[] = [
     title: "Grupos Disponibles",
     url: "/academico/grupos/disponible",
     icon: IconUsersPlus,
+    allowedRoles: ["student"]
   },
   {
-    title: "Mis Grupos Académicos",
+    title: "Mis Grupos Académicos", 
     url: "/academico/grupos/joined",
     icon: IconUserCheck,
+    allowedRoles: ["student"]
   },
   {
     title: "Grupos Terminados",
     url: "/academico/grupos/completado",
     icon: IconCircleCheck,
+    allowedRoles: ["student"]
   },
   {
     title: "Grupos Académicos",
-    url: "/academico/grupos/teach",
+    url: "/academico/grupos/teach", 
     icon: IconChalkboard,
+    allowedRoles: ["teacher"]
   },
   {
     title: "Encuestas",
     url: "/academico/encuesta",
     icon: IconChecklist,
+    allowedRoles: ["teacher"]
   },
   {
     title: "Tutorias",
     url: "/academico/tutoria",
     icon: IconSchool,
+    allowedRoles: ["teacher"]
   },
 ];
 

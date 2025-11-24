@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import IndicadoresManagement from '@/process/administrative/indicators/Indicadores.tsx';
+const robots = ["noindex", "nofollow"];
+const title = "Indicadores (KPIs) | Incadev";
+const description = "Métricas clave de desempeño institucional";
+const keywords = ["indicadores", "kpis", "métricas", "desempeño", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/indicadores";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<IndicadoresManagement client:load />
+</DashboardLayout>

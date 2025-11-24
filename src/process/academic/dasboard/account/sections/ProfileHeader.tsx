@@ -7,7 +7,7 @@ import { type UserData } from "@/process/academic/dasboard/account/hooks/useUser
 interface ProfileHeaderProps {
   formData: UserData;
   isEditing: boolean;
-  getInitials: (firstName: string, lastName: string) => string;
+  getInitials: (name: string) => string;
   getRoleLabel: (role: string | string[]) => string;
   onEditClick: () => void;
 }
@@ -25,9 +25,9 @@ export function ProfileHeader({
         <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
           <div className="relative">
             <Avatar className="h-32 w-32">
-              <AvatarImage src={formData.profile_photo} alt={formData.first_name} />
+              <AvatarImage src={formData.avatar} alt={formData.name} />
               <AvatarFallback className="text-3xl">
-                {getInitials(formData.first_name, formData.last_name)}
+                {getInitials(formData.fullname)}
               </AvatarFallback>
             </Avatar>
             {isEditing && (
@@ -42,7 +42,7 @@ export function ProfileHeader({
           
           <div className="flex-1 text-center md:text-left space-y-2">
             <h2 className="text-3xl font-bold">
-              {formData.first_name} {formData.last_name}
+              {formData.fullname}
             </h2>
             <p className="text-muted-foreground text-lg">{formData.email}</p>
             <div className="flex flex-wrap gap-2 justify-center md:justify-start">

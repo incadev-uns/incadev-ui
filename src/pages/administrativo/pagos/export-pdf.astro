@@ -1,0 +1,25 @@
+---
+import PaymentExportPDF from '@/process/administrative/pays/PaymentExportPDF.tsx';
+const title = 'Reporte de Pagos';
+const description = 'Reporte de pagos del instituto';
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>{title}</title>
+  <link rel="stylesheet" href="/src/styles/global.css" />
+  <style>
+    @media print {
+      @page {
+        margin: 1.5cm 2cm;
+        size: landscape;
+      }
+    }
+  </style>
+</head>
+<body>
+  <PaymentExportPDF client:load />
+</body>
+</html>

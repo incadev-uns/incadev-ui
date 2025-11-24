@@ -19,16 +19,13 @@ import { z } from "zod"
 import {GoogleLoginButton} from "@/process/academic/auth/components/google-login-button";
 import { config } from "@/config/academic-config"
 import {routes} from "@/process/academic/academic-site"
+
 const FormSchema = z.object({
   email: z
     .string()
-    /* .email({
-      message: "Por favor, ingresa una dirección de correo válida.",
-    }) */
     .min(1, {
       message: "El correo electrónico es obligatorio.",
     }),
-
   password: z
     .string()
     .min(8, {
@@ -36,17 +33,11 @@ const FormSchema = z.object({
     })
     .max(20, {
       message: "La contraseña no debe exceder los 20 caracteres.",
-    })
-    /* .regex(/[A-Z]/, {
-      message: "La contraseña debe contener al menos una letra mayúscula.",
-    })
-    .regex(/[0-9]/, {
-      message: "La contraseña debe contener al menos un número.",
-    })
-    .regex(/[\W_]/, {
-      message: "La contraseña debe contener al menos un carácter especial (por ejemplo, !@#$%^&*).",
-    }), */
-});
+    }),
+  role: z.enum(["student", "teacher"] as const, {
+    error: "Debes seleccionar un tipo de sesión.",
+  }),
+})
 
 export function LoginForm({
   className,
@@ -58,16 +49,17 @@ export function LoginForm({
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+    resolver: zodResolver(FormSchema as any) as any,
     defaultValues: {
       email: "",
       password: "",
+      role: "student",
     },
-  })
+  });
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
-      const response = await fetch(`${config.apiUrl}${config.endpoints.auth.login}`, {
+      const response = await fetch(`${config.endpoints.auth.login}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -75,14 +67,16 @@ export function LoginForm({
         body: JSON.stringify({
           email: data.email,
           password: data.password,
+          role: data.role,
         }),
       });
 
       if (response.ok) {
         const responseData = await response.json();
-        console.log("Login response:", responseData);
-        localStorage.setItem("token", JSON.stringify(responseData.access_token));
-        localStorage.setItem("user", JSON.stringify(responseData.user));
+        console.log("Login response:", responseData.data);
+        localStorage.setItem("token", JSON.stringify(responseData.data.token));
+        localStorage.setItem("user", JSON.stringify(responseData.data.user));
+        localStorage.setItem("role", data.role);
         toast.success("¡Inicio de sesión exitoso!", {
           description: "Redirigiendo a tu dashboard.",
         });
@@ -120,6 +114,21 @@ export function LoginForm({
             Ingresa tu correo electrónico para acceder a tu cuenta
           </p>
         </div>
+
+        <Field>
+          <FieldLabel htmlFor="role">Tipo de Sesión</FieldLabel>
+          <select
+            id="role"
+            {...register("role")}
+            className="w-full px-3 py-2 border rounded-md"
+          >
+            <option value="student">Estudiante</option>
+            <option value="teacher">Docente</option>
+          </select>
+          {errors.role && (
+            <p className="text-sm text-red-500 mt-1">{errors.role.message}</p>
+          )}
+        </Field>
         
         <Field>
           <FieldLabel htmlFor="email">Email</FieldLabel>

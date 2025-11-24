@@ -1,0 +1,206 @@
+---
+import TechWebLayout from "@/process/technology/layouts/TechWebLayout.astro";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Target, Eye, BookOpen, Users, Award, TrendingUp } from "lucide-react";
+---
+
+<TechWebLayout
+  title="Nosotros | INCADEV Tecnológico"
+  description="Conoce más sobre INCADEV, nuestra misión, visión y el equipo que hace posible la educación tecnológica de calidad."
+>
+  <div class="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
+    <div class="container mx-auto px-4 py-20 md:py-24 max-w-[1400px]">
+      <!-- Breadcrumbs -->
+      <nav class="flex items-center gap-2 text-sm text-muted-foreground mb-12">
+        <a href="/" class="hover:text-foreground transition-colors">
+          Inicio
+        </a>
+        <span>/</span>
+        <span class="text-foreground font-medium">Nosotros</span>
+      </nav>
+
+      <!-- Hero Section -->
+      <div class="text-center mb-16">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+          <BookOpen class="h-4 w-4" />
+          <span>Acerca de INCADEV</span>
+        </div>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Formando el Talento Tecnológico del Futuro
+        </h1>
+        <p class="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
+          Somos una institución educativa comprometida con la excelencia académica y la innovación tecnológica.
+        </p>
+      </div>
+
+      <!-- Misión y Visión -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-20">
+        <!-- Misión -->
+        <Card class="border-2 hover:shadow-2xl transition-all duration-300">
+          <CardHeader class="text-center pb-4">
+            <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Target class="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle class="text-2xl md:text-3xl font-bold">Nuestra Misión</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="text-center text-muted-foreground leading-relaxed text-base md:text-lg">
+              Brindar educación tecnológica de calidad, accesible y práctica que prepare a nuestros estudiantes
+              para enfrentar los desafíos del mundo digital. Nos comprometemos a formar profesionales competentes,
+              éticos e innovadores que contribuyan al desarrollo tecnológico de nuestra región y del país.
+            </p>
+          </CardContent>
+        </Card>
+
+        <!-- Visión -->
+        <Card class="border-2 hover:shadow-2xl transition-all duration-300">
+          <CardHeader class="text-center pb-4">
+            <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <Eye class="h-8 w-8 text-primary" />
+            </div>
+            <CardTitle class="text-2xl md:text-3xl font-bold">Nuestra Visión</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p class="text-center text-muted-foreground leading-relaxed text-base md:text-lg">
+              Ser reconocidos como la institución líder en formación tecnológica en el norte del Perú,
+              destacando por nuestra innovación pedagógica, la empleabilidad de nuestros egresados y
+              nuestro compromiso con la transformación digital de la sociedad para el año 2030.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- Historia de Fundación -->
+      <div class="mb-20">
+        <div class="text-center mb-12">
+          <Badge variant="outline" class="mb-4 text-base px-4 py-2">
+            <BookOpen class="h-4 w-4 mr-2" />
+            Nuestra Historia
+          </Badge>
+          <h2 class="text-3xl md:text-4xl font-bold mb-4">
+            Cómo Comenzó Todo
+          </h2>
+          <p class="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Un sueño compartido que se convirtió en realidad
+          </p>
+        </div>
+
+        <Card class="border-muted/50 shadow-xl">
+          <CardContent class="p-8 md:p-12">
+            <div class="prose prose-lg max-w-none dark:prose-invert">
+              <div class="space-y-6 text-muted-foreground leading-relaxed">
+                <p class="text-lg">
+                  <span class="text-2xl font-bold text-primary">INCADEV</span> nació en el año <strong class="text-foreground">2018</strong>
+                  en Nuevo Chimbote, Áncash, de la visión compartida de un grupo de profesionales tecnológicos que
+                  identificaron una necesidad crítica en la región: la falta de instituciones educativas que ofrecieran
+                  formación tecnológica práctica, actualizada y alineada con las demandas reales del mercado laboral.
+                </p>
+
+                <p>
+                  Nuestros fundadores, liderados por los ingenieros <strong class="text-foreground">Carlos Mendoza</strong> y
+                  <strong class="text-foreground">María Flores</strong>, ambos con más de 15 años de experiencia en empresas
+                  tecnológicas de Lima y el extranjero, decidieron regresar a su ciudad natal para compartir su conocimiento
+                  y crear oportunidades para las nuevas generaciones.
+                </p>
+
+                <p>
+                  Comenzamos con apenas <strong class="text-foreground">25 estudiantes</strong> en un pequeño local alquilado,
+                  ofreciendo únicamente dos cursos: Desarrollo Web y Reparación de Computadoras. Sin embargo, la calidad de
+                  nuestra enseñanza y nuestro enfoque práctico rápidamente llamaron la atención. Para el segundo año, habíamos
+                  triplicado nuestra matrícula y expandido nuestra oferta académica.
+                </p>
+
+                <p>
+                  Un momento decisivo llegó en <strong class="text-foreground">2020</strong>, cuando la pandemia obligó a todas
+                  las instituciones a adaptarse al mundo digital. Mientras muchas luchaban con la transición, INCADEV ya había
+                  incorporado herramientas digitales en su metodología, lo que nos permitió continuar operando sin interrupciones
+                  y hasta atraer estudiantes de otras regiones del país.
+                </p>
+
+                <p>
+                  Hoy, en <strong class="text-foreground">2025</strong>, INCADEV ha formado a más de
+                  <strong class="text-foreground">2,500 estudiantes</strong>, cuenta con
+                  <strong class="text-foreground">30 docentes especializados</strong>, y mantiene convenios con más de
+                  <strong class="text-foreground">50 empresas</strong> de tecnología a nivel nacional. El
+                  <strong class="text-foreground">85% de nuestros egresados</strong> consigue empleo en su área en los primeros
+                  6 meses después de graduarse.
+                </p>
+
+                <p class="text-lg font-medium text-foreground border-l-4 border-primary pl-6 italic">
+                  "Nuestra meta nunca fue ser la institución más grande, sino la mejor. Queríamos crear un espacio donde
+                  cada estudiante recibiera atención personalizada y saliera verdaderamente preparado para el mundo real."
+                  <br />
+                  <span class="text-sm text-muted-foreground not-italic">- Carlos Mendoza, Cofundador de INCADEV</span>
+                </p>
+
+                <p>
+                  Lo que comenzó como un sueño modesto se ha convertido en un referente de educación tecnológica en el norte
+                  del Perú, y seguimos comprometidos con nuestra misión original: transformar vidas a través de la educación
+                  tecnológica de calidad.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <!-- Valores y Estadísticas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card class="border-muted/50 hover:shadow-lg transition-all duration-300 text-center">
+          <CardHeader>
+            <div class="w-14 h-14 rounded-full bg-blue-500/10 flex items-center justify-center mx-auto mb-3">
+              <Users class="h-7 w-7 text-blue-600 dark:text-blue-400" />
+            </div>
+            <CardTitle class="text-4xl font-bold text-primary">2,500+</CardTitle>
+            <CardDescription class="text-base">Estudiantes Formados</CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card class="border-muted/50 hover:shadow-lg transition-all duration-300 text-center">
+          <CardHeader>
+            <div class="w-14 h-14 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-3">
+              <Award class="h-7 w-7 text-green-600 dark:text-green-400" />
+            </div>
+            <CardTitle class="text-4xl font-bold text-primary">30+</CardTitle>
+            <CardDescription class="text-base">Docentes Expertos</CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card class="border-muted/50 hover:shadow-lg transition-all duration-300 text-center">
+          <CardHeader>
+            <div class="w-14 h-14 rounded-full bg-purple-500/10 flex items-center justify-center mx-auto mb-3">
+              <BookOpen class="h-7 w-7 text-purple-600 dark:text-purple-400" />
+            </div>
+            <CardTitle class="text-4xl font-bold text-primary">25+</CardTitle>
+            <CardDescription class="text-base">Cursos Certificados</CardDescription>
+          </CardHeader>
+        </Card>
+
+        <Card class="border-muted/50 hover:shadow-lg transition-all duration-300 text-center">
+          <CardHeader>
+            <div class="w-14 h-14 rounded-full bg-orange-500/10 flex items-center justify-center mx-auto mb-3">
+              <TrendingUp class="h-7 w-7 text-orange-600 dark:text-orange-400" />
+            </div>
+            <CardTitle class="text-4xl font-bold text-primary">85%</CardTitle>
+            <CardDescription class="text-base">Empleabilidad</CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    </div>
+  </div>
+</TechWebLayout>
+
+<style>
+  .prose {
+    color: hsl(var(--muted-foreground));
+  }
+
+  .prose strong {
+    font-weight: 600;
+  }
+
+  .prose p {
+    margin-bottom: 1.5rem;
+  }
+</style>

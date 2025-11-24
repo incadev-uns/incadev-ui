@@ -1,87 +1,79 @@
-"use client"
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+"use client";
 
+import React from "react";
+
+// Section imports
+import HeroSection from "./sections/HeroSection";
+import CoursesSection from "./sections/CoursesSection";
+import TeachersSection from "./sections/TeachersSection";
+import TestimonialsSection from "./sections/TestimonialsSection";
+import NewsSection from "./sections/NewsSection";
+import ContactSection from "./sections/ContactSection";
+
+// Component imports
+import ChatbotButton from "./components/ChatbotButton";
+
+/**
+ * LandingPage Component
+ * Diseño limpio estilo Platzi con secciones claramente diferenciadas
+ * y espaciado generoso entre cada bloque de contenido
+ */
 const LandingPage: React.FC = () => {
   return (
-    <main className="p-8">
-      <section className="text-center mb-16">
-        <Badge variant="secondary" className="mb-4">Nuevos Cursos Disponibles</Badge>
-        <h2 className="text-4xl font-bold mb-4">Capacitación Virtual de Calidad</h2>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
-          Desarrolla tus habilidades con nuestros cursos virtuales diseñados para el éxito profesional.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Button size="lg">Explorar Cursos</Button>
-          <Button variant="outline" size="lg">Contactar</Button>
-        </div>
-      </section>
+    <>
+      <main className="min-h-screen bg-background pt-20">
+        {/* Hero Section - Fondo con gradiente sutil */}
+        <section
+          id="hero"
+          className="relative bg-linear-to-b from-primary/5 via-background to-background"
+        >
+          <HeroSection />
+        </section>
 
-      <section className="mb-16">
-        <h3 className="text-2xl font-bold text-center mb-8">Nuestros Servicios</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Capacitación Online</CardTitle>
-              <CardDescription>Cursos en vivo y grabados</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Accede a contenido de calidad desde cualquier lugar del mundo.
-              </p>
-            </CardContent>
-          </Card>
+        {/* Courses Section - Cursos destacados */}
+        <section
+          id="courses"
+          className="relative bg-background py-16 md:py-20 lg:py-24"
+        >
+          <CoursesSection />
+        </section>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Desarrollo Profesional</CardTitle>
-              <CardDescription>Mejora tus habilidades</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Programas diseñados para el crecimiento profesional continuo.
-              </p>
-            </CardContent>
-          </Card>
+        {/* Teachers Section - Profesores destacados */}
+        <section
+          id="teachers"
+          className="relative bg-muted/30 py-16 md:py-20 lg:py-24"
+        >
+          <TeachersSection />
+        </section>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Certificaciones</CardTitle>
-              <CardDescription>Valida tus conocimientos</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Obtén certificados reconocidos en la industria.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+        {/* Testimonials Section - Reseñas de estudiantes */}
+        <section
+          id="testimonials"
+          className="relative bg-background py-16 md:py-20 lg:py-24"
+        >
+          <TestimonialsSection />
+        </section>
 
-      <section className="max-w-md mx-auto">
-        <Card>
-          <CardHeader>
-            <CardTitle>Recibe más información</CardTitle>
-            <CardDescription>Prueba los estilos del formulario</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre completo</Label>
-              <Input id="name" placeholder="Ingresa tu nombre" />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input id="email" type="email" placeholder="tu@email.com" />
-            </div>
-            <Button className="w-full">Enviar solicitud</Button>
-          </CardContent>
-        </Card>
-      </section>
-    </main>
+        {/* News Section - Noticias recientes */}
+        <section
+          id="news"
+          className="relative bg-muted/30 py-16 md:py-20 lg:py-24"
+        >
+          <NewsSection />
+        </section>
+
+        {/* Contact Section - Formulario de contacto */}
+        <section
+          id="contact"
+          className="relative bg-background py-16 md:py-20 lg:py-24"
+        >
+          <ContactSection />
+        </section>
+      </main>
+
+      {/* Floating Chatbot Button */}
+      <ChatbotButton />
+    </>
   );
 };
 

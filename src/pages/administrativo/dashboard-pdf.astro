@@ -1,0 +1,43 @@
+---
+// /src/pages/dashboard-export-pdf.astro
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DashboardExportPDF from '@/process/administrative/dashboard/DashboardExportPDF.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Exportar Dashboard | Incadev";
+const description = "Reporte PDF del dashboard administrativo de Incadev";
+const keywords = ["reporte", "dashboard", "exportar", "pdf", "administrativo"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/dashboard/export";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+    <div id="pdf-export">
+        <DashboardExportPDF client:load />
+    </div>
+</DashboardLayout>
+
+<style is:global>
+    /* Estilos específicos para impresión */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #pdf-export,
+        #pdf-export * {
+            visibility: visible;
+        }
+        #pdf-export {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        
+        /* Ocultar elementos no deseados en impresión */
+        nav, header, footer, .no-print {
+            display: none !important;
+        }
+    }
+</style>

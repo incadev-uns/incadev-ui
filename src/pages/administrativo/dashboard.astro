@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import DashboardPage from '@/process/administrative/dashboard/Dashboard.tsx';
+const robots = ["noindex", "nofollow"];
+const title = "Panel administrativo | Incadev";
+const description = "Accede a tu panel administrativo de Incadev para gestionar cursos, gestión de pagos, gestión del personal y procesos administrativos relacionados.";
+const keywords = ["panel administrativo", "dashboard administrativo", "gestión de cursos", "educación virtual", "capacitación profesional", "instituto de desarrollo virtual", "plataforma educativa"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/dashboard";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<DashboardPage client:load/>
+</DashboardLayout>

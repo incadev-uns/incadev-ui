@@ -5,62 +5,45 @@ import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
 
 export interface UserData {
   id: number;
-  first_name: string;
-  last_name: string;
+  name: string;
+  fullname: string;
   email: string;
-  phone?: string;
-  address?: string;
-  city?: string;
-  country?: string;
-  birth_date?: string;
-  profile_photo?: string;
-  role: string | string[];
-  dni?: string;
-  document?: string;
-  country_location?: string;
-  gender?: string;
+  dni: string;
+  phone: string;
+  avatar: string;
+  role: string;
 }
 
 export const useUserProfile = () => {
-  const { token, user: initialUser, mounted: authMounted } = useAcademicAuth();
+  const { token, role, mounted: authMounted } = useAcademicAuth();
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [user, setUser] = useState<any | null>(initialUser);
+  const [user, setUser] = useState<UserData | null>(null);
   
   const [formData, setFormData] = useState<UserData>({
     id: 0,
-    first_name: "",
-    last_name: "",
+    name: "",
+    fullname: "",
     email: "",
+    dni: "",
     phone: "",
-    address: "",
-    city: "",
-    country: "",
-    birth_date: "",
-    profile_photo: "",
-    role: ""
+    avatar: "",
+    role: role || "student"
   });
 
   const mapApiDataToForm = (apiData: any): UserData => {
     return {
       id: apiData.id || 0,
-      first_name: apiData.first_name || "",
-      last_name: apiData.last_name || "",
+      name: apiData.name || "",
+      fullname: apiData.fullname || "",
       email: apiData.email || "",
-      phone: apiData.phone_number || "",
-      address: apiData.address || "",
-      city: apiData.country_location || "",
-      country: apiData.country || "Perú",
-      birth_date: apiData.birth_date ? apiData.birth_date.split('T')[0] : "",
-      profile_photo: apiData.profile_photo || `${routes.base}9440461.webp`,
-      role: apiData.role || "student",
       dni: apiData.dni || "",
-      document: apiData.document || "",
-      country_location: apiData.country_location || "",
-      gender: apiData.gender || ""
+      phone: apiData.phone || "",
+      avatar: apiData.avatar || `${routes.base}9440461.webp`,
+      role: role || "student"
     };
   };
 
@@ -69,29 +52,31 @@ export const useUserProfile = () => {
       try {
         setLoading(true);
         
-        if (initialUser) {
-          setUser(initialUser);
-          setFormData(mapApiDataToForm(initialUser));
+        if (!token) {
+          setLoading(false);
+          return;
         }
 
-        if (token && initialUser?.id) {
-          const tokenWithoutQuotes = token.replace(/^"|"$/g, '');
-          
-          const response = await fetch(`${config.apiUrl}${config.endpoints.users.getById}`.replace(":id", initialUser.id.toString()), {
-            headers: {
-              "Authorization": `Bearer ${tokenWithoutQuotes}`,
-              "Accept": "application/json"
-            }
-          });
-
-          if (response.ok) {
-            const apiData = await response.json();
-            setUser(apiData);
-            setFormData(mapApiDataToForm(apiData));
-            localStorage.setItem("user", JSON.stringify(apiData));
-          } else {
-            console.error("Error fetching profile:", await response.text());
+        const tokenWithoutQuotes = token.replace(/^"|"$/g, '');
+        
+        const response = await fetch(`${config.endpoints.users.me}`, {
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Accept": "application/json"
           }
+        });
+
+        if (response.ok) {
+          const apiData = await response.json();
+          console.log("Datos del usuario desde API:", apiData);
+          setUser(apiData.data.user);
+          setFormData(mapApiDataToForm(apiData.data.user));
+        } else {
+          console.error("Error fetching profile:", await response.text());
+          setMessage({
+            type: 'error',
+            text: "Error al cargar el perfil del usuario."
+          });
         }
       } catch (error) {
         console.error("Error loading profile:", error);
@@ -104,11 +89,10 @@ export const useUserProfile = () => {
       }
     };
 
-    // Solo ejecutar si authMounted es true (la autenticación está lista)
-    if (authMounted) {
+    if (authMounted && token) {
       fetchUserProfile();
     }
-  }, [token, initialUser, authMounted]); // Dependencias del efecto
+  }, [token, authMounted, role]);
 
   const handleChange = (field: keyof UserData, value: string) => {
     setFormData(prev => ({
@@ -124,7 +108,7 @@ export const useUserProfile = () => {
     try {
       const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
       
-      const response = await fetch(`${config.apiUrl}${config.endpoints.users.update}`.replace(":id", user.id), {
+      const response = await fetch(`${config.endpoints.users.update}`, {
         method: "PUT",
         headers: {
           "Authorization": `Bearer ${tokenWithoutQuotes}`,
@@ -132,15 +116,11 @@ export const useUserProfile = () => {
           "Accept": "application/json"
         },
         body: JSON.stringify({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
+          fullname: formData.fullname,
           email: formData.email,
-          phone_number: formData.phone,
-          address: formData.address,
-          country_location: formData.city,
-          country: formData.country,
-          birth_date: formData.birth_date,
-          profile_photo: formData.profile_photo
+          dni: formData.dni,
+          phone: formData.phone,
+          avatar: formData.avatar
         })
       });
 
@@ -150,9 +130,9 @@ export const useUserProfile = () => {
       }
 
       const updatedUser = await response.json();
-      setUser(updatedUser);
-      setFormData(mapApiDataToForm(updatedUser));
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser.data.user);
+      setFormData(mapApiDataToForm(updatedUser.data.user));
+      localStorage.setItem("user", JSON.stringify(updatedUser.data.user));
 
       setMessage({
         type: 'success',
@@ -179,40 +159,37 @@ export const useUserProfile = () => {
     setMessage(null);
   };
 
-  const getRoleLabel = (role: string | string[]) => {
-    if (Array.isArray(role)) {
-      return role.map(r => {
-        const roles: Record<string, string> = {
-          student: "Estudiante",
-          teacher: "Docente",
-          admin: "Administrador",
-          graduate: "Egresado"
-        };
-        return roles[r] || r;
-      }).join(", ");
-    }
-    
+  const getRoleLabel = () => {
     const roles: Record<string, string> = {
       student: "Estudiante",
-      teacher: "Docente",
-      admin: "Administrador",
-      graduate: "Egresado"
+      teacher: "Docente"
     };
     return roles[role] || role;
   };
 
-  const getInitials = (firstName: string, lastName: string) => {
-    return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  const getInitials = (name: string) => {
+    if (!name) return "";
+    
+    const words = name.split(' ').filter(word => word.length > 0);
+    if (words.length === 0) return "";
+    
+    if (words.length === 1) {
+      return words[0].charAt(0).toUpperCase();
+    }
+    
+    return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
   };
 
   return {
-    mounted: authMounted, // ← Usar authMounted en lugar del estado local
+    mounted: authMounted,
     loading,
     saving,
     message,
     isEditing,
     formData,
     user,
+    role: role || "student", 
+    roleLabel: getRoleLabel(),
     
     setIsEditing,
     handleChange,

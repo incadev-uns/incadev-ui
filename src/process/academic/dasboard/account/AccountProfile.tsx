@@ -5,7 +5,6 @@ import { IconUser } from "@tabler/icons-react";
 import { useUserProfile } from "@/process/academic/dasboard/account/hooks/useUserProfile";
 import { ProfileHeader } from "@/process/academic/dasboard/account/sections/ProfileHeader";
 import { PersonalInfoSection } from "@/process/academic/dasboard/account/sections/PersonalInfoSection";
-import { LocationSection } from "@/process/academic/dasboard/account/sections/LocationSection";
 import { AlertMessage } from "@/process/academic/dasboard/account/sections/AlertMessage";
 import { ProfileSkeleton } from "@/process/academic/dasboard/account/sections/ProfileSkeleton";
 
@@ -52,12 +51,6 @@ export default function AccountProfile() {
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <PersonalInfoSection
-                    formData={formData}
-                    isEditing={isEditing}
-                    onChange={handleChange}
-                  />
-
-                  <LocationSection
                     formData={formData}
                     isEditing={isEditing}
                     onChange={handleChange}

@@ -89,11 +89,6 @@ export default function TeachGroup() {
     window.location.href = `/academico/grupos/detalle-teach?id=${groupId}`
   }
 
-  const handleCreateGroup = () => {
-    // TODO: Implementar navegación a formulario de creación
-    console.log("Crear nuevo grupo")
-  }
-
   // Filtrar grupos por estado
   const filteredByStatus = groups.filter(group => {
     if (activeTab === "active") return group.status === "active"
@@ -199,10 +194,8 @@ export default function TeachGroup() {
                   </div>
                 </div>
                 <div className="bg-card border rounded-lg p-4 flex items-center">
-                  <Button onClick={handleCreateGroup} className="w-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Crear grupo
-                  </Button>
+                  <Plus className="w-4 h-4 mr-2" />
+                    Bienvenido Docente
                 </div>
               </div>
             </div>

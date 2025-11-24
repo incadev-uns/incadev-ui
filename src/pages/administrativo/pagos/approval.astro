@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import PaymentApproval from '@/process/administrative/pays/PaymentApproval.tsx';
+const robots = ["noindex", "nofollow"];
+const title = "Validar Pagos | Incadev";
+const description = "Revisa y aprueba los pagos pendientes de validación";
+const keywords = ["pagos", "validación", "aprobación", "gestión financiera", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/pagos/approval";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<PaymentApproval client:load/>
+</DashboardLayout>

@@ -1,0 +1,25 @@
+---
+// src/pages/administrativo/recursoshumanos/postulantes.astro
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import ApplicantsPage from '@/process/administrative/humanresources/Applicants.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Gestión de Postulantes | Recursos Humanos - Incadev";
+const description = "Administra y revisa todos los postulantes y sus aplicaciones. Acepta o rechaza candidatos y crea usuarios automáticamente.";
+const keywords = ["postulantes", "candidatos", "reclutamiento", "selección de personal", "gestión de talento"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/recursoshumanos/postulantes";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout 
+  {robots} 
+  {title} 
+  {description} 
+  {keywords} 
+  {url} 
+  {imageOG} 
+  {imagetwt}
+>
+  <ApplicantsPage client:load />
+</DashboardLayout>

@@ -17,9 +17,10 @@ import {
   navMainOptions, 
 } from "@/process/academic/academic-site"
 import {routes} from "@/process/academic/academic-site";
+import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
 
 interface User {
-  first_name?: string;
+  fullname?: string;
   email?: string;
   avatar?: string;
   role?: string | string[];
@@ -33,15 +34,26 @@ type AppSidebarProps = React.ComponentProps<typeof Sidebar> & {
 
 export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
   const [searchTerm, setSearchTerm] = React.useState('')
+  const { role } = useAcademicAuth();
+
+  const filterItemsByRole = (items: any[]) => {
+    if (!role) return items;
+    
+    return items.filter(item => {
+      if (!item.allowedRoles) return true;
+      
+      return item.allowedRoles.includes(role);
+    });
+  };
 
   const shownUser = {
-    name: user?.first_name ?? "Invitado",
+    name: user?.fullname ?? "Invitado",
     email: user?.email ?? "—",
     avatar: user?.avatar ?? `${routes.base}9440461.webp`,
     token: token ?? "token_invalido"
   };
 
-  const isAdmin = user?.role?.includes('admin') || user?.roles?.includes('admin');
+  const filteredNavSimpleMain = filterItemsByRole(navSimpleMain);
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -62,7 +74,7 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
       <SidebarContent>
         <NavMain items={navMainCollapse} searchTerm={searchTerm} />
         
-        <NavSecondary items={navSimpleMain}/>
+        <NavSecondary items={filteredNavSimpleMain}/>
         
         <NavSecondary 
           items={navMainOptions} 

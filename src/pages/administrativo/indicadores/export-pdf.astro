@@ -1,0 +1,26 @@
+---
+// pages/administrativo/indicadores/export-pdf.astro
+import KpiExportPDF from '@/process/administrative/indicators/components/kpi-export-pdf.tsx';
+const title = 'Reporte de Indicadores (KPIs)';
+const description = 'Métricas clave de desempeño institucional';
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>{title}</title>
+  <link rel="stylesheet" href="/src/styles/global.css" />
+  <style>
+    @media print {
+      @page {
+        margin: 1.5cm 2cm;
+        size: A4;
+      }
+    }
+  </style>
+</head>
+<body>
+  <KpiExportPDF client:load />
+</body>
+</html>

@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import CourseVersionsManagement from '@/process/administrative/academic-processes/VersionsManagament.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Gestió de Versiones | Incadev";
+const description = "Gestión de versiones de cursos académicos para estudiantes del instituto.";
+const keywords = ["estudiantes", "gestión académica", "matriculas", "certificados", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/academico/estudiantes";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<CourseVersionsManagement client:load />
+</DashboardLayout>

@@ -264,7 +264,6 @@ export function MaterialFormDialog({
               </p>
             </div>
 
-            {/* Preview de la URL cuando hay contenido */}
             {formData.material_url && (
               <div className="p-3 bg-muted rounded-lg">
                 <div className="flex items-start justify-between gap-2">
@@ -274,10 +273,12 @@ export function MaterialFormDialog({
                       href={formData.material_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-primary hover:underline break-all flex items-center gap-1"
+                      className="text-sm text-primary hover:underline flex items-center gap-1"
                     >
                       {currentType && <currentType.icon className="w-3 h-3 shrink-0" />}
-                      <span className="truncate">{formData.material_url}</span>
+                      <span className="truncate">
+                        {formData.material_url.split('/').pop() || 'Archivo'}
+                      </span>
                     </a>
                   </div>
                   {!editingMaterial && (

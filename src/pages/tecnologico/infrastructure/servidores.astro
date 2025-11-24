@@ -1,0 +1,23 @@
+---
+import ServersPage from '@/process/technology/dashboard/ServersPage';
+import '@/styles/global.css';
+
+const title = "Servidores | INCADEV Tecnológico";
+const description = "Gestión de servidores";
+const robots = ["noindex", "nofollow"];
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="robots" content={robots.join(", ")} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="min-h-screen bg-background font-sans antialiased">
+  <ServersPage client:load />
+</body>
+</html>
