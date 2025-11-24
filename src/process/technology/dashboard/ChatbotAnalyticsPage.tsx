@@ -87,7 +87,7 @@ export default function ChatbotAnalyticsPage() {
 
   if (loading) {
     return (
-      <TechnologyLayout breadcrumbs={[{ label: "Chatbot", href: "/tecnologico/web/chatbot/dashboard" }, { label: "Analytics" }]}>
+      <TechnologyLayout>
         <div className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <span className="ml-2">Cargando analytics...</span>
@@ -97,7 +97,7 @@ export default function ChatbotAnalyticsPage() {
   }
 
   return (
-    <TechnologyLayout breadcrumbs={[{ label: "Chatbot", href: "/tecnologico/web/chatbot/dashboard" }, { label: "Analytics" }]}>
+    <TechnologyLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold tracking-tight">Analytics del Chatbot</h1>

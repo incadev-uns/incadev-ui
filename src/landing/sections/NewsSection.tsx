@@ -2,12 +2,15 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, ArrowRight, Newspaper, Eye, User, Loader2 } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Newspaper, Eye, User, Loader2, Megaphone, AlertTriangle, CalendarDays, Sparkles, Bell, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { config } from "@/config/technology-config";
 
+type ContentType = "news" | "announcement" | "alert" | "event";
+
 interface News {
   id: number;
+  content_type?: ContentType;
   title: string;
   slug: string;
   summary: string;
@@ -21,6 +24,7 @@ interface News {
 
 interface NewsDetail {
   id: number;
+  content_type?: ContentType;
   title: string;
   slug: string;
   content: string;
@@ -51,11 +55,22 @@ export default function NewsSection() {
 
   const fetchNews = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}${config.endpoints.developerWeb.landing.news}`);
+      // Usar el endpoint de content y filtrar solo news
+      const response = await fetch(
+        `${config.apiUrl}/developer-web/content?status=published`,
+        {
+          method: "GET",
+          headers: { Accept: "application/json" },
+        }
+      );
       const data = await response.json();
 
-      if (data.success && data.data) {
-        setNews(data.data);
+      if (data.success && data.data?.data) {
+        // Filtrar solo items con content_type === "news"
+        const newsItems = data.data.data
+          .filter((item: any) => item.content_type === "news")
+          .slice(0, 6); // Limitar a 6 items
+        setNews(newsItems);
       }
     } catch (error) {
       console.error("Error fetching news:", error);
@@ -96,6 +111,59 @@ export default function NewsSection() {
     technology: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
     health: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
     science: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+  };
+
+  // Configuración de estilos por tipo de contenido
+  const contentTypeConfig: Record<ContentType, {
+    icon: typeof Newspaper;
+    label: string;
+    badgeClass: string;
+    cardClass: string;
+    gradientFrom: string;
+    gradientTo: string;
+    borderAccent: string;
+    iconBgClass: string;
+  }> = {
+    news: {
+      icon: Newspaper,
+      label: "Noticia",
+      badgeClass: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+      cardClass: "hover:shadow-blue-500/10",
+      gradientFrom: "from-blue-500/5",
+      gradientTo: "to-transparent",
+      borderAccent: "border-l-blue-500",
+      iconBgClass: "bg-blue-500/10 text-blue-600",
+    },
+    announcement: {
+      icon: Megaphone,
+      label: "Anuncio",
+      badgeClass: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
+      cardClass: "hover:shadow-purple-500/10",
+      gradientFrom: "from-purple-500/5",
+      gradientTo: "to-transparent",
+      borderAccent: "border-l-purple-500",
+      iconBgClass: "bg-purple-500/10 text-purple-600",
+    },
+    alert: {
+      icon: AlertTriangle,
+      label: "Alerta",
+      badgeClass: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
+      cardClass: "hover:shadow-red-500/10 border-red-500/20",
+      gradientFrom: "from-red-500/5",
+      gradientTo: "to-transparent",
+      borderAccent: "border-l-red-500",
+      iconBgClass: "bg-red-500/10 text-red-600",
+    },
+    event: {
+      icon: CalendarDays,
+      label: "Evento",
+      badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+      cardClass: "hover:shadow-emerald-500/10",
+      gradientFrom: "from-emerald-500/5",
+      gradientTo: "to-transparent",
+      borderAccent: "border-l-emerald-500",
+      iconBgClass: "bg-emerald-500/10 text-emerald-600",
+    },
   };
 
   // Formatear el contenido con saltos de línea
@@ -176,59 +244,106 @@ export default function NewsSection() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-          {news.map((item) => (
-            <Card key={item.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col">
-              {/* Imagen de la noticia */}
-              <div className="relative h-48 overflow-hidden bg-muted/30">
-                <img
-                  src={item.image_url}
-                  alt={item.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  loading="lazy"
-                />
-                <div className="absolute top-3 left-3">
-                  <Badge className={categoryColors[item.category] || "bg-primary/90 backdrop-blur"}>
-                    {item.category}
-                  </Badge>
-                </div>
-              </div>
+          {news.map((item) => {
+            const config = contentTypeConfig[item.content_type || 'news'];
+            const ContentIcon = config.icon;
 
-              <CardHeader>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{new Date(item.published_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            return (
+              <Card
+                key={item.id}
+                className={`group hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col relative border-l-4 ${config.borderAccent} ${config.cardClass} hover:-translate-y-1`}
+              >
+                {/* Gradiente de fondo sutil */}
+                <div className={`absolute inset-0 bg-gradient-to-br ${config.gradientFrom} ${config.gradientTo} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
+
+                {/* Imagen de la noticia con overlay dinámico */}
+                <div className="relative h-48 overflow-hidden bg-muted/30">
+                  <img
+                    src={item.image_url}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                  {/* Badge de tipo de contenido - Esquina superior izquierda */}
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <Badge className={`${config.badgeClass} border font-semibold backdrop-blur-sm shadow-lg`}>
+                      <ContentIcon className="h-3 w-3 mr-1" />
+                      {config.label}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3" />
-                    <span>{item.reading_time}</span>
+
+                  {/* Badge de categoría - Esquina superior derecha */}
+                  <div className="absolute top-3 right-3">
+                    <Badge className={`${categoryColors[item.category]} backdrop-blur-sm shadow-lg`}>
+                      {item.category}
+                    </Badge>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Eye className="h-3 w-3" />
-                    <span>{item.views}</span>
+
+                  {/* Icono flotante para alertas y eventos */}
+                  {(item.content_type === 'alert' || item.content_type === 'event') && (
+                    <div className="absolute bottom-3 right-3">
+                      <div className={`${config.iconBgClass} p-2 rounded-full backdrop-blur-sm shadow-lg animate-pulse`}>
+                        <ContentIcon className="h-5 w-5" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* DEBUG: Mostrar content_type */}
+                  <div className="absolute bottom-1 left-1 text-xs bg-black/70 text-white px-2 py-1 rounded">
+                    {item.content_type || 'undefined'}
                   </div>
                 </div>
-                <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
-                  {item.title}
-                </CardTitle>
-                <CardDescription className="line-clamp-3">
-                  {item.summary}
-                </CardDescription>
-              </CardHeader>
 
-              <CardContent className="mt-auto">
-                <p className="text-xs text-muted-foreground mb-3">Por {item.author}</p>
-                <Button
-                  variant="ghost"
-                  className="w-full gap-2 group/btn"
-                  onClick={() => handleOpenNews(item)}
-                >
-                  Leer más
-                  <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                <CardHeader className="relative z-10">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2 flex-wrap">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{new Date(item.published_date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{item.reading_time}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Eye className="h-3 w-3" />
+                      <span>{item.views}</span>
+                    </div>
+                  </div>
+                  <CardTitle className="text-xl line-clamp-2 group-hover:text-primary transition-colors">
+                    {item.title}
+                  </CardTitle>
+                  <CardDescription className="line-clamp-3">
+                    {item.summary}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="mt-auto relative z-10">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      <User className="h-3 w-3" />
+                      {item.author}
+                    </p>
+                    {item.content_type === 'announcement' && (
+                      <Badge variant="outline" className="text-xs">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Nuevo
+                      </Badge>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full gap-2 group/btn"
+                    onClick={() => handleOpenNews(item)}
+                  >
+                    {item.content_type === 'event' ? 'Ver detalles' : 'Leer más'}
+                    <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
 
         {/* Ver todas las noticias */}
@@ -251,19 +366,34 @@ export default function NewsSection() {
             </div>
           ) : selectedNews ? (
             <div className="flex flex-col">
-              {/* Imagen de cabecera */}
+              {/* Imagen de cabecera con diseño mejorado */}
               <div className="relative w-full h-64 md:h-96">
                 <img
                   src={selectedNews.image_url}
                   alt={selectedNews.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-                  <Badge className={categoryColors[selectedNews.category] || "bg-primary/90"}>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+
+                {/* Badges superiores */}
+                <div className="absolute top-6 left-6 flex items-center gap-3">
+                  {(() => {
+                    const config = contentTypeConfig[selectedNews.content_type || 'news'];
+                    const ContentIcon = config.icon;
+                    return (
+                      <Badge className={`${config.badgeClass} border font-semibold backdrop-blur-md shadow-2xl text-sm px-3 py-1`}>
+                        <ContentIcon className="h-4 w-4 mr-1.5" />
+                        {config.label}
+                      </Badge>
+                    );
+                  })()}
+                  <Badge className={`${categoryColors[selectedNews.category]} backdrop-blur-md shadow-2xl px-3 py-1`}>
                     {selectedNews.category}
                   </Badge>
-                  <h1 className="text-2xl md:text-4xl font-bold text-white mt-3 leading-tight">
+                </div>
+
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                  <h1 className="text-2xl md:text-4xl font-bold text-white mt-3 leading-tight drop-shadow-2xl">
                     {selectedNews.title}
                   </h1>
                 </div>

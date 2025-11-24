@@ -60,6 +60,11 @@ export const config = {
     },
     marketing: {
       students: "/api/marketing/students"
+    },
+    export: {
+      matriculas: "/api/export/:groupId/enrollments",
+      asistencias: "/api/export/:groupId/attendances",
+      grades: "/api/export/:groupId/grades"
     }
   },
 };

@@ -13,14 +13,16 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { MapPin, Phone, Mail, Clock, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { config } from "@/config/technology-config";
 
 interface ContactForm {
-  name: string;
+  full_name: string;
   email: string;
   phone: string;
+  company: string;
   subject: string;
   message: string;
-  category: string;
+  form_type: string;
 }
 
 const contactInfo = [
@@ -49,12 +51,13 @@ const contactInfo = [
 
 export default function ContactSection() {
   const [formData, setFormData] = useState<ContactForm>({
-    name: '',
+    full_name: '',
     email: '',
     phone: '',
+    company: '',
     subject: '',
     message: '',
-    category: ''
+    form_type: 'general'
   });
   const [status, setStatus] = useState<{ type: '' | 'loading' | 'success' | 'error', message: string }>({
     type: '',
@@ -66,21 +69,49 @@ export default function ContactSection() {
     setStatus({ type: 'loading', message: 'Enviando mensaje...' });
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Preparar datos, enviando null para campos opcionales vacíos
+      const dataToSend = {
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone || null,
+        company: formData.company || null,
+        subject: formData.subject,
+        message: formData.message,
+        form_type: formData.form_type
+      };
 
-      setStatus({
-        type: 'success',
-        message: 'Tu mensaje ha sido enviado exitosamente. Te responderemos pronto.'
+      const response = await fetch(`${config.apiUrl}/developer-web/contact-forms`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
       });
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: '',
-        category: ''
-      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus({
+          type: 'success',
+          message: data.message || '¡Gracias por contactarnos! Te responderemos pronto.'
+        });
+        setFormData({
+          full_name: '',
+          email: '',
+          phone: '',
+          company: '',
+          subject: '',
+          message: '',
+          form_type: 'general'
+        });
+      } else {
+        setStatus({
+          type: 'error',
+          message: data.message || 'Error al enviar el mensaje. Por favor intenta nuevamente.'
+        });
+      }
     } catch (error) {
+      console.error('Error sending contact form:', error);
       setStatus({
         type: 'error',
         message: 'Error al enviar el mensaje. Por favor intenta nuevamente.'
@@ -150,12 +181,12 @@ export default function ContactSection() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nombre Completo *</Label>
+                    <Label htmlFor="full_name">Nombre Completo *</Label>
                     <Input
-                      id="name"
+                      id="full_name"
                       required
-                      value={formData.name}
-                      onChange={(e) => handleChange('name', e.target.value)}
+                      value={formData.full_name}
+                      onChange={(e) => handleChange('full_name', e.target.value)}
                       placeholder="Juan Pérez"
                     />
                   </div>
@@ -181,39 +212,51 @@ export default function ContactSection() {
                       type="tel"
                       value={formData.phone}
                       onChange={(e) => handleChange('phone', e.target.value)}
-                      placeholder="+51 999 888 777"
+                      placeholder="999 888 777"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="category">Categoría *</Label>
+                    <Label htmlFor="company">Empresa / Institución</Label>
+                    <Input
+                      id="company"
+                      value={formData.company}
+                      onChange={(e) => handleChange('company', e.target.value)}
+                      placeholder="Mi Empresa"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="subject">Asunto *</Label>
+                    <Input
+                      id="subject"
+                      required
+                      value={formData.subject}
+                      onChange={(e) => handleChange('subject', e.target.value)}
+                      placeholder="Consulta sobre cursos"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="form_type">Tipo de Consulta *</Label>
                     <Select
                       required
-                      value={formData.category}
-                      onValueChange={(value) => handleChange('category', value)}
+                      value={formData.form_type}
+                      onValueChange={(value) => handleChange('form_type', value)}
                     >
-                      <SelectTrigger id="category">
-                        <SelectValue placeholder="Selecciona una categoría" />
+                      <SelectTrigger id="form_type">
+                        <SelectValue placeholder="Selecciona un tipo" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="general">Consulta General</SelectItem>
                         <SelectItem value="courses">Cursos</SelectItem>
                         <SelectItem value="support">Soporte Técnico</SelectItem>
-                        <SelectItem value="tech_assets">Gestión Tecnológica</SelectItem>
+                        <SelectItem value="partnership">Alianzas / Convenios</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="subject">Asunto *</Label>
-                  <Input
-                    id="subject"
-                    required
-                    value={formData.subject}
-                    onChange={(e) => handleChange('subject', e.target.value)}
-                    placeholder="Consulta sobre cursos"
-                  />
                 </div>
 
                 <div className="space-y-2">

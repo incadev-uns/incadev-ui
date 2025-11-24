@@ -294,7 +294,6 @@ export function NewsForm({ news, categories, onSuccess, onCancel }: NewsFormProp
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="article">Artículo</SelectItem>
-                <SelectItem value="press-release">Comunicado de Prensa</SelectItem>
                 <SelectItem value="update">Actualización</SelectItem>
                 <SelectItem value="feature">Característica</SelectItem>
               </SelectContent>

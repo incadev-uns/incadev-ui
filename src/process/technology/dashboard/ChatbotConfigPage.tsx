@@ -97,7 +97,7 @@ export default function ChatbotConfigPage() {
 
   if (loading) {
     return (
-      <TechnologyLayout breadcrumbs={[{ label: "Chatbot", href: "/tecnologico/web/chatbot/dashboard" }, { label: "Configuración" }]}>
+      <TechnologyLayout>
         <div className="flex items-center justify-center p-8">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <span className="ml-2">Cargando configuración...</span>
@@ -107,7 +107,7 @@ export default function ChatbotConfigPage() {
   }
 
   return (
-    <TechnologyLayout breadcrumbs={[{ label: "Chatbot", href: "/tecnologico/web/chatbot/dashboard" }, { label: "Configuración" }]}>
+    <TechnologyLayout>
       <div className="space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
