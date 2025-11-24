@@ -4,11 +4,11 @@
  * para esto, se ha creado un objeto config que contiene la url de la api y los endpoints.
  **/
 
-import DashboardICV from "@/process/academic/dasboard/Dashboard";
+// import DashboardICV from "@/process/academic/dasboard/Dashboard";
 
 export const config = {
-  //apiUrl:"https://instituto.cetivirgendelapuerta.com/administrativo/backend/public",
-  apiUrl:  "http://127.0.0.1:8000",
+  apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/administrativo/public",
+  // apiUrl:  "http://127.0.0.1:8000",
   environment:  "development",
   endpoints: {
     //dashboard
