@@ -99,7 +99,7 @@ export default function StudentDetailModal({
 
   return (
     <Dialog open={!!student} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[90vw] lg:max-w-[90vw] xl:max-w-[60vw] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="sr-only">Detalles del Estudiante</DialogTitle>
         </DialogHeader>
@@ -144,7 +144,7 @@ export default function StudentDetailModal({
 
         {/* Personal Info */}
         <Card className="mb-6">
-          <CardContent className="p-6">
+          <CardContent className="p-3">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900 dark:text-slate-100">
               📋 Información Personal
             </h3>
@@ -182,7 +182,7 @@ export default function StudentDetailModal({
 
         {/* Academic Summary */}
         <Card className="mb-6">
-          <CardContent className="p-6">
+          <CardContent className="p-3">
             <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-slate-900 dark:text-slate-100">
               📚 Resumen Académico
             </h3>
@@ -265,17 +265,11 @@ export default function StudentDetailModal({
           </Button>
           {userRole === 'admin' && (
             <>
-              <Button variant="outline" onClick={handleEdit}>
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white" onClick={handleEdit}>
                 <IconEdit className="mr-2 h-4 w-4" />
                 Editar
               </Button>
-              <Button 
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                onClick={handleViewHistory}
-              >
-                <IconHistory className="mr-2 h-4 w-4" />
-                Ver Historial Completo
-              </Button>
+              
             </>
           )}
         </div>

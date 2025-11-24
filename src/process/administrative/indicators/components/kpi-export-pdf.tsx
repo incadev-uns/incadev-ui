@@ -466,7 +466,7 @@ export default function KpiExportPDF() {
               ) : (
                 <>
                   <IconDownload className="h-5 w-5" />
-                  <span>Descargar PDF Profesional</span>
+                  <span>Descargar PDF</span>
                 </>
               )}
             </button>
