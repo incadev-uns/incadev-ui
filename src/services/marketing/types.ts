@@ -369,6 +369,8 @@ export interface CampaignMetricsForUI {
     totalInteractions: number;
     totalLikes: number;
     totalComments: number;
+    totalPreRegistrations: number;
+    expectedEnrollments: number;
     postMetrics: {
         postId: number;
         platform: string;
