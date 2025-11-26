@@ -4,7 +4,7 @@
  */
 
 export const config = {
-  apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
+  apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
   //apiUrl: "http://127.0.0.1:8002",
   // Marketing backend auth and related services
   //authApiUrl: "http://127.0.0.1:8001/api", // Backend principal para autenticación
@@ -33,7 +33,7 @@ export const config = {
 
     // Campaigns
     campaigns: {
-      list: "/campaigns",              // GET con ?proposal_id=X
+      list: "/campaigns",              // GET
       create: "/campaigns",            // POST
       detail: "/campaigns/:id",        // GET
       update: "/campaigns/:id",        // PUT
@@ -120,6 +120,11 @@ export const config = {
       campaigns: "/courses/:id/campaigns",
     },
 
+    versions: {
+      list: "/versions",
+      detail: "/versions/:id",
+      campaigns: "/versions/:id/campaigns",
+    },
 
     // Alumnos (desde marketing-backend usando modelos de core-domain)
     alumnos: {

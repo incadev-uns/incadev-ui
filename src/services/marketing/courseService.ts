@@ -1,5 +1,5 @@
 import { authenticatedFetch } from './authService';
-import { config } from '../../config/academic-config';
+import { config } from '../../config/marketing-config';
 import type { CourseFromAPI, CourseForUI, CourseVersionFromAPI, CourseVersionForUI } from './types';
 
 // ============================================
@@ -54,7 +54,7 @@ function mapVersionToUI(version: CourseVersionFromAPI): CourseVersionForUI {
  */
 export async function fetchCourses(): Promise<CourseForUI[]> {
     try {
-        const url = `${config.apiUrl}${config.endpoints.marketing.courses}`;
+        const url = `${config.apiUrl}${config.endpoints.courses.list}`;
 
         console.log('[courseService] Fetching courses from:', url);
 
@@ -88,7 +88,7 @@ export async function fetchCourses(): Promise<CourseForUI[]> {
  */
 export async function fetchVersions(): Promise<CourseVersionForUI[]> {
     try {
-        const url = `${config.apiUrl}${config.endpoints.marketing.versions}`;
+        const url = `${config.apiUrl}${config.endpoints.versions.list}`;
 
         console.log('[courseService] Fetching versions from:', url);
 
@@ -157,6 +157,15 @@ function mapCampaignWithMetricsToUI(campaign: CampaignWithMetricsFromAPI): Campa
     const endDate = new Date(campaign.end_date);
     const estado = endDate >= now ? 'activa' : 'finalizada';
 
+    // Validar que existan las métricas
+    const metrics = campaign.metrics || {
+        total_posts: 0,
+        total_reach: 0,
+        total_interactions: 0,
+        total_pre_registrations: 0,
+        average_ctr: 0
+    };
+
     return {
         id: campaign.id,
         nombre: campaign.name,
@@ -169,11 +178,11 @@ function mapCampaignWithMetricsToUI(campaign: CampaignWithMetricsFromAPI): Campa
         estado,
         fechaCreacion: campaign.created_at,
         metricas: {
-            totalPosts: campaign.metrics.total_posts,
-            totalReach: campaign.metrics.total_reach,
-            totalInteractions: campaign.metrics.total_interactions,
-            totalPreRegistrations: campaign.metrics.total_pre_registrations,
-            averageCtr: campaign.metrics.average_ctr || 0
+            totalPosts: metrics.total_posts,
+            totalReach: metrics.total_reach,
+            totalInteractions: metrics.total_interactions,
+            totalPreRegistrations: metrics.total_pre_registrations,
+            averageCtr: metrics.average_ctr || 0
         }
     };
 }
@@ -243,6 +252,90 @@ export async function fetchCourseCampaigns(courseId: number): Promise<CourseCamp
             descripcion: data.course.description || 'Sin descripción'
         },
         totalVersiones: data.total_versions,
+        totalCampañas: data.total_campaigns,
+        campañas: data.campaigns.map(mapCampaignWithMetricsToUI)
+    };
+}
+
+// ============================================
+// FUNCIONES PARA DETALLE DE VERSIÓN
+// ============================================
+
+import type {
+    VersionDetailFromAPI,
+    VersionDetailForUI,
+    VersionCampaignsFromAPI,
+    VersionCampaignsForUI
+} from './types';
+
+/**
+ * Mapea el detalle de versión de la API a la estructura de UI
+ */
+function mapVersionDetailToUI(version: VersionDetailFromAPI): VersionDetailForUI {
+    const imagePath = version.course?.image_path;
+    const cursoImagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
+
+    return {
+        id: version.id,
+        cursoId: parseInt(version.course_id, 10),
+        cursoNombre: version.course?.name || 'Curso desconocido',
+        cursoDescripcion: version.course?.description || 'Sin descripción',
+        cursoImagen,
+        nombre: version.name,
+        version: version.version || '',
+        precio: parseFloat(version.price) || 0,
+        estado: version.status,
+        fechaCreacion: version.created_at,
+        fechaActualizacion: version.updated_at,
+        campañas: (version.campaigns || []).map(mapCampaignWithMetricsToUI)
+    };
+}
+
+/**
+ * Obtiene el detalle de una versión por ID desde marketing-backend
+ */
+export async function fetchVersionById(versionId: number): Promise<VersionDetailForUI> {
+    const url = `${marketingConfig.apiUrl}/versions/${versionId}`;
+
+    console.log('[courseService] Fetching version detail from:', url);
+
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Error al cargar la versión: ${response.statusText}`);
+    }
+
+    const data: VersionDetailFromAPI = await response.json();
+    console.log('[courseService] Version detail response:', data);
+
+    return mapVersionDetailToUI(data);
+}
+
+/**
+ * Obtiene las campañas de una versión específica desde marketing-backend
+ */
+export async function fetchVersionCampaigns(versionId: number): Promise<VersionCampaignsForUI> {
+    const url = `${marketingConfig.apiUrl}/versions/${versionId}/campaigns`;
+
+    console.log('[courseService] Fetching version campaigns from:', url);
+
+    const response = await authenticatedFetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Error al cargar las campañas de la versión: ${response.statusText}`);
+    }
+
+    const data: VersionCampaignsFromAPI = await response.json();
+    console.log('[courseService] Version campaigns response:', data);
+
+    return {
+        version: {
+            id: data.version.id,
+            nombre: data.version.name,
+            version: data.version.version || '',
+            precio: parseFloat(data.version.price) || 0,
+            estado: data.version.status
+        },
         totalCampañas: data.total_campaigns,
         campañas: data.campaigns.map(mapCampaignWithMetricsToUI)
     };

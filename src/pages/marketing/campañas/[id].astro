@@ -1,29 +1,56 @@
 ---
 import Layout from "../../../layouts/MarketingLayout.astro";
+import { config } from "../../../config/marketing-config";
 
-// Para modo estático, generamos paths vacíos y manejamos el ID desde el cliente
-export function getStaticPaths() {
-  return [];
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// ============================================
+export async function getStaticPaths() {
+    try {
+        // Fetch all campaigns at build time
+        const url = `${config.apiUrl}${config.endpoints.campaigns.list}`;
+        console.log("[Build] Fetching campaigns from:", url);
+
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(
+                `Failed to fetch campaigns: ${response.statusText}`,
+            );
+        }
+
+        const campaigns = await response.json();
+
+        console.log(`[Build] Generating ${campaigns.length} campaign pages`);
+
+        // Generate a path for each campaign
+        return campaigns.map((campaign: any) => ({
+            params: { id: campaign.id.toString() },
+            props: {
+                campaignId: campaign.id,
+                campaignName: campaign.name,
+            },
+        }));
+    } catch (error) {
+        console.error("[Build] Error in getStaticPaths:", error);
+        return [];
+    }
 }
 
-const { id } = Astro.params;
-
-if (!id) {
-    return Astro.redirect("/marketing/campañas");
-}
-
-const mockTitle = "Detalle de Campaña";
+const { campaignId, campaignName } = Astro.props;
+const mockTitle = `${campaignName} - INCADEV UI`;
 ---
 
 <Layout title={mockTitle}>
-    <div class="space-y-6" data-campaign-id={id}>
+    <div class="space-y-6" data-campaign-id={campaignId}>
         <!-- Back Button + Header -->
         <div class="flex items-center gap-4 mb-6">
             <a
                 href="/marketing/campañas"
-                class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
-            >Back</a>
-            <!-- Campaign level actions are rendered per-post below; avoid referencing `p` here which is only defined per-post in the list -->
+                class="p-2 hover:bg-gray-100
+            dark:hover:bg-gray-900 rounded-lg smooth-transition"
+                >← Volver
+            </a>
         </div>
         <div class="flex-1">
             <h1
@@ -289,389 +316,407 @@ const mockTitle = "Detalle de Campaña";
             Crea tu primera publicación para esta campaña
         </p>
     </div>
-</Layout>
 
-<!-- Modal Nueva/Editar Publicación -->
-<div
-    id="modalPost"
-    class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
->
+    <!-- Modal Nueva/Editar Publicación -->
     <div
-        class="bg-white dark:bg-gray-950 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800"
+        id="modalPost"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
     >
         <div
-            class="p-6 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-950 z-10"
+            class="bg-white dark:bg-gray-950 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800"
         >
-            <div class="flex items-center justify-between">
-                <h2
-                    id="modalTitle"
-                    class="text-2xl font-bold text-gray-900 dark:text-white"
-                >
-                    Nueva Publicación
-                </h2>
-                <button
-                    id="btnCerrarModal"
-                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
-                >
-                    <svg
-                        class="w-6 h-6 text-gray-600 dark:text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+            <div
+                class="p-6 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-950 z-10"
+            >
+                <div class="flex items-center justify-between">
+                    <h2
+                        id="modalTitle"
+                        class="text-2xl font-bold text-gray-900 dark:text-white"
                     >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+                        Nueva Publicación
+                    </h2>
+                    <button
+                        id="btnCerrarModal"
+                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
+                    >
+                        <svg
+                            class="w-6 h-6 text-gray-600 dark:text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
             </div>
-        </div>
 
-        <form id="formPost" class="p-6 space-y-6">
-            <input type="hidden" id="postId" />
-            <input type="hidden" id="campaignId" />
+            <form id="formPost" class="p-6 space-y-6">
+                <input type="hidden" id="postId" />
+                <input type="hidden" id="campaignId" />
 
-            <!-- Título -->
-            <div>
-                <label
-                    class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
-                >
-                    Título *
-                </label>
-                <input
-                    type="text"
-                    id="postTitle"
-                    required
-                    placeholder="Ej: Promoción Black Friday 2025"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
-                />
-            </div>
-            <!-- Plataforma y Tipo -->
-            <div class="grid grid-cols-2 gap-4">
+                <!-- Título -->
                 <div>
                     <label
                         class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
                     >
-                        Plataforma *
-                    </label>
-                    <select
-                        id="postPlatform"
-                        required
-                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                    >
-                        <option value="">Seleccionar...</option>
-                        <option value="facebook">Facebook</option>
-                        <option value="instagram">Instagram</option>
-                    </select>
-                </div>
-                <div>
-                    <label
-                        class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
-                    >
-                        Tipo de Contenido *
-                    </label>
-                    <select
-                        id="postContentType"
-                        required
-                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                    >
-                        <option value="">Seleccionar...</option>
-                        <option value="image">Imagen</option>
-                        <option value="video">Video</option>
-                        <option value="text">Texto</option>
-                    </select>
-                </div>
-            </div>
-                        <!-- Link URL -->
-            <div>
-                <label
-                    class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
-                >
-                    URL de Enlace *
-                </label>
-                <input
-                    type="url"
-                    id="postLinkUrl"
-                    required
-                    placeholder="https://ejemplo.com/landing"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
-                />
-            </div>
-            <!-- Generación con IA (prompt-first) -->
-            <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
-                <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Generar con IA (prompt)</label>
-                <div class="flex gap-2">
-                    <input id="postPrompt" type="text" placeholder="Describe la publicación, p.ej. Oferta 2x1 en sandalias" class="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500" />
-                    <button id="btnGenerateAI" type="button" class="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500">✨ Generar</button>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">El generador creará texto sugerido e imagen temporal que podrás revisar antes de guardar.</p>
-            </div>
-
-
-
-            <!-- Contenido -->
-            <div>
-                <label
-                    class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
-                >
-                    Contenido *
-                </label>
-                <textarea
-                    id="postContent"
-                    required
-                    rows="4"
-                    placeholder="Escribe el texto de la publicación..."
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
-                ></textarea>
-            </div>
-
-            <!-- Imagen Path -->
-            <div>
-                <label
-                    class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
-                >
-                    Ruta de Imagen *
-                </label>
-                <input
-                    type="text"
-                    id="postImagePath"
-                    placeholder="uploads/posts/mi-imagen.jpg"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
-                />
-                <input type="hidden" id="postImageUrl" />
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Por ahora ingresa la ruta manualmente. Próximamente con
-                    Gemini AI
-                </p>
-            </div>
-
-
-
-            <!-- Estado y Fecha -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label
-                        class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
-                    >
-                        Estado *
-                    </label>
-                    <select
-                        id="postStatus"
-                        required
-                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
-                    >
-                        <option value="draft">Borrador</option>
-                        <option value="scheduled">Programado</option>
-                        <option value="published">Publicado</option>
-                    </select>
-                </div>
-                <div>
-                    <label
-                        class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
-                    >
-                        Fecha Programada
+                        Título *
                     </label>
                     <input
-                        type="datetime-local"
-                        id="postScheduledAt"
-                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                        type="text"
+                        id="postTitle"
+                        required
+                        placeholder="Ej: Promoción Black Friday 2025"
+                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
                     />
+                </div>
+                <!-- Plataforma y Tipo -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                        >
+                            Plataforma *
+                        </label>
+                        <select
+                            id="postPlatform"
+                            required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                        >
+                            <option value="">Seleccionar...</option>
+                            <option value="facebook">Facebook</option>
+                            <option value="instagram">Instagram</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                        >
+                            Tipo de Contenido *
+                        </label>
+                        <select
+                            id="postContentType"
+                            required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                        >
+                            <option value="">Seleccionar...</option>
+                            <option value="image">Imagen</option>
+                            <option value="video">Video</option>
+                            <option value="text">Texto</option>
+                        </select>
+                    </div>
+                </div>
+                <!-- Link URL -->
+                <div>
+                    <label
+                        class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                    >
+                        URL de Enlace *
+                    </label>
+                    <input
+                        type="url"
+                        id="postLinkUrl"
+                        required
+                        placeholder="https://ejemplo.com/landing"
+                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
+                    />
+                </div>
+                <!-- Generación con IA (prompt-first) -->
+                <div class="pt-4 border-t border-gray-200 dark:border-gray-800">
+                    <label
+                        class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                        >Generar con IA (prompt)</label
+                    >
+                    <div class="flex gap-2">
+                        <input
+                            id="postPrompt"
+                            type="text"
+                            placeholder="Describe la publicación, p.ej. Oferta 2x1 en sandalias"
+                            class="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500"
+                        />
+                        <button
+                            id="btnGenerateAI"
+                            type="button"
+                            class="px-4 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-500"
+                            >✨ Generar</button
+                        >
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        El generador creará texto sugerido e imagen temporal que
+                        podrás revisar antes de guardar.
+                    </p>
+                </div>
+
+                <!-- Contenido -->
+                <div>
+                    <label
+                        class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                    >
+                        Contenido *
+                    </label>
+                    <textarea
+                        id="postContent"
+                        required
+                        rows="4"
+                        placeholder="Escribe el texto de la publicación..."
+                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
+                    ></textarea>
+                </div>
+
+                <!-- Imagen Path -->
+                <div>
+                    <label
+                        class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                    >
+                        Ruta de Imagen *
+                    </label>
+                    <input
+                        type="text"
+                        id="postImagePath"
+                        placeholder="uploads/posts/mi-imagen.jpg"
+                        class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white"
+                    />
+                    <input type="hidden" id="postImageUrl" />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Por ahora ingresa la ruta manualmente. Próximamente con
+                        Gemini AI
+                    </p>
+                </div>
+
+                <!-- Estado y Fecha -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label
+                            class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                        >
+                            Estado *
+                        </label>
+                        <select
+                            id="postStatus"
+                            required
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                        >
+                            <option value="draft">Borrador</option>
+                            <option value="scheduled">Programado</option>
+                            <option value="published">Publicado</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+                        >
+                            Fecha Programada
+                        </label>
+                        <input
+                            type="datetime-local"
+                            id="postScheduledAt"
+                            class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+                        />
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div
+                    class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800"
+                >
+                    <button
+                        type="button"
+                        id="btnCancelarModal"
+                        class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-900 smooth-transition"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        type="submit"
+                        id="btnSubmitForm"
+                        class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium smooth-transition shadow-lg"
+                    >
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Ver Métricas -->
+    <div
+        id="modalMetrics"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
+    >
+        <div
+            class="bg-white dark:bg-gray-950 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800"
+        >
+            <div
+                class="p-6 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-950 z-10"
+            >
+                <div class="flex items-center justify-between">
+                    <h2
+                        class="text-2xl font-bold text-gray-900 dark:text-white"
+                    >
+                        📊 Métricas de Publicación
+                    </h2>
+                    <button
+                        id="btnCerrarMetrics"
+                        class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
+                    >
+                        <svg
+                            class="w-6 h-6 text-gray-600 dark:text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
-            <!-- Buttons -->
-            <div
-                class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800"
-            >
-                <button
-                    type="button"
-                    id="btnCancelarModal"
-                    class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-900 smooth-transition"
-                >
-                    Cancelar
-                </button>
-                <button
-                    type="submit"
-                    id="btnSubmitForm"
-                    class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium smooth-transition shadow-lg"
-                >
-                    Guardar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Modal Ver Métricas -->
-<div
-    id="modalMetrics"
-    class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
->
-    <div
-        class="bg-white dark:bg-gray-950 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800"
-    >
-        <div
-            class="p-6 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-950 z-10"
-        >
-            <div class="flex items-center justify-between">
-                <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    📊 Métricas de Publicación
-                </h2>
-                <button
-                    id="btnCerrarMetrics"
-                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
-                >
-                    <svg
-                        class="w-6 h-6 text-gray-600 dark:text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
+            <div id="metricsContent" class="p-6">
+                <!-- Se llenará dinámicamente -->
             </div>
         </div>
-
-        <div id="metricsContent" class="p-6">
-            <!-- Se llenará dinámicamente -->
-        </div>
     </div>
-</div>
 
-<script>
-    import {
-        fetchCampaignById,
-        fetchCampaignPosts,
-        fetchCampaignMetrics,
-        createPost,
-        publishPost,
-        generateDraft,
-        updatePost,
-        deletePost,
-        fetchPostMetrics,
-        type CampaignForUI,
-        type PostForUI,
-        type CreatePostDTO,
-        type UpdatePostDTO,
-    } from "../../../services/marketing/index";
+    <script>
+        import {
+            fetchCampaignById,
+            fetchCampaignPosts,
+            fetchCampaignMetrics,
+            createPost,
+            publishPost,
+            generateDraft,
+            updatePost,
+            deletePost,
+            fetchPostMetrics,
+            type CampaignForUI,
+            type PostForUI,
+            type CreatePostDTO,
+            type UpdatePostDTO,
+        } from "../../../services/marketing/index";
 
-                // ============================================
-    // VARIABLES GLOBALES
-    // ============================================
-    const mainDiv = document.querySelector("[data-campaign-id]") as HTMLElement;
-    const campaignId = parseInt(mainDiv?.dataset.campaignId || "0", 10);
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        const mainDiv = document.querySelector(
+            "[data-campaign-id]",
+        ) as HTMLElement;
+        const campaignId = parseInt(mainDiv?.dataset.campaignId || "0", 10);
 
-    let campaignData: CampaignForUI | null = null;
-    let posts: PostForUI[] = [];
-    let editingPostId: number | null = null;
+        let campaignData: CampaignForUI | null = null;
+        let posts: PostForUI[] = [];
+        let editingPostId: number | null = null;
 
-    // ============================================
-    // CONFIGURACIÓN
-    // ============================================
-    const estadoConfig = {
-        draft: {
-            label: "Borrador",
-            bg: "bg-gray-100 dark:bg-gray-800",
-            text: "text-gray-700 dark:text-gray-400",
-            icon: "📝",
-        },
-        scheduled: {
-            label: "Programado",
-            bg: "bg-yellow-50 dark:bg-yellow-950/30",
-            text: "text-yellow-700 dark:text-yellow-400",
-            icon: "📅",
-        },
-        published: {
-            label: "Publicado",
-            bg: "bg-green-50 dark:bg-green-950/30",
-            text: "text-green-700 dark:text-green-400",
-            icon: "✅",
-        },
-    };
+        // ============================================
+        // CONFIGURACIÓN
+        // ============================================
+        const estadoConfig = {
+            draft: {
+                label: "Borrador",
+                bg: "bg-gray-100 dark:bg-gray-800",
+                text: "text-gray-700 dark:text-gray-400",
+                icon: "📝",
+            },
+            scheduled: {
+                label: "Programado",
+                bg: "bg-yellow-50 dark:bg-yellow-950/30",
+                text: "text-yellow-700 dark:text-yellow-400",
+                icon: "📅",
+            },
+            published: {
+                label: "Publicado",
+                bg: "bg-green-50 dark:bg-green-950/30",
+                text: "text-green-700 dark:text-green-400",
+                icon: "✅",
+            },
+        };
 
-    const plataformaConfig = {
-        facebook: { icon: "📘", color: "text-blue-600" },
-        instagram: { icon: "📷", color: "text-pink-600" },
-        tiktok: { icon: "🎵", color: "text-gray-900" },
-    };
+        const plataformaConfig = {
+            facebook: { icon: "📘", color: "text-blue-600" },
+            instagram: { icon: "📷", color: "text-pink-600" },
+            tiktok: { icon: "🎵", color: "text-gray-900" },
+        };
 
-    // ============================================
-    // CARGAR DATOS INICIALES
-    // ============================================
-    async function loadCampaignData() {
-        try {
-            console.log("[Campaign Detail] Loading campaign:", campaignId);
-
-            // Cargar campaña
-            campaignData = await fetchCampaignById(campaignId);
-
-            // Actualizar header
-            document.getElementById("campaignTitle")!.textContent =
-                campaignData.nombre;
-            document.getElementById("campaignSubtitle")!.textContent =
-                `${campaignData.objetivo}`;
-
-            // Renderizar info card
-            renderCampaignInfo();
-
-            // Cargar métricas
+        // ============================================
+        // CARGAR DATOS INICIALES
+        // ============================================
+        async function loadCampaignData() {
             try {
-                const metrics = await fetchCampaignMetrics(campaignId);
-                updateGlobalMetrics(metrics);
+                console.log("[Campaign Detail] Loading campaign:", campaignId);
+
+                // Cargar campaña
+                campaignData = await fetchCampaignById(campaignId);
+
+                // Actualizar header
+                document.getElementById("campaignTitle")!.textContent =
+                    campaignData.nombre;
+                document.getElementById("campaignSubtitle")!.textContent =
+                    `${campaignData.objetivo}`;
+
+                // Renderizar info card
+                renderCampaignInfo();
+
+                // Cargar métricas
+                try {
+                    const metrics = await fetchCampaignMetrics(campaignId);
+                    updateGlobalMetrics(metrics);
+                } catch (error) {
+                    console.warn("[Campaign Detail] No metrics available yet");
+                }
+
+                // Cargar posts
+                posts = await fetchCampaignPosts(campaignId);
+                console.log("[Campaign Detail] Posts loaded:", posts.length);
+
+                updateStats();
+                renderPosts();
             } catch (error) {
-                console.warn("[Campaign Detail] No metrics available yet");
+                console.error("[Campaign Detail] Error loading data:", error);
+                alert("Error al cargar la campaña");
+                window.location.href = "/marketing/campañas";
             }
-
-            // Cargar posts
-            posts = await fetchCampaignPosts(campaignId);
-            console.log("[Campaign Detail] Posts loaded:", posts.length);
-
-            updateStats();
-            renderPosts();
-        } catch (error) {
-            console.error("[Campaign Detail] Error loading data:", error);
-            alert("Error al cargar la campaña");
-            window.location.href = "/marketing/campañas";
         }
-    }
 
-    // ============================================
-    // RENDERIZAR INFO DE CAMPAÑA
-    // ============================================
-    function renderCampaignInfo() {
-        if (!campaignData) return;
+        // ============================================
+        // RENDERIZAR INFO DE CAMPAÑA
+        // ============================================
+        function renderCampaignInfo() {
+            if (!campaignData) return;
 
-        const container = document.getElementById("campaignInfoCard");
-        if (!container) return;
+            const container = document.getElementById("campaignInfoCard");
+            if (!container) return;
 
-        const estadoLabel =
-            campaignData.estado === "proxima"
-                ? "🔵 Próxima"
-                : campaignData.estado === "activa"
-                  ? "🟢 Activa"
-                  : "⚪ Finalizada";
+            const estadoLabel =
+                campaignData.estado === "proxima"
+                    ? "🔵 Próxima"
+                    : campaignData.estado === "activa"
+                      ? "🟢 Activa"
+                      : "⚪ Finalizada";
 
-        const fechaInicio = new Date(campaignData.inicio).toLocaleDateString(
-            "es-ES",
-            { day: "numeric", month: "short", year: "numeric" },
-        );
-        const fechaFin = new Date(campaignData.fin).toLocaleDateString(
-            "es-ES",
-            {
+            const fechaInicio = new Date(
+                campaignData.inicio,
+            ).toLocaleDateString("es-ES", {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
-            },
-        );
+            });
+            const fechaFin = new Date(campaignData.fin).toLocaleDateString(
+                "es-ES",
+                {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                },
+            );
 
-        container.innerHTML = `
+            container.innerHTML = `
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
@@ -688,100 +733,103 @@ const mockTitle = "Detalle de Campaña";
           </div>
         </div>
       `;
-    }
-
-    // ============================================
-    // ACTUALIZAR MÉTRICAS GLOBALES
-    // ============================================
-    function updateGlobalMetrics(metrics: any) {
-        document.getElementById("metric-reach")!.textContent =
-            metrics.totalReach.toLocaleString();
-        document.getElementById("metric-interactions")!.textContent =
-            metrics.totalInteractions.toLocaleString();
-        document.getElementById("metric-prereg")!.textContent =
-            metrics.totalPreRegistrations.toLocaleString();
-        document.getElementById("metric-enrollments")!.textContent =
-            metrics.expectedEnrollments.toLocaleString();
-    }
-
-    // ============================================
-    // ACTUALIZAR ESTADÍSTICAS
-    // ============================================
-    function updateStats() {
-        const total = posts.length;
-        const byStatus = posts.reduce((acc: Record<string, number>, p) => {
-            acc[p.estado] = (acc[p.estado] || 0) + 1;
-            return acc;
-        }, {});
-
-        document.getElementById("stat-todos")!.textContent = String(total);
-        document.getElementById("stat-draft")!.textContent = String(
-            byStatus.draft || 0,
-        );
-        document.getElementById("stat-scheduled")!.textContent = String(
-            byStatus.scheduled || 0,
-        );
-        document.getElementById("stat-published")!.textContent = String(
-            byStatus.published || 0,
-        );
-    }
-
-    // ============================================
-    // RENDERIZAR POSTS
-    // ============================================
-    interface Filtros {
-        estado?: string;
-        busqueda?: string;
-    }
-
-    function renderPosts(filtros: Filtros = {}) {
-        const container = document.getElementById("postsList");
-        const emptyState = document.getElementById("emptyState");
-        if (!container) return;
-
-        let filtered = posts;
-
-        // Filtro por estado
-        if (filtros.estado && filtros.estado !== "todos") {
-            filtered = filtered.filter((p) => p.estado === filtros.estado);
         }
 
-        // Filtro por búsqueda
-        if (filtros.busqueda) {
-            filtered = filtered.filter((p) =>
-                p.titulo
-                    .toLowerCase()
-                    .includes(filtros.busqueda!.toLowerCase()),
+        // ============================================
+        // ACTUALIZAR MÉTRICAS GLOBALES
+        // ============================================
+        function updateGlobalMetrics(metrics: any) {
+            document.getElementById("metric-reach")!.textContent =
+                metrics.totalReach.toLocaleString();
+            document.getElementById("metric-interactions")!.textContent =
+                metrics.totalInteractions.toLocaleString();
+            document.getElementById("metric-prereg")!.textContent =
+                metrics.totalPreRegistrations.toLocaleString();
+            document.getElementById("metric-enrollments")!.textContent =
+                metrics.expectedEnrollments.toLocaleString();
+        }
+
+        // ============================================
+        // ACTUALIZAR ESTADÍSTICAS
+        // ============================================
+        function updateStats() {
+            const total = posts.length;
+            const byStatus = posts.reduce((acc: Record<string, number>, p) => {
+                acc[p.estado] = (acc[p.estado] || 0) + 1;
+                return acc;
+            }, {});
+
+            document.getElementById("stat-todos")!.textContent = String(total);
+            document.getElementById("stat-draft")!.textContent = String(
+                byStatus.draft || 0,
+            );
+            document.getElementById("stat-scheduled")!.textContent = String(
+                byStatus.scheduled || 0,
+            );
+            document.getElementById("stat-published")!.textContent = String(
+                byStatus.published || 0,
             );
         }
 
-        if (filtered.length === 0) {
-            container.classList.add("hidden");
-            emptyState?.classList.remove("hidden");
-            return;
+        // ============================================
+        // RENDERIZAR POSTS
+        // ============================================
+        interface Filtros {
+            estado?: string;
+            busqueda?: string;
         }
 
-        container.classList.remove("hidden");
-        emptyState?.classList.add("hidden");
+        function renderPosts(filtros: Filtros = {}) {
+            const container = document.getElementById("postsList");
+            const emptyState = document.getElementById("emptyState");
+            if (!container) return;
 
-        container.innerHTML = filtered
-            .map((p) => {
-                const estado = estadoConfig[p.estado];
-                const plataforma =
-                    plataformaConfig[
-                        p.plataforma as keyof typeof plataformaConfig
-                    ] || plataformaConfig.facebook;
+            let filtered = posts;
 
-                const fechaProgramada = p.programadoPara
-                    ? new Date(p.programadoPara).toLocaleDateString("es-ES", {
-                          day: "numeric",
-                          month: "short",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                      })
-                    : "No programado";
+            // Filtro por estado
+            if (filtros.estado && filtros.estado !== "todos") {
+                filtered = filtered.filter((p) => p.estado === filtros.estado);
+            }
 
-                return `
+            // Filtro por búsqueda
+            if (filtros.busqueda) {
+                filtered = filtered.filter((p) =>
+                    p.titulo
+                        .toLowerCase()
+                        .includes(filtros.busqueda!.toLowerCase()),
+                );
+            }
+
+            if (filtered.length === 0) {
+                container.classList.add("hidden");
+                emptyState?.classList.remove("hidden");
+                return;
+            }
+
+            container.classList.remove("hidden");
+            emptyState?.classList.add("hidden");
+
+            container.innerHTML = filtered
+                .map((p) => {
+                    const estado = estadoConfig[p.estado];
+                    const plataforma =
+                        plataformaConfig[
+                            p.plataforma as keyof typeof plataformaConfig
+                        ] || plataformaConfig.facebook;
+
+                    const fechaProgramada = p.programadoPara
+                        ? new Date(p.programadoPara).toLocaleDateString(
+                              "es-ES",
+                              {
+                                  day: "numeric",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                              },
+                          )
+                        : "No programado";
+
+                    return `
           <div class="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl hover:shadow-lg smooth-transition">
             <!-- Header -->
             <div class="flex items-start justify-between mb-4">
@@ -846,8 +894,8 @@ const mockTitle = "Detalle de Campaña";
                                 Editar
                             </button>
                             ${
-                                    p.estado !== 'published'
-                                            ? `
+                                p.estado !== "published"
+                                    ? `
                             <button
                                 onclick="publicarPost(${p.id})"
                                 class="flex-1 px-3 py-2 text-center text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-950/30 rounded-lg smooth-transition text-sm font-medium"
@@ -855,7 +903,7 @@ const mockTitle = "Detalle de Campaña";
                                 🚀 Publicar
                             </button>
                             `
-                                            : ''
+                                    : ""
                             }
               <button
                 onclick="eliminarPost(${p.id})"
@@ -866,39 +914,40 @@ const mockTitle = "Detalle de Campaña";
             </div>
           </div>
         `;
-            })
-            .join("");
-    }
+                })
+                .join("");
+        }
 
-    // ============================================
-    // FUNCIONES GLOBALES
-    // ============================================
-    (window as any).verMetricas = async function (postId: number) {
-        try {
-            const metrics = await fetchPostMetrics(postId);
+        // ============================================
+        // FUNCIONES GLOBALES
+        // ============================================
+        (window as any).verMetricas = async function (postId: number) {
+            try {
+                const metrics = await fetchPostMetrics(postId);
 
-            const metricsContent = document.getElementById("metricsContent");
-            if (metricsContent) {
-                // Calcular tasa de engagement
-                const engagementRate =
-                    metrics.totales.alcance > 0
-                        ? (
-                              (metrics.totales.engagement /
-                                  metrics.totales.alcance) *
-                              100
-                          ).toFixed(2)
-                        : "0.00";
+                const metricsContent =
+                    document.getElementById("metricsContent");
+                if (metricsContent) {
+                    // Calcular tasa de engagement
+                    const engagementRate =
+                        metrics.totales.alcance > 0
+                            ? (
+                                  (metrics.totales.engagement /
+                                      metrics.totales.alcance) *
+                                  100
+                              ).toFixed(2)
+                            : "0.00";
 
-                // Calcular frecuencia (impressions/reach)
-                const frecuencia =
-                    metrics.totales.alcance > 0
-                        ? (
-                              metrics.totales.impresiones /
-                              metrics.totales.alcance
-                          ).toFixed(2)
-                        : "0.00";
+                    // Calcular frecuencia (impressions/reach)
+                    const frecuencia =
+                        metrics.totales.alcance > 0
+                            ? (
+                                  metrics.totales.impresiones /
+                                  metrics.totales.alcance
+                              ).toFixed(2)
+                            : "0.00";
 
-                metricsContent.innerHTML = `
+                    metricsContent.innerHTML = `
         <div class="space-y-4">
           <!-- Header -->
           <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-lg">
@@ -1026,441 +1075,542 @@ const mockTitle = "Detalle de Campaña";
           }
         </div>
       `;
-            }
-
-            document.getElementById("modalMetrics")?.classList.remove("hidden");
-            document.getElementById("modalMetrics")?.classList.add("flex");
-        } catch (error) {
-            console.error("Error loading metrics:", error);
-            alert("No se pudieron cargar las métricas de esta publicación");
-        }
-    };
-
-    (window as any).editarPost = function (postId: number) {
-        const post = posts.find((p) => p.id === postId);
-        if (!post) return;
-
-        editingPostId = postId;
-
-        // Llenar formulario
-        (document.getElementById("postId") as HTMLInputElement).value =
-            String(postId);
-        (document.getElementById("postTitle") as HTMLInputElement).value =
-            post.titulo;
-        (document.getElementById("postPlatform") as HTMLSelectElement).value =
-            post.plataforma;
-        (
-            document.getElementById("postContentType") as HTMLSelectElement
-        ).value = post.tipo;
-        (document.getElementById("postContent") as HTMLTextAreaElement).value =
-            post.contenido;
-        (document.getElementById("postImagePath") as HTMLInputElement).value =
-            post.imagen || "";
-        (document.getElementById("postLinkUrl") as HTMLInputElement).value =
-            post.enlace;
-        (document.getElementById("postStatus") as HTMLSelectElement).value =
-            post.estado;
-
-        if (post.programadoPara) {
-            const fecha = new Date(post.programadoPara);
-            const fechaLocal = new Date(
-                fecha.getTime() - fecha.getTimezoneOffset() * 60000,
-            )
-                .toISOString()
-                .slice(0, 16);
-            (
-                document.getElementById("postScheduledAt") as HTMLInputElement
-            ).value = fechaLocal;
-        }
-
-        document.getElementById("modalTitle")!.textContent =
-            "Editar Publicación";
-        document.getElementById("btnSubmitForm")!.textContent = "Actualizar";
-
-        document.getElementById("modalPost")?.classList.remove("hidden");
-        document.getElementById("modalPost")?.classList.add("flex");
-
-        // Enable the header-level publish button when a post is selected for editing
-        const publishBtn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
-        if (publishBtn) publishBtn.disabled = false;
-    };
-
-    (window as any).eliminarPost = async function (postId: number) {
-        if (!confirm("¿Estás seguro de eliminar esta publicación?")) return;
-
-        try {
-            await deletePost(postId);
-            posts = posts.filter((p) => p.id !== postId);
-            updateStats();
-            renderPosts();
-            alert("✅ Publicación eliminada correctamente");
-        } catch (error) {
-            console.error("Error deleting post:", error);
-            alert("❌ Error al eliminar la publicación");
-        }
-    };
-
-    (window as any).publicarPost = async function (postId: number) {
-        if (!confirm('¿Deseas publicar esta publicación ahora?')) return;
-
-        try {
-            const updated = await publishPost(postId);
-            const idx = posts.findIndex((p) => p.id === postId);
-            if (idx !== -1) posts[idx] = updated;
-            // If the published post is the one currently selected for editing, disable the header publish button
-            if (editingPostId === postId) {
-                const publishBtn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
-                if (publishBtn) publishBtn.disabled = true;
-            }
-            updateStats();
-            renderPosts();
-            alert('✅ Publicación publicada correctamente');
-        } catch (error) {
-            console.error('Error publishing post:', error);
-            alert('❌ Error al publicar la publicación');
-        }
-    };
-
-    // ============================================
-    // EVENT LISTENERS
-    // ============================================
-    document.addEventListener("DOMContentLoaded", async () => {
-        await loadCampaignData();
-
-        let filtrosActuales: Filtros = { estado: "todos" };
-
-        // Filtros de estado
-        document.querySelectorAll(".filter-btn").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                document.querySelectorAll(".filter-btn").forEach((b) => {
-                    b.classList.remove(
-                        "border-blue-500",
-                        "dark:border-blue-500",
-                    );
-                    b.classList.add("border-gray-200", "dark:border-gray-800");
-                });
-                btn.classList.remove("border-gray-200", "dark:border-gray-800");
-                btn.classList.add("border-blue-500", "dark:border-blue-500");
-
-                filtrosActuales.estado =
-                    btn.getAttribute("data-filter") || "todos";
-                renderPosts(filtrosActuales);
-            });
-        });
-
-        // Búsqueda
-        const searchInput = document.getElementById("searchInput");
-        searchInput?.addEventListener("input", (e) => {
-            filtrosActuales.busqueda = (e.target as HTMLInputElement).value;
-            renderPosts(filtrosActuales);
-        });
-
-        // Limpiar filtros
-        document
-            .getElementById("btnLimpiarFiltros")
-            ?.addEventListener("click", () => {
-                filtrosActuales = { estado: "todos" };
-                if (searchInput) (searchInput as HTMLInputElement).value = "";
-
-                document.querySelectorAll(".filter-btn").forEach((b) => {
-                    b.classList.remove(
-                        "border-blue-500",
-                        "dark:border-blue-500",
-                    );
-                    b.classList.add("border-gray-200", "dark:border-gray-800");
-                });
-                document
-                    .querySelector('[data-filter="todos"]')
-                    ?.classList.add("border-blue-500", "dark:border-blue-500");
-
-                renderPosts(filtrosActuales);
-            });
-
-        // Modal Nuevo Post
-        document
-            .getElementById("btnNuevoPost")
-            ?.addEventListener("click", () => {
-                editingPostId = null;
-                (
-                    document.getElementById("formPost") as HTMLFormElement
-                ).reset();
-                (
-                    document.getElementById("campaignId") as HTMLInputElement
-                ).value = String(campaignId);
-                document.getElementById("modalTitle")!.textContent =
-                    "Nueva Publicación";
-                document.getElementById("btnSubmitForm")!.textContent = "Crear";
+                }
 
                 document
-                    .getElementById("modalPost")
+                    .getElementById("modalMetrics")
                     ?.classList.remove("hidden");
-                document.getElementById("modalPost")?.classList.add("flex");
-
-                // When creating a new post, no selection is active
-                const publishBtn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
-                if (publishBtn) publishBtn.disabled = true;
-            });
-
-        // Header-level publish button triggers publicarPost on the currently-selected editingPostId
-        const headerPublish = document.getElementById('btnPublishSelected');
-        headerPublish?.addEventListener('click', async () => {
-            if (!editingPostId) return alert('Selecciona una publicación para publicar (haz clic en Editar)');
-
-            // Confirm and call existing publicarPost handler
-            if (!confirm('¿Deseas publicar la publicación seleccionada ahora?')) return;
-
-            try {
-                const updated = await (window as any).publicarPost(editingPostId);
-                // publicarPost already updates posts/ui inside the function; ensure header button disabled afterwards
-                const btn = document.getElementById('btnPublishSelected') as HTMLButtonElement | null;
-                if (btn) btn.disabled = true;
-            } catch (err) {
-                // publicarPost shows alerts on error; no-op here
-            }
-        });
-
-        // Generar con IA (botón dentro del modal)
-        document.getElementById('btnGenerateAI')?.addEventListener('click', async () => {
-            const promptInput = document.getElementById('postPrompt') as HTMLInputElement;
-            const platformSelect = document.getElementById('postPlatform') as HTMLSelectElement;
-            const contentTypeSelect = document.getElementById('postContentType') as HTMLSelectElement;
-            if (!promptInput || !platformSelect) return;
-
-            const prompt = promptInput.value.trim();
-            const platform = platformSelect.value as 'facebook' | 'instagram';
-            const contentType = contentTypeSelect?.value as 'image' | 'video' | 'text' | undefined;
-            if (!contentType) return alert('Selecciona tipo de contenido antes de generar con IA');
-
-            // Instagram does not accept text-only posts
-            if (platform === 'instagram' && contentType === 'text') {
-                return alert('Instagram requiere una imagen o video; no es posible generar solo texto para Instagram');
-            }
-            if (!prompt) return alert('Escribe un prompt para generar');
-
-            const btn = document.getElementById('btnGenerateAI') as HTMLButtonElement;
-            btn.disabled = true;
-            const original = btn.textContent;
-            btn.textContent = 'Generando...';
-
-            try {
-                const linkInput = document.getElementById('postLinkUrl') as HTMLInputElement;
-                const linkUrl = linkInput?.value || undefined;
-                const resp = await generateDraft(prompt, platform, contentType, linkUrl);
-                if (resp?.success) {
-                    const data = resp.data ?? {}; 
-                    // Fill title/content/image fields
-                    if (data.suggested_content) {
-                        (document.getElementById('postContent') as HTMLTextAreaElement).value = data.suggested_content;
-                        // optional: fill title as first 80 chars
-                        (document.getElementById('postTitle') as HTMLInputElement).value = data.suggested_content.split('\n')[0].slice(0, 80);
-                    }
-
-                    if (data.temp_image_url) {
-                        (document.getElementById('postImageUrl') as HTMLInputElement).value = data.temp_image_url;
-                        (document.getElementById('postImagePath') as HTMLInputElement).value = data.temp_image_url;
-                    }
-
-                } else {
-                    alert('No se pudo generar el borrador: ' + (resp?.message || 'error'));
-                }
+                document.getElementById("modalMetrics")?.classList.add("flex");
             } catch (error) {
-                console.error('Error generating draft:', error);
-                alert('Error al generar borrador');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = original;
+                console.error("Error loading metrics:", error);
+                alert("No se pudieron cargar las métricas de esta publicación");
             }
-        });
+        };
 
-        // Cerrar modales
-        [
-            document.getElementById("btnCerrarModal"),
-            document.getElementById("btnCancelarModal"),
-        ].forEach((btn) => {
-            btn?.addEventListener("click", () => {
-                document.getElementById("modalPost")?.classList.add("hidden");
-                document.getElementById("modalPost")?.classList.remove("flex");
-            });
-        });
+        (window as any).editarPost = function (postId: number) {
+            const post = posts.find((p) => p.id === postId);
+            if (!post) return;
 
-        document
-            .getElementById("btnCerrarMetrics")
-            ?.addEventListener("click", () => {
-                document
-                    .getElementById("modalMetrics")
-                    ?.classList.add("hidden");
-                document
-                    .getElementById("modalMetrics")
-                    ?.classList.remove("flex");
-            });
+            editingPostId = postId;
 
-        // Submit form
-        // Submit form
-        document
-            .getElementById("formPost")
-            ?.addEventListener("submit", async (e) => {
-                e.preventDefault();
+            // Llenar formulario
+            (document.getElementById("postId") as HTMLInputElement).value =
+                String(postId);
+            (document.getElementById("postTitle") as HTMLInputElement).value =
+                post.titulo;
+            (
+                document.getElementById("postPlatform") as HTMLSelectElement
+            ).value = post.plataforma;
+            (
+                document.getElementById("postContentType") as HTMLSelectElement
+            ).value = post.tipo;
+            (
+                document.getElementById("postContent") as HTMLTextAreaElement
+            ).value = post.contenido;
+            (
+                document.getElementById("postImagePath") as HTMLInputElement
+            ).value = post.imagen || "";
+            (document.getElementById("postLinkUrl") as HTMLInputElement).value =
+                post.enlace;
+            (document.getElementById("postStatus") as HTMLSelectElement).value =
+                post.estado;
 
-                const userStr = localStorage.getItem("user");
-                if (!userStr) {
-                    alert("Error: No se pudo obtener el usuario");
-                    return;
-                }
-                const user = JSON.parse(userStr);
-
-                const scheduledAtValue = (
+            if (post.programadoPara) {
+                const fecha = new Date(post.programadoPara);
+                const fechaLocal = new Date(
+                    fecha.getTime() - fecha.getTimezoneOffset() * 60000,
+                )
+                    .toISOString()
+                    .slice(0, 16);
+                (
                     document.getElementById(
                         "postScheduledAt",
                     ) as HTMLInputElement
-                ).value;
+                ).value = fechaLocal;
+            }
 
-                const statusValue = (
-                    document.getElementById("postStatus") as HTMLSelectElement
-                ).value as "draft" | "scheduled" | "published";
+            document.getElementById("modalTitle")!.textContent =
+                "Editar Publicación";
+            document.getElementById("btnSubmitForm")!.textContent =
+                "Actualizar";
 
-                const btnSubmit = document.getElementById(
-                    "btnSubmitForm",
-                ) as HTMLButtonElement;
-                const originalText = btnSubmit.textContent;
-                btnSubmit.disabled = true;
-                btnSubmit.textContent = editingPostId
-                    ? "Actualizando..."
-                    : "Creando...";
+            document.getElementById("modalPost")?.classList.remove("hidden");
+            document.getElementById("modalPost")?.classList.add("flex");
+
+            // Enable the header-level publish button when a post is selected for editing
+            const publishBtn = document.getElementById(
+                "btnPublishSelected",
+            ) as HTMLButtonElement | null;
+            if (publishBtn) publishBtn.disabled = false;
+        };
+
+        (window as any).eliminarPost = async function (postId: number) {
+            if (!confirm("¿Estás seguro de eliminar esta publicación?")) return;
+
+            try {
+                await deletePost(postId);
+                posts = posts.filter((p) => p.id !== postId);
+                updateStats();
+                renderPosts();
+                alert("✅ Publicación eliminada correctamente");
+            } catch (error) {
+                console.error("Error deleting post:", error);
+                alert("❌ Error al eliminar la publicación");
+            }
+        };
+
+        (window as any).publicarPost = async function (postId: number) {
+            if (!confirm("¿Deseas publicar esta publicación ahora?")) return;
+
+            try {
+                const updated = await publishPost(postId);
+                const idx = posts.findIndex((p) => p.id === postId);
+                if (idx !== -1) posts[idx] = updated;
+                // If the published post is the one currently selected for editing, disable the header publish button
+                if (editingPostId === postId) {
+                    const publishBtn = document.getElementById(
+                        "btnPublishSelected",
+                    ) as HTMLButtonElement | null;
+                    if (publishBtn) publishBtn.disabled = true;
+                }
+                updateStats();
+                renderPosts();
+                alert("✅ Publicación publicada correctamente");
+            } catch (error) {
+                console.error("Error publishing post:", error);
+                alert("❌ Error al publicar la publicación");
+            }
+        };
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+        document.addEventListener("DOMContentLoaded", async () => {
+            await loadCampaignData();
+
+            let filtrosActuales: Filtros = { estado: "todos" };
+
+            // Filtros de estado
+            document.querySelectorAll(".filter-btn").forEach((btn) => {
+                btn.addEventListener("click", () => {
+                    document.querySelectorAll(".filter-btn").forEach((b) => {
+                        b.classList.remove(
+                            "border-blue-500",
+                            "dark:border-blue-500",
+                        );
+                        b.classList.add(
+                            "border-gray-200",
+                            "dark:border-gray-800",
+                        );
+                    });
+                    btn.classList.remove(
+                        "border-gray-200",
+                        "dark:border-gray-800",
+                    );
+                    btn.classList.add(
+                        "border-blue-500",
+                        "dark:border-blue-500",
+                    );
+
+                    filtrosActuales.estado =
+                        btn.getAttribute("data-filter") || "todos";
+                    renderPosts(filtrosActuales);
+                });
+            });
+
+            // Búsqueda
+            const searchInput = document.getElementById("searchInput");
+            searchInput?.addEventListener("input", (e) => {
+                filtrosActuales.busqueda = (e.target as HTMLInputElement).value;
+                renderPosts(filtrosActuales);
+            });
+
+            // Limpiar filtros
+            document
+                .getElementById("btnLimpiarFiltros")
+                ?.addEventListener("click", () => {
+                    filtrosActuales = { estado: "todos" };
+                    if (searchInput)
+                        (searchInput as HTMLInputElement).value = "";
+
+                    document.querySelectorAll(".filter-btn").forEach((b) => {
+                        b.classList.remove(
+                            "border-blue-500",
+                            "dark:border-blue-500",
+                        );
+                        b.classList.add(
+                            "border-gray-200",
+                            "dark:border-gray-800",
+                        );
+                    });
+                    document
+                        .querySelector('[data-filter="todos"]')
+                        ?.classList.add(
+                            "border-blue-500",
+                            "dark:border-blue-500",
+                        );
+
+                    renderPosts(filtrosActuales);
+                });
+
+            // Modal Nuevo Post
+            document
+                .getElementById("btnNuevoPost")
+                ?.addEventListener("click", () => {
+                    editingPostId = null;
+                    (
+                        document.getElementById("formPost") as HTMLFormElement
+                    ).reset();
+                    (
+                        document.getElementById(
+                            "campaignId",
+                        ) as HTMLInputElement
+                    ).value = String(campaignId);
+                    document.getElementById("modalTitle")!.textContent =
+                        "Nueva Publicación";
+                    document.getElementById("btnSubmitForm")!.textContent =
+                        "Crear";
+
+                    document
+                        .getElementById("modalPost")
+                        ?.classList.remove("hidden");
+                    document.getElementById("modalPost")?.classList.add("flex");
+
+                    // When creating a new post, no selection is active
+                    const publishBtn = document.getElementById(
+                        "btnPublishSelected",
+                    ) as HTMLButtonElement | null;
+                    if (publishBtn) publishBtn.disabled = true;
+                });
+
+            // Header-level publish button triggers publicarPost on the currently-selected editingPostId
+            const headerPublish = document.getElementById("btnPublishSelected");
+            headerPublish?.addEventListener("click", async () => {
+                if (!editingPostId)
+                    return alert(
+                        "Selecciona una publicación para publicar (haz clic en Editar)",
+                    );
+
+                // Confirm and call existing publicarPost handler
+                if (
+                    !confirm(
+                        "¿Deseas publicar la publicación seleccionada ahora?",
+                    )
+                )
+                    return;
 
                 try {
-                    if (editingPostId) {
-                        // ============================================
-                        // ACTUALIZAR POST
-                        // ============================================
-                        const updateData: UpdatePostDTO = {
-                            title: (
-                                document.getElementById(
-                                    "postTitle",
-                                ) as HTMLInputElement
-                            ).value,
-                            platform: (
-                                document.getElementById(
-                                    "postPlatform",
-                                ) as HTMLSelectElement
-                            ).value as "facebook" | "instagram",
-                            content: (
-                                document.getElementById(
-                                    "postContent",
-                                ) as HTMLTextAreaElement
-                            ).value,
-                            content_type: (
-                                document.getElementById(
-                                    "postContentType",
-                                ) as HTMLSelectElement
-                            ).value as "image" | "video" | "text",
-                            image_path: (
-                                document.getElementById(
-                                    "postImagePath",
-                                ) as HTMLInputElement
-                            ).value,
-                            link_url: (
-                                document.getElementById(
-                                    "postLinkUrl",
-                                ) as HTMLInputElement
-                            ).value,
-                            status: statusValue,
-                            scheduled_at: scheduledAtValue || null,
-                            published_at:
-                                statusValue === "published"
-                                    ? new Date()
-                                          .toISOString()
-                                          .slice(0, 19)
-                                          .replace("T", " ")
-                                    : null,
-                        };
+                    const updated = await (window as any).publicarPost(
+                        editingPostId,
+                    );
+                    // publicarPost already updates posts/ui inside the function; ensure header button disabled afterwards
+                    const btn = document.getElementById(
+                        "btnPublishSelected",
+                    ) as HTMLButtonElement | null;
+                    if (btn) btn.disabled = true;
+                } catch (err) {
+                    // publicarPost shows alerts on error; no-op here
+                }
+            });
 
-                        const updated = await updatePost(
-                            editingPostId,
-                            updateData,
-                        );
-                        const index = posts.findIndex(
-                            (p) => p.id === editingPostId,
-                        );
-                        if (index !== -1) posts[index] = updated;
-                    } else {
-                        // ============================================
-                        // CREAR POST
-                        // ============================================
-                        const createData: CreatePostDTO = {
-                            campaign_id: campaignId,
-                            title: (
-                                document.getElementById(
-                                    "postTitle",
-                                ) as HTMLInputElement
-                            ).value,
-                            platform: (
-                                document.getElementById(
-                                    "postPlatform",
-                                ) as HTMLSelectElement
-                            ).value as "facebook" | "instagram",
-                            content: (
-                                document.getElementById(
-                                    "postContent",
-                                ) as HTMLTextAreaElement
-                            ).value,
-                            content_type: (
-                                document.getElementById(
-                                    "postContentType",
-                                ) as HTMLSelectElement
-                            ).value as "image" | "video" | "text",
-                            image_path: (
-                                document.getElementById(
-                                    "postImagePath",
-                                ) as HTMLInputElement
-                            ).value,
-                            image_url: (
-                                document.getElementById(
-                                    'postImageUrl',
-                                ) as HTMLInputElement
-                            ).value || null,
-                            link_url: (
-                                document.getElementById(
-                                    "postLinkUrl",
-                                ) as HTMLInputElement
-                            ).value,
-                            status: statusValue,
-                            scheduled_at: scheduledAtValue || null,
-                            published_at:
-                                statusValue === "published"
-                                    ? new Date()
-                                          .toISOString()
-                                          .slice(0, 19)
-                                          .replace("T", " ")
-                                    : null,
-                            created_by: user.id,
-                        };
+            // Generar con IA (botón dentro del modal)
+            document
+                .getElementById("btnGenerateAI")
+                ?.addEventListener("click", async () => {
+                    const promptInput = document.getElementById(
+                        "postPrompt",
+                    ) as HTMLInputElement;
+                    const platformSelect = document.getElementById(
+                        "postPlatform",
+                    ) as HTMLSelectElement;
+                    const contentTypeSelect = document.getElementById(
+                        "postContentType",
+                    ) as HTMLSelectElement;
+                    if (!promptInput || !platformSelect) return;
 
-                        const created = await createPost(createData);
-                        posts.push(created);
+                    const prompt = promptInput.value.trim();
+                    const platform = platformSelect.value as
+                        | "facebook"
+                        | "instagram";
+                    const contentType = contentTypeSelect?.value as
+                        | "image"
+                        | "video"
+                        | "text"
+                        | undefined;
+                    if (!contentType)
+                        return alert(
+                            "Selecciona tipo de contenido antes de generar con IA",
+                        );
+
+                    // Instagram does not accept text-only posts
+                    if (platform === "instagram" && contentType === "text") {
+                        return alert(
+                            "Instagram requiere una imagen o video; no es posible generar solo texto para Instagram",
+                        );
                     }
+                    if (!prompt) return alert("Escribe un prompt para generar");
 
-                    updateStats();
-                    renderPosts(filtrosActuales);
+                    const btn = document.getElementById(
+                        "btnGenerateAI",
+                    ) as HTMLButtonElement;
+                    btn.disabled = true;
+                    const original = btn.textContent;
+                    btn.textContent = "Generando...";
 
+                    try {
+                        const linkInput = document.getElementById(
+                            "postLinkUrl",
+                        ) as HTMLInputElement;
+                        const linkUrl = linkInput?.value || undefined;
+                        const resp = await generateDraft(
+                            prompt,
+                            platform,
+                            contentType,
+                            linkUrl,
+                        );
+                        if (resp?.success) {
+                            const data = resp.data ?? {};
+                            // Fill title/content/image fields
+                            if (data.suggested_content) {
+                                (
+                                    document.getElementById(
+                                        "postContent",
+                                    ) as HTMLTextAreaElement
+                                ).value = data.suggested_content;
+                                // optional: fill title as first 80 chars
+                                (
+                                    document.getElementById(
+                                        "postTitle",
+                                    ) as HTMLInputElement
+                                ).value = data.suggested_content
+                                    .split("\n")[0]
+                                    .slice(0, 80);
+                            }
+
+                            if (data.temp_image_url) {
+                                (
+                                    document.getElementById(
+                                        "postImageUrl",
+                                    ) as HTMLInputElement
+                                ).value = data.temp_image_url;
+                                (
+                                    document.getElementById(
+                                        "postImagePath",
+                                    ) as HTMLInputElement
+                                ).value = data.temp_image_url;
+                            }
+                        } else {
+                            alert(
+                                "No se pudo generar el borrador: " +
+                                    (resp?.message || "error"),
+                            );
+                        }
+                    } catch (error) {
+                        console.error("Error generating draft:", error);
+                        alert("Error al generar borrador");
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = original;
+                    }
+                });
+
+            // Cerrar modales
+            [
+                document.getElementById("btnCerrarModal"),
+                document.getElementById("btnCancelarModal"),
+            ].forEach((btn) => {
+                btn?.addEventListener("click", () => {
                     document
                         .getElementById("modalPost")
                         ?.classList.add("hidden");
                     document
                         .getElementById("modalPost")
                         ?.classList.remove("flex");
-
-                    alert(
-                        editingPostId
-                            ? "✅ Publicación actualizada"
-                            : "✅ Publicación creada",
-                    );
-                } catch (error) {
-                    console.error("Error saving post:", error);
-                    alert("❌ Error al guardar la publicación");
-                } finally {
-                    btnSubmit.disabled = false;
-                    btnSubmit.textContent = originalText;
-                }
+                });
             });
-    });
-</script>
+
+            document
+                .getElementById("btnCerrarMetrics")
+                ?.addEventListener("click", () => {
+                    document
+                        .getElementById("modalMetrics")
+                        ?.classList.add("hidden");
+                    document
+                        .getElementById("modalMetrics")
+                        ?.classList.remove("flex");
+                });
+
+            // Submit form
+            // Submit form
+            document
+                .getElementById("formPost")
+                ?.addEventListener("submit", async (e) => {
+                    e.preventDefault();
+
+                    const userStr = localStorage.getItem("user");
+                    if (!userStr) {
+                        alert("Error: No se pudo obtener el usuario");
+                        return;
+                    }
+                    const user = JSON.parse(userStr);
+
+                    const scheduledAtValue = (
+                        document.getElementById(
+                            "postScheduledAt",
+                        ) as HTMLInputElement
+                    ).value;
+
+                    const statusValue = (
+                        document.getElementById(
+                            "postStatus",
+                        ) as HTMLSelectElement
+                    ).value as "draft" | "scheduled" | "published";
+
+                    const btnSubmit = document.getElementById(
+                        "btnSubmitForm",
+                    ) as HTMLButtonElement;
+                    const originalText = btnSubmit.textContent;
+                    btnSubmit.disabled = true;
+                    btnSubmit.textContent = editingPostId
+                        ? "Actualizando..."
+                        : "Creando...";
+
+                    try {
+                        if (editingPostId) {
+                            // ============================================
+                            // ACTUALIZAR POST
+                            // ============================================
+                            const updateData: UpdatePostDTO = {
+                                title: (
+                                    document.getElementById(
+                                        "postTitle",
+                                    ) as HTMLInputElement
+                                ).value,
+                                platform: (
+                                    document.getElementById(
+                                        "postPlatform",
+                                    ) as HTMLSelectElement
+                                ).value as "facebook" | "instagram",
+                                content: (
+                                    document.getElementById(
+                                        "postContent",
+                                    ) as HTMLTextAreaElement
+                                ).value,
+                                content_type: (
+                                    document.getElementById(
+                                        "postContentType",
+                                    ) as HTMLSelectElement
+                                ).value as "image" | "video" | "text",
+                                image_path: (
+                                    document.getElementById(
+                                        "postImagePath",
+                                    ) as HTMLInputElement
+                                ).value,
+                                link_url: (
+                                    document.getElementById(
+                                        "postLinkUrl",
+                                    ) as HTMLInputElement
+                                ).value,
+                                status: statusValue,
+                                scheduled_at: scheduledAtValue || null,
+                                published_at:
+                                    statusValue === "published"
+                                        ? new Date()
+                                              .toISOString()
+                                              .slice(0, 19)
+                                              .replace("T", " ")
+                                        : null,
+                            };
+
+                            const updated = await updatePost(
+                                editingPostId,
+                                updateData,
+                            );
+                            const index = posts.findIndex(
+                                (p) => p.id === editingPostId,
+                            );
+                            if (index !== -1) posts[index] = updated;
+                        } else {
+                            // ============================================
+                            // CREAR POST
+                            // ============================================
+                            const createData: CreatePostDTO = {
+                                campaign_id: campaignId,
+                                title: (
+                                    document.getElementById(
+                                        "postTitle",
+                                    ) as HTMLInputElement
+                                ).value,
+                                platform: (
+                                    document.getElementById(
+                                        "postPlatform",
+                                    ) as HTMLSelectElement
+                                ).value as "facebook" | "instagram",
+                                content: (
+                                    document.getElementById(
+                                        "postContent",
+                                    ) as HTMLTextAreaElement
+                                ).value,
+                                content_type: (
+                                    document.getElementById(
+                                        "postContentType",
+                                    ) as HTMLSelectElement
+                                ).value as "image" | "video" | "text",
+                                image_path: (
+                                    document.getElementById(
+                                        "postImagePath",
+                                    ) as HTMLInputElement
+                                ).value,
+                                image_url:
+                                    (
+                                        document.getElementById(
+                                            "postImageUrl",
+                                        ) as HTMLInputElement
+                                    ).value || null,
+                                link_url: (
+                                    document.getElementById(
+                                        "postLinkUrl",
+                                    ) as HTMLInputElement
+                                ).value,
+                                status: statusValue,
+                                scheduled_at: scheduledAtValue || null,
+                                published_at:
+                                    statusValue === "published"
+                                        ? new Date()
+                                              .toISOString()
+                                              .slice(0, 19)
+                                              .replace("T", " ")
+                                        : null,
+                                created_by: user.id,
+                            };
+
+                            const created = await createPost(createData);
+                            posts.push(created);
+                        }
+
+                        updateStats();
+                        renderPosts(filtrosActuales);
+
+                        document
+                            .getElementById("modalPost")
+                            ?.classList.add("hidden");
+                        document
+                            .getElementById("modalPost")
+                            ?.classList.remove("flex");
+
+                        alert(
+                            editingPostId
+                                ? "✅ Publicación actualizada"
+                                : "✅ Publicación creada",
+                        );
+                    } catch (error) {
+                        console.error("Error saving post:", error);
+                        alert("❌ Error al guardar la publicación");
+                    } finally {
+                        btnSubmit.disabled = false;
+                        btnSubmit.textContent = originalText;
+                    }
+                });
+        });
+    </script>
+</Layout>

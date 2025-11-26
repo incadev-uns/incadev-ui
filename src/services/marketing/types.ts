@@ -469,3 +469,63 @@ export interface CourseCampaignsForUI {
     totalCampañas: number;
     campañas: CampaignWithMetricsForUI[];
 }
+
+// ============================================
+// VERSION DETAIL (detalle de una versión específica)
+// ============================================
+
+export interface VersionDetailFromAPI {
+    id: number;
+    course_id: string;
+    version: string | null;
+    name: string;
+    price: string;
+    status: 'draft' | 'published' | 'archived';
+    created_at: string;
+    updated_at: string;
+    course: CourseFromAPI;
+    campaigns: CampaignWithMetricsFromAPI[];
+}
+
+export interface VersionDetailForUI {
+    id: number;
+    cursoId: number;
+    cursoNombre: string;
+    cursoDescripcion: string;
+    cursoImagen: string | null;
+    nombre: string;
+    version: string;
+    precio: number;
+    estado: 'draft' | 'published' | 'archived';
+    fechaCreacion: string;
+    fechaActualizacion: string;
+    campañas: CampaignWithMetricsForUI[];
+}
+
+// ============================================
+// VERSION CAMPAIGNS (campañas de una versión específica)
+// ============================================
+
+export interface VersionCampaignsFromAPI {
+    version: {
+        id: number;
+        name: string;
+        version: string | null;
+        price: string;
+        status: 'draft' | 'published' | 'archived';
+    };
+    total_campaigns: number;
+    campaigns: CampaignWithMetricsFromAPI[];
+}
+
+export interface VersionCampaignsForUI {
+    version: {
+        id: number;
+        nombre: string;
+        version: string;
+        precio: number;
+        estado: 'draft' | 'published' | 'archived';
+    };
+    totalCampañas: number;
+    campañas: CampaignWithMetricsForUI[];
+}

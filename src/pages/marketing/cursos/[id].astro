@@ -1,18 +1,48 @@
 ---
 // src/pages/marketing/cursos/[id].astro
 import Layout from "../../../layouts/MarketingLayout.astro";
+import { config } from "../../../config/marketing-config";
 
-// Para modo estático, generamos paths vacíos y manejamos el ID desde el cliente
-export function getStaticPaths() {
-  return [];
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// ============================================
+export async function getStaticPaths() {
+  try {
+    // Fetch all versions at build time
+    const url = `${config.apiUrl}${config.endpoints.versions.list}`;
+    console.log("[Build] Fetching versions from:", url);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch versions: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const versions = data.data || [];
+
+    console.log(`[Build] Generating ${versions.length} version pages`);
+
+    // Generate a path for each version
+    return versions.map((version: any) => ({
+      params: { id: version.id.toString() },
+      props: {
+        versionId: version.id,
+        versionName: version.name,
+      },
+    }));
+  } catch (error) {
+    console.error("[Build] Error in getStaticPaths:", error);
+    return [];
+  }
 }
 
-const { id } = Astro.params;
-const mockTitle = "Curso - INCADEV UI";
+const { versionId, versionName } = Astro.props;
+const mockTitle = `${versionName} - INCADEV UI`;
 ---
 
 <Layout title={mockTitle}>
-  <div class="space-y-6" data-course-id={id}>
+  <div class="space-y-6" data-version-id={versionId}>
     <!-- Breadcrumb -->
     <nav
       class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
@@ -43,7 +73,9 @@ const mockTitle = "Curso - INCADEV UI";
         class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"
       >
       </div>
-      <p class="text-gray-600 dark:text-gray-400">Cargando curso...</p>
+      <p class="text-gray-600 dark:text-gray-400">
+        Cargando versión del curso...
+      </p>
     </div>
 
     <!-- Error State -->
@@ -68,7 +100,7 @@ const mockTitle = "Curso - INCADEV UI";
         </svg>
       </div>
       <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-        Error al cargar el curso
+        Error al cargar la versión
       </h3>
       <p id="errorMessage" class="text-gray-600 dark:text-gray-400 mb-4"></p>
       <button
@@ -81,7 +113,7 @@ const mockTitle = "Curso - INCADEV UI";
 
     <!-- Main Content -->
     <div id="mainContent" class="hidden space-y-6">
-      <!-- Header del Curso -->
+      <!-- Header de la Versión -->
       <div
         class="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6"
       >
@@ -89,17 +121,23 @@ const mockTitle = "Curso - INCADEV UI";
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3 flex-wrap">
               <h1
-                id="cursoNombre"
+                id="versionNombre"
                 class="text-3xl font-bold text-gray-900 dark:text-white"
               >
               </h1>
               <span
-                id="cursoBadge"
+                id="versionBadge"
                 class="px-3 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 rounded-full text-sm font-medium"
               >
-                Curso
+                Versión
               </span>
             </div>
+
+            <p
+              id="cursoNombre"
+              class="text-xl text-gray-700 dark:text-gray-300 mb-2"
+            >
+            </p>
 
             <p
               id="cursoDescripcion"
@@ -107,9 +145,8 @@ const mockTitle = "Curso - INCADEV UI";
             >
             </p>
 
-            <!-- Info del curso -->
-            <div id="cursoInfo" class="flex flex-wrap gap-4 text-sm">
-            </div>
+            <!-- Info de la versión -->
+            <div id="versionInfo" class="flex flex-wrap gap-4 text-sm"></div>
           </div>
 
           <div class="flex gap-2">
@@ -146,12 +183,6 @@ const mockTitle = "Curso - INCADEV UI";
             </button>
             <button
               class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
-              data-tab="versiones"
-            >
-              Versiones
-            </button>
-            <button
-              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
               data-tab="metricas"
             >
               Métricas
@@ -164,12 +195,30 @@ const mockTitle = "Curso - INCADEV UI";
           <div class="flex items-center justify-between mb-6">
             <div>
               <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                Campañas del Curso
+                Campañas de esta Versión
               </h2>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                Campañas de marketing asociadas a las versiones de este curso
+                Campañas de marketing asociadas a esta versión del curso
               </p>
             </div>
+            <button
+              id="btnCrearCampana"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium smooth-transition flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"></path>
+              </svg>
+              Crear Campaña
+            </button>
           </div>
 
           <!-- Campañas Grid -->
@@ -198,26 +247,10 @@ const mockTitle = "Curso - INCADEV UI";
             <h3
               class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
             >
-              No hay campañas para este curso
+              No hay campañas para esta versión
             </h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Aún no se han creado campañas para las versiones de este curso
-            </p>
-          </div>
-        </div>
-
-        <!-- Tab Content: Versiones -->
-        <div id="tab-versiones" class="tab-content hidden p-6">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Versiones del Curso
-          </h2>
-
-          <div id="versionesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          </div>
-
-          <div id="emptyVersiones" class="hidden text-center py-12">
-            <p class="text-gray-600 dark:text-gray-400">
-              No hay versiones registradas para este curso
+              Aún no se han creado campañas para esta versión del curso
             </p>
           </div>
         </div>
@@ -314,10 +347,10 @@ const mockTitle = "Curso - INCADEV UI";
               </div>
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400"
-                  >Versiones del Curso</span
+                  >Precio de la Versión</span
                 >
                 <span
-                  id="metricaTotalVersiones"
+                  id="metricaPrecio"
                   class="text-sm font-bold text-gray-900 dark:text-white"
                   >--</span
                 >
@@ -327,25 +360,194 @@ const mockTitle = "Curso - INCADEV UI";
         </div>
       </div>
     </div>
+
+    <!-- Modal: Crear Campaña -->
+    <div
+      id="modalCrearCampana"
+      class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div
+          class="sticky top-0 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 p-6 flex items-center justify-between"
+        >
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Crear Nueva Campaña
+          </h2>
+          <button
+            id="btnCerrarModal"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
+          >
+            <svg
+              class="w-6 h-6 text-gray-600 dark:text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="formCrearCampana" class="p-6 space-y-6">
+          <!-- Nombre -->
+          <div>
+            <label
+              for="campanaNombre"
+              class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+            >
+              Nombre de la Campaña
+              <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="campanaNombre"
+              required
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              placeholder="Ej: Campaña Verano 2025"
+            />
+          </div>
+
+          <!-- Objetivo -->
+          <div>
+            <label
+              for="campanaObjetivo"
+              class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+            >
+              Objetivo de la Campaña
+              <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              id="campanaObjetivo"
+              required
+              rows="3"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white resize-none"
+              placeholder="Describe el objetivo principal de esta campaña..."
+            ></textarea>
+          </div>
+
+          <!-- Fechas -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                for="campanaInicio"
+                class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+              >
+                Fecha de Inicio
+                <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="campanaInicio"
+                required
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label
+                for="campanaFin"
+                class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+              >
+                Fecha de Fin
+                <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="campanaFin"
+                required
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <!-- Proposal ID (Opcional) -->
+          <div>
+            <label
+              for="campanaProposalId"
+              class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+            >
+              ID de Propuesta (Opcional)
+            </label>
+            <input
+              type="number"
+              id="campanaProposalId"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              placeholder="Dejar vacío si no aplica"
+            />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Si esta campaña está asociada a una propuesta específica
+            </p>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex gap-3 pt-4">
+            <button
+              type="button"
+              id="btnCancelarCrear"
+              class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 font-medium smooth-transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium smooth-transition"
+            >
+              Crear Campaña
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div id="loadingCrear" class="hidden text-center py-4">
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"
+            >
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              Creando campaña...
+            </p>
+          </div>
+
+          <!-- Error State -->
+          <div
+            id="errorCrear"
+            class="hidden p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+          >
+            <p
+              class="text-sm text-red-600 dark:text-red-400"
+              id="errorCrearMessage"
+            >
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <script>
     import {
-      fetchCourseById,
-      fetchCourseCampaigns,
-      type CourseDetailForUI,
-      type CourseCampaignsForUI,
-      type CampaignWithMetricsForUI,
-    } from "../../../services/marketing";
+      fetchVersionById,
+      fetchVersionCampaigns,
+    } from "../../../services/marketing/courseService";
+
+    import type {
+      VersionDetailForUI,
+      VersionCampaignsForUI,
+      CampaignWithMetricsForUI,
+    } from "../../../services/marketing/types";
 
     // ============================================
     // VARIABLES GLOBALES
     // ============================================
-    const mainDiv = document.querySelector("[data-course-id]") as HTMLElement;
-    const courseId = parseInt(mainDiv?.dataset.courseId || "0", 10);
+    const mainDiv = document.querySelector("[data-version-id]") as HTMLElement;
+    const versionId = parseInt(mainDiv?.dataset.versionId || "0", 10);
 
-    let cursoData: CourseDetailForUI | null = null;
-    let campaignsData: CourseCampaignsForUI | null = null;
+    let versionData: VersionDetailForUI | null = null;
+    let campaignsData: VersionCampaignsForUI | null = null;
 
     // ============================================
     // FUNCIONES AUXILIARES
@@ -376,7 +578,10 @@ const mockTitle = "Curso - INCADEV UI";
     }
 
     function getVersionEstadoBadge(estado: string) {
-      const configs: Record<string, { bg: string; text: string; label: string }> = {
+      const configs: Record<
+        string,
+        { bg: string; text: string; label: string }
+      > = {
         published: {
           bg: "bg-green-50 dark:bg-green-950/30",
           text: "text-green-700 dark:text-green-400",
@@ -398,37 +603,50 @@ const mockTitle = "Curso - INCADEV UI";
     }
 
     // ============================================
-    // RENDERIZAR CURSO
+    // RENDERIZAR VERSIÓN
     // ============================================
 
-    function renderCurso(curso: CourseDetailForUI) {
+    function renderVersion(version: VersionDetailForUI) {
       // Breadcrumb
       const breadcrumb = document.getElementById("breadcrumbTitle");
-      if (breadcrumb) breadcrumb.textContent = curso.nombre;
+      if (breadcrumb) breadcrumb.textContent = version.nombre;
 
-      // Nombre
-      const nombre = document.getElementById("cursoNombre");
-      if (nombre) nombre.textContent = curso.nombre;
+      // Nombre de la versión
+      const nombre = document.getElementById("versionNombre");
+      if (nombre) nombre.textContent = version.nombre;
 
-      // Descripcion
+      // Nombre del curso
+      const cursoNombre = document.getElementById("cursoNombre");
+      if (cursoNombre) cursoNombre.textContent = version.cursoNombre;
+
+      // Descripción del curso
       const descripcion = document.getElementById("cursoDescripcion");
-      if (descripcion) descripcion.textContent = curso.descripcion;
+      if (descripcion) descripcion.textContent = version.cursoDescripcion;
 
       // Info
-      const info = document.getElementById("cursoInfo");
+      const info = document.getElementById("versionInfo");
       if (info) {
         info.innerHTML = `
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
             </svg>
-            <span class="text-gray-600 dark:text-gray-400">${curso.versiones.length} versiones</span>
+            <span class="text-gray-600 dark:text-gray-400">Versión: ${version.version || "N/A"}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-gray-600 dark:text-gray-400">Precio: S/ ${version.precio.toFixed(2)}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${getVersionEstadoBadge(version.estado)}
           </div>
           <div class="flex items-center gap-2">
             <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <span class="text-gray-600 dark:text-gray-400">Creado: ${new Date(curso.fechaCreacion).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}</span>
+            <span class="text-gray-600 dark:text-gray-400">Creado: ${new Date(version.fechaCreacion).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}</span>
           </div>
         `;
       }
@@ -438,7 +656,7 @@ const mockTitle = "Curso - INCADEV UI";
     // RENDERIZAR CAMPAÑAS
     // ============================================
 
-    function renderCampanas(data: CourseCampaignsForUI) {
+    function renderCampanas(data: VersionCampaignsForUI) {
       const container = document.getElementById("campanasList");
       const emptyState = document.getElementById("emptyCampanas");
 
@@ -463,7 +681,6 @@ const mockTitle = "Curso - INCADEV UI";
                   ${c.nombre}
                 </h3>
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">${c.objetivo}</p>
-                ${c.versionNombre ? `<span class="text-xs px-2 py-1 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-400 rounded">Version: ${c.versionNombre}</span>` : ""}
               </div>
               ${getEstadoBadgeHTML(c.estado)}
             </div>
@@ -501,53 +718,13 @@ const mockTitle = "Curso - INCADEV UI";
     }
 
     // ============================================
-    // RENDERIZAR VERSIONES
-    // ============================================
-
-    function renderVersiones(curso: CourseDetailForUI) {
-      const container = document.getElementById("versionesList");
-      const emptyState = document.getElementById("emptyVersiones");
-
-      if (!container || !emptyState) return;
-
-      if (curso.versiones.length === 0) {
-        container.classList.add("hidden");
-        emptyState.classList.remove("hidden");
-        return;
-      }
-
-      container.classList.remove("hidden");
-      emptyState.classList.add("hidden");
-
-      container.innerHTML = curso.versiones
-        .map((v) => {
-          return `
-          <div class="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl">
-            <div class="flex items-start justify-between mb-3">
-              <h3 class="font-semibold text-gray-900 dark:text-white">${v.nombre}</h3>
-              ${getVersionEstadoBadge(v.estado)}
-            </div>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-gray-400">Version</span>
-                <span class="text-gray-900 dark:text-white">${v.version || "N/A"}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-gray-400">Precio</span>
-                <span class="text-gray-900 dark:text-white font-semibold">S/ ${v.precio.toFixed(2)}</span>
-              </div>
-            </div>
-          </div>
-        `;
-        })
-        .join("");
-    }
-
-    // ============================================
     // ACTUALIZAR MÉTRICAS
     // ============================================
 
-    function actualizarMetricas(data: CourseCampaignsForUI, curso: CourseDetailForUI) {
+    function actualizarMetricas(
+      data: VersionCampaignsForUI,
+      version: VersionDetailForUI,
+    ) {
       // Calcular totales
       let totalReach = 0;
       let totalInteractions = 0;
@@ -561,15 +738,16 @@ const mockTitle = "Curso - INCADEV UI";
         sumCtr += c.metricas.averageCtr;
       });
 
-      const avgCtr = data.campañas.length > 0 ? sumCtr / data.campañas.length : 0;
+      const avgCtr =
+        data.campañas.length > 0 ? sumCtr / data.campañas.length : 0;
 
       // Quick Metrics
       const quickMetrics = document.getElementById("quickMetrics");
       if (quickMetrics) {
         quickMetrics.innerHTML = `
           <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <p class="text-sm text-gray-600 dark:text-gray-400">Versiones</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">${curso.versiones.length}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Precio</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">S/ ${version.precio.toFixed(2)}</p>
           </div>
           <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <p class="text-sm text-gray-600 dark:text-gray-400">Campañas</p>
@@ -589,17 +767,28 @@ const mockTitle = "Curso - INCADEV UI";
       // Tab Métricas
       const metricaAlcance = document.getElementById("metricaAlcance");
       const metricaCTR = document.getElementById("metricaCTR");
-      const metricaInteracciones = document.getElementById("metricaInteracciones");
-      const metricaTotalCampanas = document.getElementById("metricaTotalCampanas");
+      const metricaInteracciones = document.getElementById(
+        "metricaInteracciones",
+      );
+      const metricaTotalCampanas = document.getElementById(
+        "metricaTotalCampanas",
+      );
       const metricaTotalPosts = document.getElementById("metricaTotalPosts");
-      const metricaTotalVersiones = document.getElementById("metricaTotalVersiones");
+      const metricaPrecio = document.getElementById("metricaPrecio");
 
-      if (metricaAlcance) metricaAlcance.textContent = totalReach > 1000 ? (totalReach / 1000).toFixed(1) + "K" : String(totalReach);
+      if (metricaAlcance)
+        metricaAlcance.textContent =
+          totalReach > 1000
+            ? (totalReach / 1000).toFixed(1) + "K"
+            : String(totalReach);
       if (metricaCTR) metricaCTR.textContent = avgCtr.toFixed(1) + "%";
-      if (metricaInteracciones) metricaInteracciones.textContent = String(totalInteractions);
-      if (metricaTotalCampanas) metricaTotalCampanas.textContent = String(data.totalCampañas);
+      if (metricaInteracciones)
+        metricaInteracciones.textContent = String(totalInteractions);
+      if (metricaTotalCampanas)
+        metricaTotalCampanas.textContent = String(data.totalCampañas);
       if (metricaTotalPosts) metricaTotalPosts.textContent = String(totalPosts);
-      if (metricaTotalVersiones) metricaTotalVersiones.textContent = String(curso.versiones.length);
+      if (metricaPrecio)
+        metricaPrecio.textContent = `S/ ${version.precio.toFixed(2)}`;
     }
 
     // ============================================
@@ -607,35 +796,32 @@ const mockTitle = "Curso - INCADEV UI";
     // ============================================
 
     document.addEventListener("DOMContentLoaded", async () => {
-      console.log("[Curso Detail] Loading course:", courseId);
+      console.log("[Version Detail] Loading version:", versionId);
 
       try {
-        // 1. Cargar curso
-        cursoData = await fetchCourseById(courseId);
-        console.log("[Curso Detail] Course loaded:", cursoData);
+        // 1. Cargar versión
+        versionData = await fetchVersionById(versionId);
+        console.log("[Version Detail] Version loaded:", versionData);
 
-        // 2. Renderizar curso
-        renderCurso(cursoData);
+        // 2. Renderizar versión
+        renderVersion(versionData);
 
-        // 3. Cargar campañas del curso
-        campaignsData = await fetchCourseCampaigns(courseId);
-        console.log("[Curso Detail] Campaigns loaded:", campaignsData);
+        // 3. Cargar campañas de la versión
+        campaignsData = await fetchVersionCampaigns(versionId);
+        console.log("[Version Detail] Campaigns loaded:", campaignsData);
 
         // 4. Renderizar campañas
         renderCampanas(campaignsData);
 
-        // 5. Renderizar versiones
-        renderVersiones(cursoData);
+        // 5. Actualizar métricas
+        actualizarMetricas(campaignsData, versionData);
 
-        // 6. Actualizar métricas
-        actualizarMetricas(campaignsData, cursoData);
-
-        // 7. Mostrar contenido
+        // 6. Mostrar contenido
         mostrarContenido();
       } catch (error) {
-        console.error("[Curso Detail] Error loading data:", error);
+        console.error("[Version Detail] Error loading data:", error);
         mostrarError(
-          error instanceof Error ? error.message : "Error desconocido"
+          error instanceof Error ? error.message : "Error desconocido",
         );
       }
 
@@ -652,7 +838,7 @@ const mockTitle = "Curso - INCADEV UI";
               "bg-blue-50",
               "dark:bg-blue-950/30",
               "text-blue-600",
-              "dark:text-blue-400"
+              "dark:text-blue-400",
             );
             b.classList.add("text-gray-600", "dark:text-gray-400");
           });
@@ -660,7 +846,7 @@ const mockTitle = "Curso - INCADEV UI";
             "bg-blue-50",
             "dark:bg-blue-950/30",
             "text-blue-600",
-            "dark:text-blue-400"
+            "dark:text-blue-400",
           );
           btn.classList.remove("text-gray-600", "dark:text-gray-400");
 
@@ -670,6 +856,140 @@ const mockTitle = "Curso - INCADEV UI";
           document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
         });
       });
+
+      // ============================================
+      // MODAL CREAR CAMPAÑA
+      // ============================================
+
+      const modal = document.getElementById("modalCrearCampana");
+      const btnCrearCampana = document.getElementById("btnCrearCampana");
+      const btnCerrarModal = document.getElementById("btnCerrarModal");
+      const btnCancelarCrear = document.getElementById("btnCancelarCrear");
+      const formCrearCampana = document.getElementById(
+        "formCrearCampana",
+      ) as HTMLFormElement;
+
+      // Abrir modal
+      if (btnCrearCampana && modal) {
+        btnCrearCampana.addEventListener("click", () => {
+          modal.classList.remove("hidden");
+          // Resetear formulario
+          formCrearCampana?.reset();
+          document.getElementById("errorCrear")?.classList.add("hidden");
+        });
+      }
+
+      // Cerrar modal
+      const cerrarModal = () => {
+        modal?.classList.add("hidden");
+      };
+
+      btnCerrarModal?.addEventListener("click", cerrarModal);
+      btnCancelarCrear?.addEventListener("click", cerrarModal);
+
+      // Cerrar al hacer click fuera del modal
+      modal?.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          cerrarModal();
+        }
+      });
+
+      // Submit del formulario
+      if (formCrearCampana) {
+        formCrearCampana.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const loadingCrear = document.getElementById("loadingCrear");
+          const errorCrear = document.getElementById("errorCrear");
+          const errorCrearMessage =
+            document.getElementById("errorCrearMessage");
+
+          try {
+            // Mostrar loading
+            loadingCrear?.classList.remove("hidden");
+            errorCrear?.classList.add("hidden");
+
+            // Obtener datos del formulario
+            const nombre = (
+              document.getElementById("campanaNombre") as HTMLInputElement
+            ).value;
+            const objetivo = (
+              document.getElementById("campanaObjetivo") as HTMLTextAreaElement
+            ).value;
+            const inicio = (
+              document.getElementById("campanaInicio") as HTMLInputElement
+            ).value;
+            const fin = (
+              document.getElementById("campanaFin") as HTMLInputElement
+            ).value;
+            const proposalIdInput = (
+              document.getElementById("campanaProposalId") as HTMLInputElement
+            ).value;
+            const proposalId = proposalIdInput
+              ? parseInt(proposalIdInput, 10)
+              : null;
+
+            // Validar fechas
+            if (new Date(fin) < new Date(inicio)) {
+              throw new Error(
+                "La fecha de fin debe ser posterior a la fecha de inicio",
+              );
+            }
+
+            // Preparar datos
+            const campaignData = {
+              name: nombre,
+              objective: objetivo,
+              start_date: inicio,
+              end_date: fin,
+              course_version_id: versionId,
+              proposal_id: proposalId,
+            };
+
+            console.log("[Crear Campaña] Sending data:", campaignData);
+
+            // Hacer request a la API
+            const response = await fetch(
+              `https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api/campaigns`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(campaignData),
+              },
+            );
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || "Error al crear la campaña");
+            }
+
+            const result = await response.json();
+            console.log("[Crear Campaña] Success:", result);
+
+            // Cerrar modal
+            cerrarModal();
+
+            // Recargar campañas
+            campaignsData = await fetchVersionCampaigns(versionId);
+            renderCampanas(campaignsData);
+            actualizarMetricas(campaignsData, versionData!);
+
+            // Mostrar mensaje de éxito
+            alert("¡Campaña creada exitosamente!");
+          } catch (error) {
+            console.error("[Crear Campaña] Error:", error);
+            if (errorCrear && errorCrearMessage) {
+              errorCrear.classList.remove("hidden");
+              errorCrearMessage.textContent =
+                error instanceof Error ? error.message : "Error desconocido";
+            }
+          } finally {
+            loadingCrear?.classList.add("hidden");
+          }
+        });
+      }
     });
   </script>
 </Layout>

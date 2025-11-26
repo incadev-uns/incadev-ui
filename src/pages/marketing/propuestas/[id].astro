@@ -1,20 +1,50 @@
 ---
 // src/pages/marketing/propuestas/[id].astro
 import Layout from "../../../layouts/MarketingLayout.astro";
+import { config } from "../../../config/marketing-config";
 
-// Para modo estático, generamos paths vacíos y manejamos el ID desde el cliente
-export function getStaticPaths() {
-  return [];
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// ============================================
+export async function getStaticPaths() {
+  try {
+    // Fetch all proposals at build time
+    const url = `${config.apiUrl}${config.endpoints.proposals.list}`;
+    console.log("[Build] Fetching proposals from:", url);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch proposals: ${response.statusText}`);
+    }
+
+    const responseData = await response.json();
+
+    // ✅ Extraer data del wrapper (si existe)
+    const proposals = responseData.data || responseData;
+
+    console.log(`[Build] Generating ${proposals.length} proposal pages`);
+
+    // Generate a path for each proposal
+    return proposals.map((proposal: any) => ({
+      params: { id: proposal.id.toString() },
+      props: {
+        proposalId: proposal.id,
+        proposalTitle: proposal.title,
+      },
+    }));
+  } catch (error) {
+    console.error("[Build] Error in getStaticPaths:", error);
+    return [];
+  }
 }
 
-const { id } = Astro.params;
-
-// Mock temporal solo para el título inicial de la página
-const mockTitle = "Propuesta - INCADEV UI";
+const { proposalId, proposalTitle } = Astro.props;
+const mockTitle = `${proposalTitle} - INCADEV UI`;
 ---
 
 <Layout title={mockTitle}>
-  <div class="space-y-6" data-proposal-id={id}>
+  <div class="space-y-6" data-proposal-id={proposalId}>
     <!-- Breadcrumb -->
     <nav
       class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
