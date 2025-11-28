@@ -605,6 +605,79 @@ import Layout from "../../layouts/MarketingLayout.astro";
             </div>
 
             ${
+              a.asistencias || a.rendimiento
+                ? `
+              <div class="grid grid-cols-2 gap-3 mb-4">
+                ${
+                  a.asistencias
+                    ? `
+                  <div class="p-3 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-900/50">
+                    <div class="flex items-center gap-2 mb-1">
+                      <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Asistencia</span>
+                    </div>
+                    <p class="text-xl font-bold text-blue-600 dark:text-blue-400">${a.asistencias.porcentaje.toFixed(1)}%</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">${a.asistencias.presentes}/${a.asistencias.totalClases} clases</p>
+                  </div>
+                `
+                    : ""
+                }
+                ${
+                  a.rendimiento
+                    ? `
+                  <div class="p-3 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-900/50">
+                    <div class="flex items-center gap-2 mb-1">
+                      <svg class="w-4 h-4 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                      <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Rendimiento</span>
+                    </div>
+                    <p class="text-xl font-bold text-purple-600 dark:text-purple-400">${a.rendimiento.promedioNotas.toFixed(1)}</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">${a.rendimiento.tareasEntregadas}/${a.rendimiento.tareasTotales} tareas</p>
+                  </div>
+                `
+                    : ""
+                }
+              </div>
+              ${
+                a.engagementScore > 0
+                  ? `
+                <div class="mb-4 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/30 dark:to-emerald-950/30 rounded-lg border border-green-200 dark:border-green-900/50">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span class="text-xs font-medium text-gray-600 dark:text-gray-400">Engagement Score</span>
+                    </div>
+                    <span class="text-sm font-bold ${
+                      a.engagementScore >= 80
+                        ? "text-green-600 dark:text-green-400"
+                        : a.engagementScore >= 60
+                          ? "text-yellow-600 dark:text-yellow-400"
+                          : "text-red-600 dark:text-red-400"
+                    }">${a.engagementScore.toFixed(0)}/100</span>
+                  </div>
+                  <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                    <div class="h-1.5 rounded-full ${
+                      a.engagementScore >= 80
+                        ? "bg-green-600"
+                        : a.engagementScore >= 60
+                          ? "bg-yellow-600"
+                          : "bg-red-600"
+                    }" style="width: ${a.engagementScore}%"></div>
+                  </div>
+                </div>
+              `
+                  : ""
+              }
+            `
+                : ""
+            }
+
+            ${
               a.interests && a.interests.length > 0
                 ? `
               <div class="flex flex-wrap gap-2 mb-4">
@@ -623,7 +696,7 @@ import Layout from "../../layouts/MarketingLayout.astro";
             }
 
             <div class="pt-3 border-t border-gray-200 dark:border-gray-800">
-              <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+              <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-3">
                 <div class="flex items-center gap-4">
                   <span>Registrado hace ${diasRegistro} días</span>
                   ${
@@ -650,6 +723,16 @@ import Layout from "../../layouts/MarketingLayout.astro";
                   ${a.telefono}
                 </span>
               </div>
+              <a
+                href="/marketing/alumnos/${a.id}"
+                class="w-full py-2 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg text-sm font-medium smooth-transition flex items-center justify-center gap-2"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                Ver perfil completo
+              </a>
             </div>
           </div>
         `;
