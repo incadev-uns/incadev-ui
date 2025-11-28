@@ -53,11 +53,14 @@ export { fetchStudents } from './studentService';
 export {
     fetchAlumnosData,
     fetchStudentStats,
-    fetchStudentResumen
+    fetchStudentResumen,
+    fetchAlumnoDetalle
 } from './studentStatsService';
+
 export type {
     AlumnoForUI,
     StudentStatsForUI,
+    AlumnoDetalleForUI,
     AlumnosDataForUI
 } from './studentStatsService';
 

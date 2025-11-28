@@ -3,13 +3,42 @@
 import Layout from "../../../layouts/MarketingLayout.astro";
 import { config } from "../../../config/marketing-config";
 
-// Deshabilitar pre-renderizado estático, usar SSR dinámico
-export const prerender = false;
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// ============================================
+export async function getStaticPaths() {
+  try {
+    // Fetch all versions at build time
+    const url = `${config.apiUrl}${config.endpoints.versions.list}`;
+    console.log("[Build] Fetching versions from:", url);
 
-// Obtener el ID de los parámetros de la URL
-const { id } = Astro.params;
-const versionId = parseInt(id || "0", 10);
-const mockTitle = `Curso ${id} - INCADEV UI`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch versions: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const versions = data.data || [];
+
+    console.log(`[Build] Generating ${versions.length} version pages`);
+
+    // Generate a path for each version
+    return versions.map((version: any) => ({
+      params: { id: version.id.toString() },
+      props: {
+        versionId: version.id,
+        versionName: version.name,
+      },
+    }));
+  } catch (error) {
+    console.error("[Build] Error in getStaticPaths:", error);
+    return [];
+  }
+}
+
+const { versionId, versionName } = Astro.props;
+const mockTitle = `${versionName} - INCADEV UI`;
 ---
 
 <Layout title={mockTitle}>
@@ -135,7 +164,7 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
           id="quickMetricsContainer"
           class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800"
         >
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="quickMetrics">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="quickMetrics">
           </div>
         </div>
       </div>
@@ -150,32 +179,26 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
               class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 whitespace-nowrap"
               data-tab="campanas"
             >
-              Campanas
-            </button>
-            <button
-              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
-              data-tab="estudiantes"
-            >
-              Estudiantes
+              Campañas
             </button>
             <button
               class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
               data-tab="metricas"
             >
-              Métricas Marketing
+              Métricas
             </button>
           </nav>
         </div>
 
-        <!-- Tab Content: Campanas -->
+        <!-- Tab Content: Campañas -->
         <div id="tab-campanas" class="tab-content p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
               <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                Campanas de esta Versión
+                Campañas de esta Versión
               </h2>
               <p class="text-sm text-gray-600 dark:text-gray-400">
-                Campanas de marketing asociadas a esta versión del curso
+                Campañas de marketing asociadas a esta versión del curso
               </p>
             </div>
             <button
@@ -198,7 +221,7 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
             </button>
           </div>
 
-          <!-- Campanas Grid -->
+          <!-- Campañas Grid -->
           <div id="campanasList" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           </div>
 
@@ -224,115 +247,18 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
             <h3
               class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
             >
-              No hay Campanas para esta versión
+              No hay campañas para esta versión
             </h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Aún no se han creado Campanas para esta versión del curso
+              Aún no se han creado campañas para esta versión del curso
             </p>
-          </div>
-        </div>
-
-        <!-- Tab Content: Estudiantes -->
-        <div id="tab-estudiantes" class="tab-content hidden p-6">
-          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Métricas Académicas
-          </h2>
-
-          <!-- Métricas Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <!-- Promedio de Notas -->
-            <div class="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-900/50">
-              <div class="flex items-center gap-3 mb-4">
-                <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                <div>
-                  <p class="text-sm text-blue-600 dark:text-blue-400 font-medium">Promedio Notas</p>
-                  <p id="estudiantesNotas" class="text-2xl font-bold text-gray-900 dark:text-white">--</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Total Matriculados -->
-            <div class="p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-900/50">
-              <div class="flex items-center gap-3 mb-4">
-                <svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <div>
-                  <p class="text-sm text-purple-600 dark:text-purple-400 font-medium">Total Matriculados</p>
-                  <p id="estudiantesTotal" class="text-2xl font-bold text-gray-900 dark:text-white">--</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Distribución de Estudiantes -->
-          <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-            <div class="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Activos</p>
-              <p id="estudiantesActivos" class="text-xl font-bold text-green-600 dark:text-green-400">--</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Completados</p>
-              <p id="estudiantesCompletados" class="text-xl font-bold text-blue-600 dark:text-blue-400">--</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Reprobados</p>
-              <p id="estudiantesReprobados" class="text-xl font-bold text-orange-600 dark:text-orange-400">--</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Desertores</p>
-              <p id="estudiantesDesertores" class="text-xl font-bold text-red-600 dark:text-red-400">--</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Tasa Retención</p>
-              <p id="estudiantesTasaRetencion" class="text-xl font-bold text-purple-600 dark:text-purple-400">--%</p>
-            </div>
-            <div class="p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 text-center">
-              <p class="text-sm text-gray-600 dark:text-gray-400 mb-1">Egresados</p>
-              <p id="estudiantesEgresados" class="text-xl font-bold text-teal-600 dark:text-teal-400">--</p>
-            </div>
-          </div>
-
-          <!-- Detalle de Asistencias -->
-          <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div class="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 rounded-xl border border-green-200 dark:border-green-900/50">
-              <div class="flex items-center justify-between mb-3">
-                <div>
-                  <p class="text-sm text-green-700 dark:text-green-400 font-medium">Asistencia Promedio</p>
-                  <p id="asistenciaPorcentaje" class="text-3xl font-bold text-gray-900 dark:text-white">--%</p>
-                </div>
-                <div class="text-right text-sm text-gray-600 dark:text-gray-400">
-                  <p>Clases: <span id="asistenciaClases">--</span></p>
-                </div>
-              </div>
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                <div class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
-                  <p class="text-xs text-gray-600 dark:text-gray-400">Asistencias</p>
-                  <p id="asistenciaPresentes" class="text-lg font-bold text-green-600 dark:text-green-400">--</p>
-                </div>
-                <div class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
-                  <p class="text-xs text-gray-600 dark:text-gray-400">Tardanzas</p>
-                  <p id="asistenciaTardanzas" class="text-lg font-bold text-yellow-600 dark:text-yellow-400">--</p>
-                </div>
-                <div class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
-                  <p class="text-xs text-gray-600 dark:text-gray-400">Ausentes</p>
-                  <p id="asistenciaAusentes" class="text-lg font-bold text-red-600 dark:text-red-400">--</p>
-                </div>
-                <div class="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
-                  <p class="text-xs text-gray-600 dark:text-gray-400">Justificados</p>
-                  <p id="asistenciaJustificados" class="text-lg font-bold text-blue-600 dark:text-blue-400">--</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
         <!-- Tab Content: Métricas -->
         <div id="tab-metricas" class="tab-content hidden p-6">
           <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-            Métricas de Campanas
+            Métricas de Campañas
           </h2>
 
           <!-- Stats Grid -->
@@ -401,7 +327,7 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
             <div class="space-y-3">
               <div class="flex items-center justify-between">
                 <span class="text-sm text-gray-600 dark:text-gray-400"
-                  >Total de Campanas</span
+                  >Total de Campañas</span
                 >
                 <span
                   id="metricaTotalCampanas"
@@ -724,48 +650,10 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
           </div>
         `;
       }
-
-      // Renderizar métricas de estudiantes
-      if (version.metricasEstudiantes) {
-        const metricas = version.metricasEstudiantes;
-
-        document.getElementById("estudiantesNotas")!.textContent =
-          (metricas.promedioNotas || 0).toFixed(1);
-        document.getElementById("estudiantesTotal")!.textContent =
-          (metricas.totalMatriculados || 0).toString();
-        document.getElementById("estudiantesActivos")!.textContent =
-          (metricas.activos || 0).toString();
-        document.getElementById("estudiantesCompletados")!.textContent =
-          (metricas.completados || 0).toString();
-        document.getElementById("estudiantesReprobados")!.textContent =
-          (metricas.reprobados || 0).toString();
-        document.getElementById("estudiantesDesertores")!.textContent =
-          (metricas.desertores || 0).toString();
-        document.getElementById("estudiantesTasaRetencion")!.textContent =
-          `${(metricas.tasaRetencion || 0).toFixed(1)}%`;
-        document.getElementById("estudiantesEgresados")!.textContent =
-          (metricas.egresados || 0).toString();
-
-        if (metricas.asistencias) {
-          const asist = metricas.asistencias;
-          document.getElementById("asistenciaPorcentaje")!.textContent =
-            `${(asist.porcentaje || 0).toFixed(1)}%`;
-          document.getElementById("asistenciaClases")!.textContent =
-            (asist.totalClases || 0).toString();
-          document.getElementById("asistenciaPresentes")!.textContent =
-            (asist.presentes || 0).toString();
-          document.getElementById("asistenciaTardanzas")!.textContent =
-            (asist.tardanzas || 0).toString();
-          document.getElementById("asistenciaAusentes")!.textContent =
-            (asist.ausentes || 0).toString();
-          document.getElementById("asistenciaJustificados")!.textContent =
-            (asist.justificados || 0).toString();
-        }
-      }
     }
 
     // ============================================
-    // RENDERIZAR Campanas
+    // RENDERIZAR CAMPAÑAS
     // ============================================
 
     function renderCampanas(data: VersionCampaignsForUI) {
@@ -819,7 +707,7 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
             </div>
 
             <div class="flex gap-2">
-              <a href="/marketing/Campanas/${c.id}" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium smooth-transition text-center">
+              <a href="/marketing/campaigns/${c.id}" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium smooth-transition text-center">
                 Ver Detalles
               </a>
             </div>
@@ -856,20 +744,22 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
       // Quick Metrics
       const quickMetrics = document.getElementById("quickMetrics");
       if (quickMetrics) {
-        const totalAlumnos = version.metricasEstudiantes?.totalMatriculados || 0;
-
         quickMetrics.innerHTML = `
           <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <p class="text-sm text-gray-600 dark:text-gray-400">Precio</p>
             <p class="text-2xl font-bold text-gray-900 dark:text-white">S/ ${version.precio.toFixed(2)}</p>
           </div>
           <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <p class="text-sm text-gray-600 dark:text-gray-400">Total Alumnos</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">${totalAlumnos}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Campañas</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${data.totalCampanas}</p>
           </div>
           <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <p class="text-sm text-gray-600 dark:text-gray-400">Campanas</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">${data.totalCampanas}</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Alcance Total</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${totalReach > 1000 ? (totalReach / 1000).toFixed(1) + "K" : totalReach}</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Interacciones</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${totalInteractions}</p>
           </div>
         `;
       }
@@ -916,11 +806,11 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
         // 2. Renderizar versión
         renderVersion(versionData);
 
-        // 3. Cargar Campanas de la versión
+        // 3. Cargar campañas de la versión
         campaignsData = await fetchVersionCampaigns(versionId);
         console.log("[Version Detail] Campaigns loaded:", campaignsData);
 
-        // 4. Renderizar Campanas
+        // 4. Renderizar campañas
         renderCampanas(campaignsData);
 
         // 5. Actualizar métricas
@@ -1081,7 +971,7 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
             // Cerrar modal
             cerrarModal();
 
-            // Recargar Campanas
+            // Recargar campañas
             campaignsData = await fetchVersionCampaigns(versionId);
             renderCampanas(campaignsData);
             actualizarMetricas(campaignsData, versionData!);
@@ -1103,5 +993,3 @@ const mockTitle = `Curso ${id} - INCADEV UI`;
     });
   </script>
 </Layout>
-
-

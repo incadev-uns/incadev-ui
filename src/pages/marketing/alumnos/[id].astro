@@ -3,13 +3,42 @@
 import Layout from "../../../layouts/MarketingLayout.astro";
 import { config } from "../../../config/marketing-config";
 
-// Deshabilitar pre-renderizado estático, usar SSR dinámico
-export const prerender = false;
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// ============================================
+export async function getStaticPaths() {
+  try {
+    // Fetch all alumnos at build time
+    const url = `${config.apiUrl}${config.endpoints.alumnos.stats}`;
+    console.log("[Build] Fetching alumnos from:", url);
 
-// Obtener el ID de los parámetros de la URL
-const { id } = Astro.params;
-const alumnoId = parseInt(id || "0", 10);
-const mockTitle = `Alumno ${id} - INCADEV UI`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch alumnos: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const alumnos = data.alumnos || [];
+
+    console.log(`[Build] Generating ${alumnos.length} alumno pages`);
+
+    // Generate a path for each alumno
+    return alumnos.map((alumno: any) => ({
+      params: { id: alumno.id.toString() },
+      props: {
+        alumnoId: alumno.id,
+        alumnoNombre: alumno.nombre,
+      },
+    }));
+  } catch (error) {
+    console.error("[Build] Error in getStaticPaths:", error);
+    return [];
+  }
+}
+
+const { alumnoId, alumnoNombre } = Astro.props;
+const mockTitle = `${alumnoNombre} - INCADEV UI`;
 ---
 
 <Layout title={mockTitle}>
@@ -460,7 +489,8 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
   </div>
 
   <script>
-    import { config } from "../../../config/marketing-config";
+    import { fetchAlumnoDetalle } from "../../../services/marketing/studentStatsService";
+    import type { AlumnoDetalleForUI } from "../../../services/marketing/studentStatsService";
 
     // ============================================
     // VARIABLES GLOBALES
@@ -468,7 +498,7 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
     const mainDiv = document.querySelector("[data-alumno-id]") as HTMLElement;
     const alumnoId = parseInt(mainDiv?.dataset.alumnoId || "0", 10);
 
-    let alumnoData: any = null;
+    let alumnoData: AlumnoDetalleForUI | null = null;
 
     // ============================================
     // FUNCIONES AUXILIARES
@@ -553,7 +583,7 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
     // ============================================
     // RENDERIZAR ALUMNO
     // ============================================
-    function renderAlumno(alumno: any) {
+    function renderAlumno(alumno: AlumnoDetalleForUI) {
       console.log("[renderAlumno] Datos recibidos:", alumno);
 
       if (!alumno) {
@@ -563,42 +593,29 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
       }
 
       // Obtener valores desde la estructura del backend
-      const alumnoInfo = alumno.alumno || alumno;
+      const alumnoInfo = alumno.alumno;
 
       // Breadcrumb
       const breadcrumb = document.getElementById("breadcrumbTitle");
-      if (breadcrumb) breadcrumb.textContent = alumnoInfo.nombre || alumnoInfo.name || "Sin nombre";
-      const nombreAlumno = alumnoInfo.nombre || alumnoInfo.name || "Sin nombre";
-      const emailAlumno = alumnoInfo.email || "Sin email";
-      const telefonoAlumno = alumnoInfo.telefono || alumnoInfo.phone || "No registrado";
-      const dniAlumno = alumnoInfo.dni || alumnoInfo.document_number || null;
-      const estadoMap: Record<string, string> = {
-        pending: "pendiente",
-        active: "cursando",
-        completed: "completado",
-        failed: "reprobado",
-        dropped: "desertor",
-        egresado: "egresado",
-      };
+      if (breadcrumb) breadcrumb.textContent = alumnoInfo.nombre;
 
-      const estadoAlumno =
-        estadoMap[alumnoInfo.estado] ||
-        estadoMap[alumnoInfo.status] ||
-        alumnoInfo.estado ||
-        alumnoInfo.status ||
-        "pendiente";
-      const cursoAlumno = alumnoInfo.curso || "Sin curso";
-      const grupoAlumno = alumnoInfo.grupo || "Sin grupo";
-      const fechaRegistroAlumno = alumnoInfo.fecha_registro || alumnoInfo.created_at;
+      const nombreAlumno = alumnoInfo.nombre;
+      const emailAlumno = alumnoInfo.email;
+      const telefonoAlumno = alumnoInfo.telefono || "No registrado";
+      const dniAlumno = alumnoInfo.dni || null;
+      const estadoAlumno = alumnoInfo.estado;
+      const cursoAlumno = alumnoInfo.curso;
+      const grupoAlumno = alumnoInfo.grupo;
+      const fechaRegistroAlumno = alumnoInfo.fechaRegistro;
       const interesesAlumno = alumnoInfo.interests || [];
-      const learningGoalAlumno = alumnoInfo.learning_goal || null;
+      const learningGoalAlumno = alumnoInfo.learningGoal || null;
 
       // Avatar
       const avatarContainer = document.getElementById("alumnoAvatar");
       if (avatarContainer) {
-        if (alumno.avatar) {
+        if (alumnoInfo.avatar) {
           avatarContainer.innerHTML = `
-            <img src="${alumno.avatar}" alt="${nombreAlumno}" class="w-24 h-24 rounded-full object-cover border-4 border-blue-200 dark:border-blue-900" />
+            <img src="${alumnoInfo.avatar}" alt="${nombreAlumno}" class="w-24 h-24 rounded-full object-cover border-4 border-blue-200 dark:border-blue-900" />
           `;
         } else {
           const initials = getInitials(nombreAlumno);
@@ -675,7 +692,7 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
         if (asistenciaPorcentaje)
           asistenciaPorcentaje.textContent = `${(resumenAsist.porcentaje || 0).toFixed(1)}%`;
         if (asistenciaDetalle)
-          asistenciaDetalle.textContent = `${resumenAsist.presentes || 0} / ${resumenAsist.total_clases || 0} clases`;
+          asistenciaDetalle.textContent = `${resumenAsist.presentes || 0} / ${resumenAsist.totalClases || 0} clases`;
       }
 
       // Rendimiento (desde rendimiento.resumen)
@@ -684,41 +701,32 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
         const promedioNotas = document.getElementById("promedioNotas");
         const tareasDetalle = document.getElementById("tareasDetalle");
         if (promedioNotas)
-          promedioNotas.textContent = (resumenRend.promedio_notas || 0).toFixed(1);
+          promedioNotas.textContent = (resumenRend.promedioNotas || 0).toFixed(1);
         if (tareasDetalle)
-          tareasDetalle.textContent = `${resumenRend.tareas_entregadas || 0} / ${resumenRend.tareas_totales || 0} tareas entregadas`;
+          tareasDetalle.textContent = `${resumenRend.tareasEntregadas || 0} / ${resumenRend.tareasTotales || 0} tareas entregadas`;
       }
 
-      // Engagement Score: preferimos el valor del backend (0-10) y lo mostramos en escala 0-100
-      let engagementScore =
-        alumno.engagement_score !== undefined && alumno.engagement_score !== null
-          ? (alumno.engagement_score || 0) * 10
-          : null;
- 
-      // Si no viene del backend, calculamos con la f�rmula alternativa (asistencia + notas + tareas)
-      if (engagementScore === null && alumno.asistencias && alumno.asistencias.resumen && alumno.rendimiento && alumno.rendimiento.resumen) {
+      // Engagement Score: calcular con asistencia + notas + tareas
+      let engagementScore = 0;
+      if (alumno.asistencias && alumno.asistencias.resumen && alumno.rendimiento && alumno.rendimiento.resumen) {
         const resumenAsist = alumno.asistencias.resumen;
         const resumenRend = alumno.rendimiento.resumen;
- 
-        // F�rmula de engagement:
-        // 40% Asistencia + 40% Promedio de notas (normalizado a 100) + 20% Tareas entregadas
+
         const porcentajeAsistencia = resumenAsist.porcentaje || 0;
-        const promedioNotas = resumenRend.promedio_notas || 0;
-        const porcentajeTareas = resumenRend.tareas_totales > 0
-          ? (resumenRend.tareas_entregadas / resumenRend.tareas_totales) * 100
+        const promedioNotas = resumenRend.promedioNotas || 0;
+        const porcentajeTareas = resumenRend.tareasTotales > 0
+          ? (resumenRend.tareasEntregadas / resumenRend.tareasTotales) * 100
           : 0;
- 
+
         // Normalizar promedio de notas a escala 0-100 (asumiendo escala vigesimal 0-20)
         const notasNormalizadas = (promedioNotas / 20) * 100;
- 
+
         engagementScore = (porcentajeAsistencia * 0.4) + (notasNormalizadas * 0.4) + (porcentajeTareas * 0.2);
       }
- 
-      // Renderizar engagement (valor del backend o calculado)
-      engagementScore = engagementScore ?? 0;
+
       const engagementScoreEl = document.getElementById("engagementScore");
       const engagementBar = document.getElementById("engagementBar");
- 
+
       if (engagementScoreEl)
         engagementScoreEl.textContent = `${Math.round(engagementScore)}/100`;
       if (engagementBar) {
@@ -760,7 +768,7 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
           };
 
           historialContainer.innerHTML = alumno.timeline
-            .map((evento: any) => {
+            .map((evento) => {
               const config = tipoIcons[evento.tipo] || tipoIcons.default;
               const fecha = new Date(evento.timestamp);
               const fechaFormateada = fecha.toLocaleDateString("es-ES", {
@@ -808,21 +816,12 @@ const mockTitle = `Alumno ${id} - INCADEV UI`;
       console.log("[Alumno Detail] Loading alumno:", alumnoId);
 
       try {
-        // Construir URL del endpoint
-        const url = `${config.apiUrl}${config.endpoints.alumnos.detalle.replace(":id", alumnoId.toString())}`;
-        console.log("[Alumno Detail] Fetching from:", url);
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-
-        const responseData = await response.json();
-        alumnoData = responseData.data || responseData;
-
+        alumnoData = await fetchAlumnoDetalle(alumnoId);
         console.log("[Alumno Detail] Alumno loaded:", alumnoData);
-        console.log("[Alumno Detail] Raw response:", responseData);
+
+        if (!alumnoData) {
+          throw new Error("No se pudieron cargar los datos del alumno");
+        }
 
         renderAlumno(alumnoData);
         mostrarContenido();
