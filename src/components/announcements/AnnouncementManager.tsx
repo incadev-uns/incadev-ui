@@ -3,6 +3,7 @@ import { technologyApi } from "@/services/tecnologico/api"
 import { BannerAnnouncement } from "./BannerAnnouncement"
 import { ModalAnnouncement } from "./ModalAnnouncement"
 import { PopupAnnouncement } from "./PopupAnnouncement"
+import { NotificationAnnouncement } from "./NotificationAnnouncement"
 import type { Announcement, AnnouncementItemType } from "@/types/developer-web"
 
 const DISMISSED_KEY = "dismissed_announcements"
@@ -10,13 +11,17 @@ const MODAL_INITIAL_DELAY = 2000 // 2 seconds after page load for first modal
 const MODAL_SEQUENTIAL_DELAY = 3000 // 3 seconds between modals
 const POPUP_INITIAL_DELAY = 5000 // 5 seconds after page load for first popup
 const POPUP_SEQUENTIAL_DELAY = 3000 // 3 seconds between popups
+const NOTIFICATION_INITIAL_DELAY = 1000 // 1 second after page load for first notification
+const NOTIFICATION_SEQUENTIAL_DELAY = 2000 // 2 seconds between notifications
 
 export function AnnouncementManager() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [currentModalIndex, setCurrentModalIndex] = useState(0)
   const [currentPopupIndex, setCurrentPopupIndex] = useState(0)
+  const [currentNotificationIndex, setCurrentNotificationIndex] = useState(0)
   const [showModal, setShowModal] = useState(false)
   const [showPopup, setShowPopup] = useState(false)
+  const [showNotification, setShowNotification] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -77,6 +82,24 @@ export function AnnouncementManager() {
     const initialTimeout = setTimeout(() => {
       setShowPopup(true)
     }, POPUP_INITIAL_DELAY)
+
+    return () => clearTimeout(initialTimeout)
+  }, [announcements, loading])
+
+  // Schedule notifications sequentially
+  useEffect(() => {
+    if (loading) return
+
+    const notifications = announcements
+      .filter((a) => a.item_type === "notification")
+      .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+
+    if (notifications.length === 0) return
+
+    // Show first notification after initial delay
+    const initialTimeout = setTimeout(() => {
+      setShowNotification(true)
+    }, NOTIFICATION_INITIAL_DELAY)
 
     return () => clearTimeout(initialTimeout)
   }, [announcements, loading])
@@ -142,6 +165,27 @@ export function AnnouncementManager() {
     }
   }
 
+  const handleNotificationClose = (id: number) => {
+    // Save to dismissed
+    addDismissedId(id)
+
+    // Hide current notification
+    setShowNotification(false)
+
+    // Get remaining notifications
+    const notifications = announcements
+      .filter((a) => a.item_type === "notification")
+      .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+
+    // Move to next notification after delay
+    if (currentNotificationIndex + 1 < notifications.length) {
+      setTimeout(() => {
+        setCurrentNotificationIndex(currentNotificationIndex + 1)
+        setShowNotification(true)
+      }, NOTIFICATION_SEQUENTIAL_DELAY)
+    }
+  }
+
   if (loading) {
     return null
   }
@@ -155,19 +199,33 @@ export function AnnouncementManager() {
     .filter((a) => a.item_type === "popup")
     .sort((a, b) => (b.priority || 0) - (a.priority || 0))
 
+  const notifications = announcements
+    .filter((a) => a.item_type === "notification")
+    .sort((a, b) => (b.priority || 0) - (a.priority || 0))
+
   const currentModal = modals[currentModalIndex]
   const currentPopup = popups[currentPopupIndex]
+  const currentNotification = notifications[currentNotificationIndex]
 
   return (
     <>
       {/* Banner - now shown in HeroSection instead */}
       {/* Removed to avoid duplication */}
 
-      {/* Modal - center overlay - sequential display */}
+      {/* Modal - center overlay - sequential display (highest priority) */}
       {showModal && currentModal && (
         <ModalAnnouncement
           announcement={currentModal}
           onClose={() => handleModalClose(currentModal.id)}
+        />
+      )}
+
+      {/* Notification - top right - sequential display */}
+      {/* Show independent of modal/popup */}
+      {showNotification && currentNotification && (
+        <NotificationAnnouncement
+          announcement={currentNotification}
+          onClose={() => handleNotificationClose(currentNotification.id)}
         />
       )}
 
