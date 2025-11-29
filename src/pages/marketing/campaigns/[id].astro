@@ -1066,6 +1066,33 @@ const { campaignId, campaignName } = Astro.props;
             overlay?.classList.add("flex");
         }
 
+        // Sanitize strings by replacing lone surrogate halves with the replacement character
+        function sanitizeString(input) {
+            if (typeof input !== 'string' || input.length === 0) return input;
+            let out = '';
+            for (let i = 0; i < input.length; i++) {
+                const code = input.charCodeAt(i);
+                if (code >= 0xd800 && code <= 0xdbff) {
+                    // High surrogate
+                    const next = input.charCodeAt(i + 1);
+                    if (next >= 0xdc00 && next <= 0xdfff) {
+                        // valid pair, keep both
+                        out += input[i] + input[i + 1];
+                        i++; // skip low surrogate
+                    } else {
+                        // lone high surrogate - replace
+                        out += '\uFFFD';
+                    }
+                } else if (code >= 0xdc00 && code <= 0xdfff) {
+                    // lone low surrogate - replace
+                    out += '\uFFFD';
+                } else {
+                    out += input[i];
+                }
+            }
+            return out;
+        }
+
         function hideLoading() {
             const overlay = document.getElementById("aiLoadingOverlay");
             overlay?.classList.add("hidden");
@@ -1971,19 +1998,23 @@ const { campaignId, campaignName } = Astro.props;
                             if (idx !== -1) posts[idx] = updated;
                             showToast("Publicación actualizada", "success");
                         } else {
+                            // Sanitize title and content to avoid invalid Unicode sequences
+                            const sanitizedTitle = sanitizeString((document.getElementById(
+                                "postTitle",
+                            ) as HTMLInputElement).value || '');
+                            const sanitizedContent = sanitizeString((document.getElementById(
+                                "postContent",
+                            ) as HTMLTextAreaElement).value || '');
+
                             const data: CreatePostDTO = {
                                 campaign_id: campaignId,
                                 title: (
                                     document.getElementById(
                                         "postTitle",
                                     ) as HTMLInputElement
-                                ).value,
+                                ).value ? sanitizedTitle : sanitizedTitle,
                                 platform: selectedPlatform!,
-                                content: (
-                                    document.getElementById(
-                                        "postContent",
-                                    ) as HTMLTextAreaElement
-                                ).value,
+                                content: sanitizedContent,
                                 content_type: selectedContentType!,
                                 image_path: (
                                     document.getElementById(
@@ -2023,7 +2054,8 @@ const { campaignId, campaignName } = Astro.props;
                                 return;
                             }
                                 // Debugging: print the payload that will be sent
-                                console.log('[formPost] Creating post payload:', data);
+                                    console.log('[formPost] Creating post payload:', data);
+                                    console.log('[formPost] Creating post payload (stringified):', JSON.stringify(data));
                             const created = await createPost(data);
                             posts.push(created);
                             showToast("Publicación creada", "success");
