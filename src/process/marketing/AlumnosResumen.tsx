@@ -1,8 +1,8 @@
 // src/components/marketing/AlumnosResumen.tsx
 import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Clock, BookOpen, CheckCircle, XCircle, UserX, GraduationCap, Users, Loader2 } from 'lucide-react';
-import { fetchStudentStats, type StudentStatsForUI } from '../../services/marketing/studentStatsService';
+import { Clock, BookOpen, CheckCircle, XCircle, UserX, GraduationCap, Users, Loader2, TrendingUp, TrendingDown } from 'lucide-react';
+import { fetchAlumnosData, type StudentStatsForUI, type AlumnoForUI } from '../../services/marketing/studentStatsService';
 
 const statsConfig = [
   {
@@ -57,13 +57,15 @@ const statsConfig = [
 
 export default function AlumnosResumen() {
   const [stats, setStats] = useState<StudentStatsForUI | null>(null);
+  const [alumnos, setAlumnos] = useState<AlumnoForUI[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadStats() {
       try {
-        const data = await fetchStudentStats();
-        setStats(data);
+        const data = await fetchAlumnosData();
+        setStats(data.stats);
+        setAlumnos(data.alumnos);
       } catch (error) {
         console.error('[AlumnosResumen] Error:', error);
       } finally {
@@ -72,6 +74,33 @@ export default function AlumnosResumen() {
     }
     loadStats();
   }, []);
+
+  // Calcular insights de asistencias y rendimiento
+  const insights = React.useMemo(() => {
+    if (alumnos.length === 0) return null;
+
+    const alumnosConAsistencias = alumnos.filter(a => a.asistencias !== null);
+    const alumnosConNotas = alumnos.filter(a => a.rendimiento !== null);
+
+    const promedioAsistencia = alumnosConAsistencias.length > 0
+      ? alumnosConAsistencias.reduce((sum, a) => sum + (a.asistencias?.porcentaje || 0), 0) / alumnosConAsistencias.length
+      : 0;
+
+    const promedioNotas = alumnosConNotas.length > 0
+      ? alumnosConNotas.reduce((sum, a) => sum + (a.rendimiento?.promedioNotas || 0), 0) / alumnosConNotas.length
+      : 0;
+
+    const alumnosConBajaAsistencia = alumnosConAsistencias.filter(a => (a.asistencias?.porcentaje || 0) < 70).length;
+    const alumnosEnRiesgo = alumnosConNotas.filter(a => (a.rendimiento?.promedioNotas || 0) < 60).length;
+
+    return {
+      promedioAsistencia,
+      promedioNotas,
+      alumnosConBajaAsistencia,
+      alumnosEnRiesgo,
+      totalConDatos: alumnosConAsistencias.length,
+    };
+  }, [alumnos]);
 
   if (loading) {
     return (
@@ -139,6 +168,73 @@ export default function AlumnosResumen() {
             );
           })}
         </div>
+
+        {/* Insights de Rendimiento y Asistencias */}
+        {insights && insights.totalConDatos > 0 && (
+          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-800">
+            <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-3 uppercase tracking-wide">
+              Insights de Rendimiento
+            </h4>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Promedio de Asistencia */}
+              <div className="p-3 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg border border-blue-200 dark:border-blue-900/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Asistencia Promedio</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {insights.promedioAsistencia.toFixed(1)}%
+                  </p>
+                  {insights.promedioAsistencia >= 80 ? (
+                    <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  ) : insights.promedioAsistencia < 70 ? (
+                    <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  ) : null}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {insights.alumnosConBajaAsistencia > 0
+                    ? `${insights.alumnosConBajaAsistencia} con baja asistencia`
+                    : 'Todos sobre 70%'
+                  }
+                </p>
+              </div>
+
+              {/* Promedio de Notas */}
+              <div className="p-3 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20 rounded-lg border border-purple-200 dark:border-purple-900/30">
+                <div className="flex items-center gap-2 mb-1">
+                  <BookOpen className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <span className="text-xs text-gray-600 dark:text-gray-400">Promedio General</span>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                    {insights.promedioNotas.toFixed(1)}
+                  </p>
+                  {insights.promedioNotas >= 75 ? (
+                    <TrendingUp className="w-4 h-4 text-green-600 dark:text-green-400" />
+                  ) : insights.promedioNotas < 60 ? (
+                    <TrendingDown className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  ) : null}
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {insights.alumnosEnRiesgo > 0
+                    ? `${insights.alumnosEnRiesgo} en riesgo académico`
+                    : 'Todos sobre 60 pts'
+                  }
+                </p>
+              </div>
+            </div>
+
+            {/* Alertas si hay alumnos en riesgo 
+            {(insights.alumnosConBajaAsistencia > 0 || insights.alumnosEnRiesgo > 0) && (
+              <div className="mt-3 p-2.5 bg-orange-50 dark:bg-orange-950/20 rounded-lg border border-orange-200 dark:border-orange-900/30">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-orange-600 dark:bg-orange-400 rounded-full animate-pulse"></div>
+                </div>
+              </div>
+            )}*/}
+          </div>
+        )}
 
         <div className="mt-4 grid grid-cols-2 gap-3">
           <a

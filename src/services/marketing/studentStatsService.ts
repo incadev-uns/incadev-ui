@@ -244,6 +244,7 @@ export interface AlumnoDetalleForUI {
         fechaRegistro: string;
         interests: string[];
         learningGoal: string;
+        engagementScore: number;
     };
     asistencias: {
         resumen: AsistenciasForUI;
@@ -446,6 +447,7 @@ function mapAlumnoDetalleToUI(data: AlumnoDetalleFromAPI): AlumnoDetalleForUI {
             fechaRegistro: data.alumno.fecha_registro,
             interests: data.alumno.interests || [],
             learningGoal: data.alumno.learning_goal || '',
+            engagementScore: (data.alumno.engagement_score ?? 0) * 10,
         },
         asistencias: {
             resumen: {
