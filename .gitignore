@@ -26,3 +26,4 @@ pnpm-debug.log*
 magenta-motion/
 
 package-lock.json
+vendor/composer/**

@@ -28,6 +28,7 @@ function mapPostFromAPI(apiPost: PostFromAPI): PostForUI {
         tipo: apiPost.content_type,
         imagen: apiPost.image_path,
         enlace: apiPost.link_url,
+        metaPostId: apiPost.meta_post_id ?? null,
         estado: apiPost.status,
         programadoPara: apiPost.scheduled_at,
         publicadoEn: apiPost.published_at,
@@ -79,8 +80,12 @@ export async function createPost(post: CreatePostDTO): Promise<PostForUI> {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                let errorData = null;
+                try { errorData = await response.json(); } catch (e) { /* ignore */ }
+                const err: any = new Error((errorData && (errorData.message || errorData.error)) || `HTTP error! status: ${response.status}`);
+                err.status = response.status;
+                err.body = errorData;
+                throw err;
         }
 
         const data: PostFromAPI = await response.json();
@@ -139,8 +144,12 @@ export async function updatePost(id: number, updates: UpdatePostDTO): Promise<Po
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                let errorData = null;
+                try { errorData = await response.json(); } catch (e) { /* ignore */ }
+                const err: any = new Error((errorData && (errorData.message || errorData.error)) || `HTTP error! status: ${response.status}`);
+                err.status = response.status;
+                err.body = errorData;
+                throw err;
         }
 
         const data: PostFromAPI = await response.json();
@@ -193,8 +202,27 @@ export async function publishPost(id: number): Promise<PostForUI> {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            // Try parse as JSON, fallback to text
+            let errMsg = `HTTP error! status: ${response.status}`;
+            let errorData: any = null;
+            try {
+                errorData = await response.json();
+                // Prefer server-provided message, otherwise the entire payload
+                errMsg = (
+                    (errorData && (errorData.message || errorData.error || JSON.stringify(errorData))) || errMsg
+                );
+            } catch (parseErr) {
+                try {
+                    const txt = await response.text();
+                    if (txt) errMsg = txt;
+                } catch (t) {
+                    // ignore
+                }
+            }
+            const err: any = new Error(errMsg);
+            err.status = response.status;
+            err.body = errorData || null;
+            throw err;
         }
 
         const data: any = await response.json();

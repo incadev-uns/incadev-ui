@@ -205,6 +205,7 @@ export interface PostFromAPI {
     content_type: 'image' | 'video' | 'text';
     image_path: string | null;
     link_url: string;
+    meta_post_id?: string | null;
     status: 'draft' | 'scheduled' | 'published';
     scheduled_at: string | null;
     published_at: string | null;
@@ -222,6 +223,7 @@ export interface PostForUI {
     tipo: 'image' | 'video' | 'text';
     imagen: string | null;
     enlace: string;
+    metaPostId?: string | null;
     estado: 'draft' | 'scheduled' | 'published';
     programadoPara: string | null;
     publicadoEn: string | null;
@@ -236,6 +238,7 @@ export interface CreatePostDTO {
     content: string;
     content_type: 'image' | 'video' | 'text';
     image_path: string;
+    image_id?: string | null;
     image_url?: string | null;
     link_url: string;
     status: 'draft' | 'scheduled' | 'published';
@@ -250,6 +253,7 @@ export interface UpdatePostDTO {
     content?: string;
     content_type?: 'image' | 'video' | 'text';
     image_path?: string;
+    image_id?: string | null;
     image_url?: string | null;
     link_url?: string;
     status?: 'draft' | 'scheduled' | 'published';
