@@ -36,13 +36,13 @@ const colorMap: { [key: string]: string } = {
   yellow: 'bg-yellow-500',
 };
 
-type TabType = 'propuestas' | 'publicaciones' | 'comparativa' | 'chatbot';
+type TabType = 'proposals' | 'publicaciones' | 'comparativa' | 'chatbot';
 
 export default function MetricasManager() {
   const [periodo, setPeriodo] = useState('7dias');
   const [filtroEstado, setFiltroEstado] = useState('todas');
   const [filtroCanal, setFiltroCanal] = useState('todos');
-  const [activeTab, setActiveTab] = useState<TabType>('propuestas');
+  const [activeTab, setActiveTab] = useState<TabType>('proposals');
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -237,10 +237,10 @@ export default function MetricasManager() {
       {/* Navigation Buttons */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-800 pb-2 overflow-x-auto">
         <Button
-          variant={activeTab === 'propuestas' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('propuestas')}
+          variant={activeTab === 'proposals' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('proposals')}
         >
-          Propuestas
+          Proposals
         </Button>
         <Button
           variant={activeTab === 'publicaciones' ? 'default' : 'ghost'}

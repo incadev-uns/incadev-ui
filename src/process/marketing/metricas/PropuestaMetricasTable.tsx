@@ -389,7 +389,7 @@ export default function PropuestaMetricasTable() {
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => window.location.href = `/marketing/propuestas/${propuesta.id}`}
+                  onClick={() => window.location.href = `/marketing/proposals/${propuesta.id}`}
                 >
                   Ver más
                   <ExternalLink className="w-3 h-3" />
