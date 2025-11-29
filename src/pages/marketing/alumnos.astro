@@ -850,7 +850,14 @@ import Layout from "../../layouts/MarketingLayout.astro";
 
       const btnExportar = document.getElementById("btnExportarDatos");
       btnExportar?.addEventListener("click", () => {
-        const csv = [
+        const sanitize = (val: string | number | null | undefined) =>
+          typeof val === "number"
+            ? val.toString()
+            : (val ?? "")
+                .replace(/"/g, '""')
+                .trim();
+
+        const csvRows = [
           [
             "ID",
             "Nombre",
@@ -862,24 +869,34 @@ import Layout from "../../layouts/MarketingLayout.astro";
             "Intereses",
             "Objetivo",
             "Fecha Registro",
+            "Engagement (0-100)",
+            "Asistencia (%)",
+            "Promedio Notas",
           ],
           ...alumnos.map((a) => [
             a.id,
-            `"${a.nombre}"`,
-            a.email,
-            a.dni,
-            a.telefono,
-            a.estado,
-            `"${a.curso}"`,
-            `"${a.interests.join(', ')}"`,
-            `"${a.learningGoal}"`,
-            a.fechaRegistro?.split('T')[0] || '',
+            `"${sanitize(a.nombre)}"`,
+            sanitize(a.email),
+            sanitize(a.dni),
+            sanitize(a.telefono),
+            sanitize(a.estado),
+            `"${sanitize(a.curso)}"`,
+            `"${sanitize(a.interests.join(", "))}"`,
+            `"${sanitize(a.learningGoal)}"`,
+            a.fechaRegistro?.split("T")[0] || "",
+            a.engagementScore ?? 0,
+            a.asistencias?.porcentaje ?? "",
+            a.rendimiento?.promedioNotas ?? "",
           ]),
         ]
           .map((row) => row.join(","))
           .join("\n");
 
-        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        // Agrega BOM para que Excel reconozca UTF-8
+        const csvContent = "\ufeff" + csvRows;
+        const blob = new Blob([csvContent], {
+          type: "text/csv;charset=utf-8;",
+        });
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
