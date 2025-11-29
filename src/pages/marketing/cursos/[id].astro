@@ -751,6 +751,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
       VersionDetailForUI,
       VersionCampaignsForUI,
       CampaignWithMetricsForUI,
+      MetricasEstudiantesForUI,
     } from "../../../services/marketing/types";
 
     // ============================================
@@ -815,6 +816,94 @@ const mockTitle = `${versionName} - INCADEV UI`;
       return `<span class="px-2 py-1 ${config.bg} ${config.text} rounded text-xs font-medium">${config.label}</span>`;
     }
 
+    function renderMetricasAcademicas(
+      metricas?: MetricasEstudiantesForUI,
+    ) {
+      const setText = (id: string, value: string) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+
+      if (!metricas) {
+        [
+          "acadTotalMatriculados",
+          "acadActivos",
+          "acadCompletados",
+          "acadEgresados",
+          "acadPromedioNotas",
+          "acadPromedioAsistencia",
+          "acadReprobados",
+          "acadDesertores",
+          "acadTasaRetencion",
+          "acadTasaGraduacion",
+        ].forEach((id) => setText(id, id.includes("Promedio") ? "--%" : "--"));
+
+        const detalle = document.getElementById("acadAsistenciasDetalle");
+        if (detalle) detalle.textContent = "No hay información disponible";
+        return;
+      }
+
+      setText("acadTotalMatriculados", String(metricas.totalMatriculados));
+      setText("acadActivos", String(metricas.activos));
+      setText("acadCompletados", String(metricas.completados));
+      setText("acadEgresados", String(metricas.egresados ?? 0));
+      setText("acadPromedioNotas", metricas.promedioNotas.toFixed(1));
+      setText(
+        "acadPromedioAsistencia",
+        `${metricas.promedioAsistencia.toFixed(1)}%`,
+      );
+      setText("acadReprobados", String(metricas.reprobados));
+      setText("acadDesertores", String(metricas.desertores));
+      setText("acadTasaRetencion", `${metricas.tasaRetencion.toFixed(1)}%`);
+      setText("acadTasaGraduacion", `${metricas.tasaGraduacion.toFixed(1)}%`);
+
+      const detalle = document.getElementById("acadAsistenciasDetalle");
+      if (!detalle) return;
+
+      if (!metricas.asistencias) {
+        detalle.textContent = "No hay información disponible";
+        return;
+      }
+
+      const a = metricas.asistencias;
+      detalle.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700 dark:text-gray-200">
+          <div>
+            <p class="font-semibold">Clases</p>
+            <p>${a.totalClases}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Estudiantes</p>
+            <p>${a.totalEstudiantes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Total de asistencias</p>
+            <p>${a.esperadas}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Presentes</p>
+            <p>${a.presentes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Tardanzas</p>
+            <p>${a.tardanzas}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Ausentes</p>
+            <p>${a.ausentes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Justificados</p>
+            <p>${a.justificados}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Asistencia</p>
+            <p>${a.porcentaje.toFixed(1)}%</p>
+          </div>
+        </div>
+      `;
+    }
+
     // ============================================
     // RENDERIZAR VERSIÓN
     // ============================================
@@ -863,6 +952,8 @@ const mockTitle = `${versionName} - INCADEV UI`;
           </div>
         `;
       }
+
+      renderMetricasAcademicas(version.metricasEstudiantes);
     }
 
     // ============================================
