@@ -32,7 +32,7 @@ function mapMetricasEstudiantes(metricas?: MetricasEstudiantesFromAPI): Metricas
         ? {
             totalClases: metricas.asistencias.total_clases,
             totalEstudiantes: metricas.asistencias.total_estudiantes,
-            esperadas: metricas.asistencias.esperadas,
+            totalAsistencias: metricas.asistencias.esperadas,
             presentes: metricas.asistencias.presentes,
             tardanzas: metricas.asistencias.tardanzas,
             ausentes: metricas.asistencias.ausentes,
