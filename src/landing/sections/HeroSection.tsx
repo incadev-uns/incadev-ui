@@ -30,6 +30,7 @@ export default function HeroSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [banners, setBanners] = useState<Announcement[]>([]);
+  const [bannersLoaded, setBannersLoaded] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dismissedIds, setDismissedIds] = useState<number[]>([]);
 
@@ -104,11 +105,17 @@ export default function HeroSection() {
           .filter((item: any) => item.item_type === "banner")
           .sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0));
 
-        setBanners(bannerItems);
+        // Delay para permitir que la imagen estática se muestre primero
+        setTimeout(() => {
+          setBanners(bannerItems);
+          setBannersLoaded(true);
+        }, 800);
+
         console.log("Banners cargados:", bannerItems);
       }
     } catch (error) {
       console.error("Error fetching banners:", error);
+      setBannersLoaded(true);
     }
   };
 
@@ -349,11 +356,29 @@ export default function HeroSection() {
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl" />
 
             {/* 3D Carousel - Show Banners if available, otherwise Events */}
-            {banners.length > 0 ? (
-              <BannerCarousel3D banners={banners} />
-            ) : (
-              <Events3DCarousel />
-            )}
+            <div className="relative w-full">
+              {/* Events Carousel - Always render but fade out when banners load */}
+              <div
+                className={`transition-opacity duration-700 ${
+                  banners.length > 0 && bannersLoaded
+                    ? "opacity-0 pointer-events-none absolute inset-0"
+                    : "opacity-100"
+                }`}
+              >
+                <Events3DCarousel />
+              </div>
+
+              {/* Banner Carousel - Fade in when loaded */}
+              {banners.length > 0 && (
+                <div
+                  className={`transition-opacity duration-700 ${
+                    bannersLoaded ? "opacity-100" : "opacity-0 absolute inset-0"
+                  }`}
+                >
+                  <BannerCarousel3D banners={banners} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

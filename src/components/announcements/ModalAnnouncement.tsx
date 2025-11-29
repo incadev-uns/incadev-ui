@@ -46,7 +46,7 @@ export function ModalAnnouncement({ announcement, onClose }: ModalAnnouncementPr
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${
+      className={`fixed inset-0 z-[110] flex items-center justify-center p-4 transition-all duration-300 ${
         isVisible && !isClosing ? "opacity-100" : "opacity-0"
       }`}
       onClick={handleBackdropClick}
