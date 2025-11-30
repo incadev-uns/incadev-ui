@@ -7,7 +7,7 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/process/evaluation/audits/components/dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -21,7 +21,6 @@ import {
     FileText,
     AlertTriangle,
     Clock,
-    User,
     Shield,
     X,
     Loader2,
@@ -33,7 +32,7 @@ import {
     Target,
     Search,
     BarChart3,
-    ExternalLink
+    ExternalLink,
 } from "lucide-react"
 import { auditService } from "@/process/evaluation/audits/services/audit-service"
 import type { Audit } from "../types/audit"
@@ -42,8 +41,8 @@ interface Finding {
     id: number
     audit_id: number
     description: string
-    severity: 'low' | 'medium' | 'high' | 'critical'
-    status: 'open' | 'in_progress' | 'resolved' | 'wont_fix'
+    severity: "low" | "medium" | "high" | "critical"
+    status: "open" | "in_progress" | "resolved" | "wont_fix"
     created_at: string
     updated_at: string
     evidences: Evidence[]
@@ -75,7 +74,7 @@ export function AuditDetailDialog({
     open,
     onOpenChange,
     audit,
-    onManageFindings
+    onManageFindings,
 }: AuditDetailDialogProps) {
     const [findings, setFindings] = useState<Finding[]>([])
     const [loading, setLoading] = useState(false)
@@ -103,14 +102,11 @@ export function AuditDetailDialog({
             setLoading(true)
             setError(null)
 
-            // Usar la recomendación de la auditoría si existe
             setRecommendation(audit.recommendation || "")
 
-            // Si la auditoría ya viene con hallazgos, usarlos
             if (audit.findings && Array.isArray(audit.findings)) {
                 setFindings(audit.findings)
             } else {
-                // Si no, cargar hallazgos desde el servicio
                 console.log("🔄 Cargando hallazgos para auditoría:", audit.id)
                 const findingsResponse = await auditService.getFindings(audit.id)
 
@@ -120,7 +116,6 @@ export function AuditDetailDialog({
                     setFindings([])
                 }
             }
-
         } catch (error: any) {
             console.error("❌ Error cargando datos de auditoría:", error)
             setError(error?.message || "Error al cargar los datos de la auditoría")
@@ -133,7 +128,11 @@ export function AuditDetailDialog({
     const handleFinalizeAudit = async () => {
         if (!audit) return
 
-        if (!confirm("¿Estás seguro de que deseas finalizar esta auditoría? Esta acción no se puede deshacer.")) {
+        if (
+            !confirm(
+                "¿Estás seguro de que deseas finalizar esta auditoría? Esta acción no se puede deshacer."
+            )
+        ) {
             return
         }
 
@@ -142,14 +141,12 @@ export function AuditDetailDialog({
             setError(null)
 
             await auditService.update(audit.id, {
-                status: 'completed',
-                recommendation: recommendation
+                status: "completed",
+                recommendation: recommendation,
             })
 
-            // Recargar datos para reflejar cambios
             await loadAuditData()
             alert("✅ Auditoría finalizada exitosamente")
-
         } catch (error: any) {
             console.error("Error finalizando auditoría:", error)
             setError(error?.message || "Error al finalizar la auditoría")
@@ -166,11 +163,10 @@ export function AuditDetailDialog({
             setError(null)
 
             await auditService.updateRecommendation(audit.id, {
-                recommendation: recommendation
+                recommendation: recommendation,
             })
 
             alert("✅ Recomendación actualizada exitosamente")
-
         } catch (error: any) {
             console.error("Error actualizando recomendación:", error)
             setError(error?.message || "Error al actualizar la recomendación")
@@ -179,7 +175,9 @@ export function AuditDetailDialog({
         }
     }
 
-    const handleUpdateStatus = async (newStatus: 'pending' | 'in_progress' | 'completed' | 'cancelled') => {
+    const handleUpdateStatus = async (
+        newStatus: "pending" | "in_progress" | "completed" | "cancelled"
+    ) => {
         if (!audit) return
 
         try {
@@ -187,12 +185,11 @@ export function AuditDetailDialog({
             setError(null)
 
             await auditService.update(audit.id, {
-                status: newStatus
+                status: newStatus,
             })
 
-            await loadAuditData() // Recargar datos
-            alert(`✅ Estado actualizado a: ${newStatus.replace('_', ' ')}`)
-
+            await loadAuditData()
+            alert(`✅ Estado actualizado a: ${newStatus.replace("_", " ")}`)
         } catch (error: any) {
             console.error("Error actualizando estado:", error)
             setError(error?.message || "Error al actualizar el estado")
@@ -211,7 +208,7 @@ export function AuditDetailDialog({
             const response = await auditService.generateReport(audit.id)
 
             if (response.data?.report_url) {
-                window.open(response.data.report_url, '_blank')
+                window.open(response.data.report_url, "_blank")
                 alert("✅ Reporte generado exitosamente")
             } else {
                 alert("✅ Reporte generado exitosamente")
@@ -230,7 +227,6 @@ export function AuditDetailDialog({
             console.log("📥 Descargando reporte para auditoría:", audit.id)
 
             await auditService.downloadReport(audit.id)
-
         } catch (error: any) {
             console.error("Error descargando reporte:", error)
             setError(error?.message || "Error al descargar el reporte")
@@ -242,7 +238,7 @@ export function AuditDetailDialog({
             pending: "secondary",
             in_progress: "default",
             completed: "outline",
-            cancelled: "destructive"
+            cancelled: "destructive",
         } as const
         return variants[status as keyof typeof variants] || "secondary"
     }
@@ -252,7 +248,7 @@ export function AuditDetailDialog({
             pending: Clock,
             in_progress: AlertTriangle,
             completed: CheckCircle,
-            cancelled: Shield
+            cancelled: Shield,
         }
         return icons[status as keyof typeof icons] || Clock
     }
@@ -262,7 +258,7 @@ export function AuditDetailDialog({
             low: "outline",
             medium: "secondary",
             high: "destructive",
-            critical: "destructive"
+            critical: "destructive",
         } as const
         return variants[severity as keyof typeof variants] || "outline"
     }
@@ -272,74 +268,88 @@ export function AuditDetailDialog({
             open: "secondary",
             in_progress: "default",
             resolved: "outline",
-            wont_fix: "destructive"
+            wont_fix: "destructive",
         } as const
         return variants[status as keyof typeof variants] || "secondary"
     }
 
     const handleManageFindings = () => {
         if (audit && onManageFindings) {
-            onOpenChange(false) // Cerrar este dialog primero
-            setTimeout(() => onManageFindings(audit), 300) // Abrir el dialog de hallazgos
+            onOpenChange(false)
+            setTimeout(() => onManageFindings(audit), 300)
         }
     }
 
-    // Estadísticas para el dashboard
     const stats = {
         totalFindings: findings.length,
-        openFindings: findings.filter(f => f.status === 'open').length,
-        inProgressFindings: findings.filter(f => f.status === 'in_progress').length,
-        resolvedFindings: findings.filter(f => f.status === 'resolved' || f.status === 'wont_fix').length,
+        openFindings: findings.filter((f) => f.status === "open").length,
+        inProgressFindings: findings.filter((f) => f.status === "in_progress").length,
+        resolvedFindings: findings.filter(
+            (f) => f.status === "resolved" || f.status === "wont_fix"
+        ).length,
         totalEvidences: findings.reduce((total, finding) => total + finding.evidences.length, 0),
         totalActions: findings.reduce((total, finding) => total + finding.actions.length, 0),
-        highSeverity: findings.filter(f => f.severity === 'high' || f.severity === 'critical').length
+        highSeverity: findings.filter((f) => f.severity === "high" || f.severity === "critical")
+            .length,
     }
 
     if (!audit) return null
 
     const StatusIcon = getStatusIcon(audit.status)
-    const canEdit = audit.status !== 'completed' && audit.status !== 'cancelled'
+    const canEdit = audit.status !== "completed" && audit.status !== "cancelled"
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6">
-
-                <DialogContent
-                    className="
-                    max-w-[1100px] h-[90vh] overflow-y-auto rounded-xl p-0
-                "
-                >
+            <DialogContent
+                showCloseButton={false}
+                className="p-0 rounded-xl"
+            >
+                <div className="flex h-full flex-col">
                     {/* Header fijo */}
                     <div className="flex-shrink-0 border-b border-border/40 bg-background/70 backdrop-blur-md">
-                        <DialogHeader className="px-6 py-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                                <div className="flex items-start gap-3 min-w-0 flex-1">
-                                    <StatusIcon className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+                        <DialogHeader className="px-4 py-3 sm:px-6 sm:py-4">
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex min-w-0 flex-1 items-start gap-3">
+                                    <StatusIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
                                     <div className="min-w-0 flex-1">
-                                        <DialogTitle className="text-xl font-semibold truncate">
+                                        <DialogTitle className="truncate text-base font-semibold sm:text-xl">
                                             {audit.summary || `Auditoría #${audit.id}`}
                                         </DialogTitle>
-                                        <DialogDescription className="flex items-center gap-3 mt-1 text-sm flex-wrap text-muted-foreground">
+                                        <DialogDescription className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                                             <span className="flex items-center gap-1.5">
                                                 <Calendar className="h-3.5 w-3.5" />
-                                                {new Date(audit.audit_date).toLocaleDateString('es-PE')}
+                                                {new Date(audit.audit_date).toLocaleDateString("es-PE")}
                                             </span>
                                             <span>•</span>
                                             <span>ID: {audit.id}</span>
                                             <span>•</span>
                                             <span className="truncate">
-                                                {audit.auditable_type?.replace('IncadevUns\\CoreDomain\\Models\\', '')} - ID {audit.auditable_id}
+                                                {audit.auditable_type?.replace(
+                                                    "IncadevUns\\CoreDomain\\Models\\",
+                                                    ""
+                                                )}{" "}
+                                                - ID {audit.auditable_id}
                                             </span>
                                         </DialogDescription>
                                     </div>
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <Button variant="outline" size="sm" onClick={handleManageFindings} className="gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleManageFindings}
+                                        className="gap-2"
+                                    >
                                         <Search className="h-4 w-4" /> Hallazgos
                                     </Button>
 
-                                    <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)} className="h-9 w-9 p-0">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => onOpenChange(false)}
+                                        className="h-9 w-9 p-0"
+                                    >
                                         <X className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -347,10 +357,9 @@ export function AuditDetailDialog({
                         </DialogHeader>
                     </div>
 
-
                     {/* Alert de errores */}
                     {error && (
-                        <div className="flex-shrink-0 px-6 py-3">
+                        <div className="flex-shrink-0 px-4 py-2 sm:px-6 sm:py-3">
                             <Alert variant="destructive" className="py-3">
                                 <AlertCircle className="h-4 w-4" />
                                 <AlertDescription className="text-sm">{error}</AlertDescription>
@@ -358,14 +367,18 @@ export function AuditDetailDialog({
                         </div>
                     )}
 
-                    {/* Contenido principal con tabs */}
-                    <div className="flex-1 flex flex-col min-h-0">
-                        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-                            <div className="flex-shrink-0 px-6 border-b bg-muted/30">
-                                <TabsList className="w-full justify-start h-12 bg-transparent p-0">
+                    {/* Tabs + contenido scrollable */}
+                    <div className="flex min-h-0 flex-1 flex-col">
+                        <Tabs
+                            value={activeTab}
+                            onValueChange={setActiveTab}
+                            className="flex min-h-0 flex-1 flex-col"
+                        >
+                            <div className="flex-shrink-0 border-b bg-muted/30 px-4 sm:px-6">
+                                <TabsList className="flex w-full justify-start gap-1 bg-transparent p-0">
                                     <TabsTrigger
                                         value="overview"
-                                        className="flex items-center gap-2 text-sm px-4 py-3 "
+                                        className="flex items-center gap-2 px-3 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm"
                                     >
                                         <BarChart3 className="h-4 w-4" />
                                         <span className="hidden sm:inline">Resumen</span>
@@ -373,19 +386,22 @@ export function AuditDetailDialog({
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="findings"
-                                        className="flex items-center gap-2 text-sm px-4 py-3"
+                                        className="flex items-center gap-2 px-3 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm"
                                     >
                                         <Target className="h-4 w-4" />
                                         <span>Hallazgos</span>
                                         {findings.length > 0 && (
-                                            <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1 text-xs">
+                                            <Badge
+                                                variant="secondary"
+                                                className="ml-1 h-5 min-w-5 px-1 text-[10px] sm:text-xs"
+                                            >
                                                 {findings.length}
                                             </Badge>
                                         )}
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="recommendation"
-                                        className="flex items-center gap-2 text-sm px-4 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                        className="flex items-center gap-2 px-3 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm"
                                     >
                                         <FileText className="h-4 w-4" />
                                         <span className="hidden sm:inline">Recomendación</span>
@@ -393,7 +409,7 @@ export function AuditDetailDialog({
                                     </TabsTrigger>
                                     <TabsTrigger
                                         value="reports"
-                                        className="flex items-center gap-2 text-sm px-4 py-3 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                                        className="flex items-center gap-2 px-3 py-2 text-xs sm:px-4 sm:py-3 sm:text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm"
                                     >
                                         <FileBarChart className="h-4 w-4" />
                                         <span className="hidden sm:inline">Reportes</span>
@@ -402,13 +418,11 @@ export function AuditDetailDialog({
                                 </TabsList>
                             </div>
 
-                            {/* Contenido de las tabs con scroll */}
                             <ScrollArea className="flex-1">
-                                <div className="p-6 space-y-6">
-
+                                <div className="space-y-6 p-4 sm:p-6">
                                     {/* Pestaña Resumen */}
                                     <TabsContent value="overview" className="mt-0 space-y-6">
-                                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                                             {/* Información de la auditoría */}
                                             <Card>
                                                 <CardHeader>
@@ -418,35 +432,52 @@ export function AuditDetailDialog({
                                                     </CardTitle>
                                                 </CardHeader>
                                                 <CardContent className="space-y-4">
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium text-muted-foreground">Estado</label>
+                                                            <label className="text-sm font-medium text-muted-foreground">
+                                                                Estado
+                                                            </label>
                                                             <div>
-                                                                <Badge variant={getStatusVariant(audit.status)} className="capitalize">
-                                                                    {audit.status.replace('_', ' ')}
+                                                                <Badge
+                                                                    variant={getStatusVariant(audit.status)}
+                                                                    className="capitalize"
+                                                                >
+                                                                    {audit.status.replace("_", " ")}
                                                                 </Badge>
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium text-muted-foreground">Auditor ID</label>
+                                                            <label className="text-sm font-medium text-muted-foreground">
+                                                                Auditor ID
+                                                            </label>
                                                             <p className="text-sm font-medium">{audit.auditor_id}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium text-muted-foreground">Tipo</label>
-                                                            <p className="text-sm font-medium truncate">
-                                                                {audit.auditable_type?.replace('IncadevUns\\CoreDomain\\Models\\', '')}
+                                                            <label className="text-sm font-medium text-muted-foreground">
+                                                                Tipo
+                                                            </label>
+                                                            <p className="truncate text-sm font-medium">
+                                                                {audit.auditable_type?.replace(
+                                                                    "IncadevUns\\CoreDomain\\Models\\",
+                                                                    ""
+                                                                )}
                                                             </p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <label className="text-sm font-medium text-muted-foreground">Elemento ID</label>
+                                                            <label className="text-sm font-medium text-muted-foreground">
+                                                                Elemento ID
+                                                            </label>
                                                             <p className="text-sm font-medium">{audit.auditable_id}</p>
                                                         </div>
                                                     </div>
                                                     <Separator />
                                                     <div className="space-y-2">
-                                                        <label className="text-sm font-medium text-muted-foreground">Resumen</label>
-                                                        <p className="text-sm leading-relaxed text-foreground bg-muted/30 p-3 rounded-md min-h-[60px]">
-                                                            {audit.summary || 'No se ha proporcionado un resumen para esta auditoría.'}
+                                                        <label className="text-sm font-medium text-muted-foreground">
+                                                            Resumen
+                                                        </label>
+                                                        <p className="min-h-[60px] rounded-md bg-muted/30 p-3 text-sm leading-relaxed text-foreground">
+                                                            {audit.summary ||
+                                                                "No se ha proporcionado un resumen para esta auditoría."}
                                                         </p>
                                                     </div>
                                                 </CardContent>
@@ -466,35 +497,35 @@ export function AuditDetailDialog({
                                                 <CardContent className="space-y-4">
                                                     {canEdit ? (
                                                         <div className="space-y-3">
-                                                            <div className="flex flex-col sm:flex-row gap-2">
-                                                                {audit.status === 'pending' && (
+                                                            <div className="flex flex-col gap-2 sm:flex-row">
+                                                                {audit.status === "pending" && (
                                                                     <Button
-                                                                        onClick={() => handleUpdateStatus('in_progress')}
+                                                                        onClick={() => handleUpdateStatus("in_progress")}
                                                                         disabled={updating}
-                                                                        className="flex-1 min-w-0"
+                                                                        className="min-w-0 flex-1"
                                                                     >
-                                                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                                                        <CheckCircle className="mr-2 h-4 w-4" />
                                                                         Iniciar Auditoría
                                                                     </Button>
                                                                 )}
-                                                                {audit.status === 'in_progress' && (
+                                                                {audit.status === "in_progress" && (
                                                                     <Button
                                                                         onClick={handleFinalizeAudit}
                                                                         disabled={updating}
-                                                                        className="flex-1 min-w-0"
+                                                                        className="min-w-0 flex-1"
                                                                     >
-                                                                        <CheckCircle className="h-4 w-4 mr-2" />
+                                                                        <CheckCircle className="mr-2 h-4 w-4" />
                                                                         Finalizar Auditoría
                                                                     </Button>
                                                                 )}
                                                             </div>
                                                             <Button
                                                                 variant="outline"
-                                                                onClick={() => handleUpdateStatus('cancelled')}
+                                                                onClick={() => handleUpdateStatus("cancelled")}
                                                                 disabled={updating}
                                                                 className="w-full"
                                                             >
-                                                                <X className="h-4 w-4 mr-2" />
+                                                                <X className="mr-2 h-4 w-4" />
                                                                 Cancelar Auditoría
                                                             </Button>
                                                         </div>
@@ -502,7 +533,11 @@ export function AuditDetailDialog({
                                                         <Alert>
                                                             <AlertCircle className="h-4 w-4" />
                                                             <AlertDescription className="text-sm">
-                                                                Esta auditoría está <strong className="capitalize">{audit.status.replace('_', ' ')}</strong> y no puede ser modificada.
+                                                                Esta auditoría está{" "}
+                                                                <strong className="capitalize">
+                                                                    {audit.status.replace("_", " ")}
+                                                                </strong>{" "}
+                                                                y no puede ser modificada.
                                                             </AlertDescription>
                                                         </Alert>
                                                     )}
@@ -515,28 +550,31 @@ export function AuditDetailDialog({
                                     <TabsContent value="findings" className="mt-0 space-y-6">
                                         {loading ? (
                                             <div className="flex items-center justify-center py-12">
-                                                <div className="text-center space-y-3">
-                                                    <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+                                                <div className="space-y-3 text-center">
+                                                    <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
                                                     <p className="text-sm text-muted-foreground">Cargando hallazgos...</p>
                                                 </div>
                                             </div>
                                         ) : findings.length === 0 ? (
                                             <Card className="text-center">
                                                 <CardContent className="py-12">
-                                                    <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                                    <h3 className="text-lg font-semibold mb-2">No hay hallazgos registrados</h3>
-                                                    <p className="text-muted-foreground mb-6 text-sm max-w-md mx-auto">
-                                                        No se han identificado hallazgos en esta auditoría. Puede comenzar agregando el primer hallazgo.
+                                                    <Target className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                                                    <h3 className="mb-2 text-lg font-semibold">
+                                                        No hay hallazgos registrados
+                                                    </h3>
+                                                    <p className="mx-auto mb-6 max-w-md text-sm text-muted-foreground">
+                                                        No se han identificado hallazgos en esta auditoría. Puede comenzar
+                                                        agregando el primer hallazgo.
                                                     </p>
                                                     <Button onClick={handleManageFindings} size="lg">
-                                                        <Plus className="h-4 w-4 mr-2" />
+                                                        <Plus className="mr-2 h-4 w-4" />
                                                         Agregar Primer Hallazgo
                                                     </Button>
                                                 </CardContent>
                                             </Card>
                                         ) : (
                                             <div className="space-y-4">
-                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                                                     <h3 className="text-lg font-semibold">Hallazgos Identificados</h3>
                                                     <div className="flex items-center gap-3">
                                                         <span className="text-sm text-muted-foreground">
@@ -556,11 +594,14 @@ export function AuditDetailDialog({
 
                                                 <div className="grid gap-4">
                                                     {findings.map((finding) => (
-                                                        <Card key={finding.id} className="group hover:shadow-md transition-all duration-200 border-l-4 border-l-blue-500">
+                                                        <Card
+                                                            key={finding.id}
+                                                            className="group border-l-4 border-l-blue-500 transition-all duration-200 hover:shadow-md"
+                                                        >
                                                             <CardHeader className="pb-3">
-                                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
-                                                                    <div className="flex-1 min-w-0 space-y-2">
-                                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                                                    <div className="min-w-0 flex-1 space-y-2">
+                                                                        <div className="flex flex-wrap items-center gap-2">
                                                                             <CardTitle className="text-base font-semibold text-foreground">
                                                                                 Hallazgo #{finding.id}
                                                                             </CardTitle>
@@ -568,10 +609,10 @@ export function AuditDetailDialog({
                                                                                 variant={getFindingStatusVariant(finding.status)}
                                                                                 className="text-xs capitalize"
                                                                             >
-                                                                                {finding.status.replace('_', ' ')}
+                                                                                {finding.status.replace("_", " ")}
                                                                             </Badge>
                                                                         </div>
-                                                                        <CardDescription className="text-sm leading-relaxed text-foreground/80 line-clamp-2">
+                                                                        <CardDescription className="line-clamp-2 text-sm leading-relaxed text-foreground/80">
                                                                             {finding.description}
                                                                         </CardDescription>
                                                                     </div>
@@ -584,8 +625,8 @@ export function AuditDetailDialog({
                                                                 </div>
                                                             </CardHeader>
                                                             <CardContent className="pt-0">
-                                                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-sm text-muted-foreground">
-                                                                    <div className="flex items-center gap-4 flex-wrap">
+                                                                <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+                                                                    <div className="flex flex-wrap items-center gap-4">
                                                                         <span className="flex items-center gap-1.5">
                                                                             <FileText className="h-3.5 w-3.5" />
                                                                             {finding.evidences.length} evidencias
@@ -595,7 +636,8 @@ export function AuditDetailDialog({
                                                                             {finding.actions.length} acciones
                                                                         </span>
                                                                         <span className="text-xs">
-                                                                            Creado: {new Date(finding.created_at).toLocaleDateString('es-PE')}
+                                                                            Creado:{" "}
+                                                                            {new Date(finding.created_at).toLocaleDateString("es-PE")}
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -632,18 +674,18 @@ export function AuditDetailDialog({
                                                         disabled={!canEdit}
                                                     />
                                                 </div>
-                                                <div className="flex flex-col sm:flex-row gap-3">
+                                                <div className="flex flex-col gap-3 sm:flex-row">
                                                     <Button
                                                         onClick={handleUpdateRecommendation}
                                                         disabled={updating || !recommendation.trim() || !canEdit}
                                                         size="sm"
                                                         className="sm:flex-1"
                                                     >
-                                                        {updating && <Loader2 className="h-3 w-3 animate-spin mr-2" />}
+                                                        {updating && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                                                         {updating ? "Guardando..." : "Guardar Recomendación"}
                                                     </Button>
 
-                                                    {audit.status === 'in_progress' && (
+                                                    {audit.status === "in_progress" && (
                                                         <Button
                                                             variant="default"
                                                             onClick={handleFinalizeAudit}
@@ -651,7 +693,7 @@ export function AuditDetailDialog({
                                                             size="sm"
                                                             className="sm:flex-1"
                                                         >
-                                                            <CheckCircle className="h-3 w-3 mr-2" />
+                                                            <CheckCircle className="mr-2 h-3 w-3" />
                                                             Finalizar Auditoría
                                                         </Button>
                                                     )}
@@ -660,7 +702,11 @@ export function AuditDetailDialog({
                                                     <Alert>
                                                         <AlertCircle className="h-4 w-4" />
                                                         <AlertDescription className="text-sm">
-                                                            No se pueden modificar las recomendaciones en una auditoría <strong className="capitalize">{audit.status.replace('_', ' ')}</strong>.
+                                                            No se pueden modificar las recomendaciones en una auditoría{" "}
+                                                            <strong className="capitalize">
+                                                                {audit.status.replace("_", " ")}
+                                                            </strong>
+                                                            .
                                                         </AlertDescription>
                                                     </Alert>
                                                 )}
@@ -670,7 +716,7 @@ export function AuditDetailDialog({
 
                                     {/* Pestaña Reportes */}
                                     <TabsContent value="reports" className="mt-0">
-                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                                             <Card>
                                                 <CardHeader>
                                                     <CardTitle className="flex items-center gap-2 text-base">
@@ -688,9 +734,9 @@ export function AuditDetailDialog({
                                                             className="w-full justify-start"
                                                             size="sm"
                                                         >
-                                                            <FileText className="h-4 w-4 mr-2" />
+                                                            <FileText className="mr-2 h-4 w-4" />
                                                             Generar Reporte Completo
-                                                            <ExternalLink className="h-3 w-3 ml-auto" />
+                                                            <ExternalLink className="ml-auto h-3 w-3" />
                                                         </Button>
                                                         <Button
                                                             variant="outline"
@@ -699,7 +745,7 @@ export function AuditDetailDialog({
                                                             size="sm"
                                                             disabled={!audit.path_report}
                                                         >
-                                                            <Download className="h-4 w-4 mr-2" />
+                                                            <Download className="mr-2 h-4 w-4" />
                                                             Descargar PDF
                                                             {!audit.path_report && (
                                                                 <Badge variant="secondary" className="ml-auto text-xs">
@@ -728,7 +774,7 @@ export function AuditDetailDialog({
                                                         className="w-full justify-start"
                                                         size="sm"
                                                     >
-                                                        <Search className="h-4 w-4 mr-2" />
+                                                        <Search className="mr-2 h-4 w-4" />
                                                         Gestionar Hallazgos
                                                     </Button>
                                                 </CardContent>
@@ -740,32 +786,32 @@ export function AuditDetailDialog({
                                                 <CardTitle className="text-base">Información del Reporte</CardTitle>
                                             </CardHeader>
                                             <CardContent>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm text-muted-foreground">
+                                                <div className="grid grid-cols-1 gap-6 text-sm text-muted-foreground md:grid-cols-2">
                                                     <ul className="space-y-3">
                                                         <li className="flex items-start gap-3">
-                                                            <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                                                            <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                                                             <span>Todos los hallazgos identificados con su severidad</span>
                                                         </li>
                                                         <li className="flex items-start gap-3">
-                                                            <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                                                            <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                                                             <span>Recomendaciones generales y específicas</span>
                                                         </li>
                                                         <li className="flex items-start gap-3">
-                                                            <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                                                            <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                                                             <span>Estado de las acciones correctivas</span>
                                                         </li>
                                                     </ul>
                                                     <ul className="space-y-3">
                                                         <li className="flex items-start gap-3">
-                                                            <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                                                            <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                                                             <span>Fechas, responsables y auditor asignado</span>
                                                         </li>
                                                         <li className="flex items-start gap-3">
-                                                            <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                                                            <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                                                             <span>Evidencias documentadas y referencias</span>
                                                         </li>
                                                         <li className="flex items-start gap-3">
-                                                            <div className="h-2 w-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                                                            <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                                                             <span>Análisis detallado de severidad e impacto</span>
                                                         </li>
                                                     </ul>
@@ -777,8 +823,8 @@ export function AuditDetailDialog({
                             </ScrollArea>
                         </Tabs>
                     </div>
-                </DialogContent>
-            </div>
+                </div>
+            </DialogContent>
         </Dialog>
     )
 }
