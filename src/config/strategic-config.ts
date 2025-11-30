@@ -7,9 +7,8 @@
 type apiProps = string | number;
 
 export const config = {
-  apiUrl:
-  "https://instituto.cetivirgendelapuerta.com/estrategico/StrategicProcessApp/public",
-  //apiUrl: "http://127.0.0.1:8001",
+  apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/estrategico/public",
+  //apiUrl: "http://strategicprocessapp.test",
   environment: "development",
   endpoints: {
     messageFiles: {
@@ -98,6 +97,23 @@ export const config = {
       get: (id: apiProps) => `/api/strategic/quality-standards/${id}`,
       update: (id: apiProps) => `/api/strategic/quality-standards/${id}`,
       delete: (id: apiProps) => `/api/strategic/quality-standards/${id}`,
+    },
+
+    iniciatives: {
+      list: "/api/iniciatives",
+      create: "/api/iniciatives",
+      get: (id: apiProps) => `/api/iniciatives/${id}`,
+      update: (id: apiProps) => `/api/iniciatives/${id}`,
+      delete: (id: apiProps) => `/api/iniciatives/${id}`,
+      transition: (id: apiProps) => `/api/iniciatives/${id}/transition`,
+    },
+
+    iniciativeEvaluations: {
+      list: "/api/iniciative-evaluations",
+      create: "/api/iniciative-evaluations",
+      get: (id: apiProps) => `/api/iniciative-evaluations/${id}`,
+      update: (id: apiProps) => `/api/iniciative-evaluations/${id}`,
+      delete: (id: apiProps) => `/api/iniciative-evaluations/${id}`,
     },
 
     user: {

@@ -110,7 +110,10 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    
+                    <a href={routes.admin.management.initiatives}>
+                      <IconTrendingUp className="h-4 w-4" />
+                      <span>Iniciativas</span>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>

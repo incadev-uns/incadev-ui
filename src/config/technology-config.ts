@@ -6,7 +6,7 @@
 
 export const config = {
   apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/tecnologico/public/api",
-  //apiUrl: "http://localhost:8000/api",
+  //apiUrl: "http://localhost:8001/api",
   environment: "development",
   endpoints: {
     // Authentication 
