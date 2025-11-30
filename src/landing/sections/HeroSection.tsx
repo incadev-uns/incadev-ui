@@ -14,7 +14,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import { config } from "@/config/technology-config";
+import { technologyApi } from "@/services/tecnologico/api";
 import Events3DCarousel from "../components/Events3DCarousel";
+import BannerCarousel3D from "../components/BannerCarousel3D";
+import type { Announcement } from "@/types/developer-web";
 
 interface HeroStats {
   students: number;
@@ -22,18 +25,12 @@ interface HeroStats {
   teachers: number;
 }
 
-interface Announcement {
-  id: number;
-  title: string;
-  summary: string;
-  link_url?: string | null;
-  button_text?: string | null;
-}
-
 export default function HeroSection() {
   const [stats, setStats] = useState<HeroStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [banners, setBanners] = useState<Announcement[]>([]);
+  const [bannersLoaded, setBannersLoaded] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dismissedIds, setDismissedIds] = useState<number[]>([]);
 
@@ -48,6 +45,7 @@ export default function HeroSection() {
   useEffect(() => {
     fetchHeroStats();
     fetchAnnouncements();
+    fetchBanners();
   }, []);
 
   const fetchHeroStats = async () => {
@@ -97,6 +95,30 @@ export default function HeroSection() {
     }
   };
 
+  const fetchBanners = async () => {
+    try {
+      const response = await technologyApi.developerWeb.announcements.published();
+
+      if (response.success && response.data?.data) {
+        // Filtrar solo banners tipo "banner" y ordenar por prioridad
+        const bannerItems = response.data.data
+          .filter((item: any) => item.item_type === "banner")
+          .sort((a: any, b: any) => (b.priority || 0) - (a.priority || 0));
+
+        // Delay para permitir que la imagen estática se muestre primero
+        setTimeout(() => {
+          setBanners(bannerItems);
+          setBannersLoaded(true);
+        }, 800);
+
+        console.log("Banners cargados:", bannerItems);
+      }
+    } catch (error) {
+      console.error("Error fetching banners:", error);
+      setBannersLoaded(true);
+    }
+  };
+
   const handleDismiss = (id: number) => {
     const newDismissed = [...dismissedIds, id];
     setDismissedIds(newDismissed);
@@ -134,7 +156,7 @@ export default function HeroSection() {
   const currentAnnouncement = activeAnnouncements[currentIndex];
 
   return (
-    <div className="container mx-auto px-4 py-16 lg:py-24 relative overflow-hidden">
+    <div className="px-4 sm:px-8 md:px-16 lg:px-24 xl:px-32 2xl:px-40 py-16 lg:py-24 relative overflow-hidden">
       {/* Background decorative elements */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -translate-y-1/2" />
       <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-emerald-500/5 rounded-full blur-[80px] translate-y-1/2" />
@@ -326,15 +348,37 @@ export default function HeroSection() {
           </div>
         </div>
 
-        {/* Events 3D Carousel */}
+        {/* 3D Carousel (Banners or Events) */}
         <div className="relative flex justify-center lg:justify-end">
           <div className="relative w-full">
             {/* Decorative background elements */}
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
             <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl" />
 
-            {/* 3D Carousel */}
-            <Events3DCarousel />
+            {/* 3D Carousel - Show Banners if available, otherwise Events */}
+            <div className="relative w-full">
+              {/* Events Carousel - Always render but fade out when banners load */}
+              <div
+                className={`transition-opacity duration-700 ${
+                  banners.length > 0 && bannersLoaded
+                    ? "opacity-0 pointer-events-none absolute inset-0"
+                    : "opacity-100"
+                }`}
+              >
+                <Events3DCarousel />
+              </div>
+
+              {/* Banner Carousel - Fade in when loaded */}
+              {banners.length > 0 && (
+                <div
+                  className={`transition-opacity duration-700 ${
+                    bannersLoaded ? "opacity-100" : "opacity-0 absolute inset-0"
+                  }`}
+                >
+                  <BannerCarousel3D banners={banners} />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

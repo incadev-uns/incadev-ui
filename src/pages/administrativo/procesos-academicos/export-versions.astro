@@ -1,5 +1,6 @@
 ---
 import CourseVersionsExportPDF from '@/process/administrative/academic-processes/CourseVersionsExportPDF.tsx';
+import '@/styles/global.css';
 const title = 'Reporte de Versiones de Cursos';
 const description = 'Reporte de versiones de cursos en formato PDF generado el ' + new Date().toLocaleDateString('es-PE');
 ---
@@ -9,7 +10,6 @@ const description = 'Reporte de versiones de cursos en formato PDF generado el '
 <head>
   <meta charset="UTF-8"/>
   <title>{title}</title>
-  <link rel="stylesheet" href="/src/styles/global.css" />
   <style>
     @media print {
       @page {

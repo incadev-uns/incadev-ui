@@ -50,6 +50,7 @@ export const routes = {
       organizations: "/estrategico/admin/organizaciones",
       agreements: "/estrategico/admin/convenios",
       plans: "/estrategico/plan",
+      initiatives: "/estrategico/iniciativas",
       calidad: "/estrategico/calidadeducativa",
       documents: "/estrategico/admin/documentos",
     },

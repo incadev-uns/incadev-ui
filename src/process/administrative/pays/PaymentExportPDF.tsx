@@ -36,9 +36,9 @@ export default function PaymentExportPDF() {
     try {
       setLoading(true);
       let data: PaymentsExportData;
-      
+
       try {
-        const response = await fetch('/api/pagos/export-data', {
+        const response = await fetch(`${config.apiUrl}/api/pagos/export-data`, {
           method: 'GET',
           headers: {
             'Accept': 'application/json',
@@ -53,7 +53,7 @@ export default function PaymentExportPDF() {
         }
       } catch (fetchError) {
         console.error('Error al obtener datos del backend:', fetchError);
-        
+
         const storedData = localStorage.getItem('paymentsExportData');
         if (storedData) {
           data = JSON.parse(storedData);
@@ -87,19 +87,19 @@ export default function PaymentExportPDF() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-PE', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return new Date(dateString).toLocaleDateString('es-PE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     });
   };
 
   const getCurrentDateTime = () => {
     const now = new Date();
-    return now.toLocaleDateString('es-PE', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return now.toLocaleDateString('es-PE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
     }) + ' - ' + now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
   };
 
@@ -244,15 +244,14 @@ export default function PaymentExportPDF() {
                   {payment.operation_date ? formatDate(payment.operation_date) : 'Sin fecha'}
                 </td>
                 <td className="p-2 border-b border-slate-200">
-                  <span className={`inline-block px-2 py-0.5 rounded-xl text-[9px] font-semibold uppercase tracking-wide border ${
-                    payment.status === 'approved'
+                  <span className={`inline-block px-2 py-0.5 rounded-xl text-[9px] font-semibold uppercase tracking-wide border ${payment.status === 'approved'
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
                       : payment.status === 'pending'
-                      ? 'bg-amber-100 text-amber-800 border-amber-300'
-                      : payment.status === 'rejected'
-                      ? 'bg-red-100 text-red-800 border-red-300'
-                      : 'bg-slate-100 text-slate-700 border-slate-300'
-                  }`}>
+                        ? 'bg-amber-100 text-amber-800 border-amber-300'
+                        : payment.status === 'rejected'
+                          ? 'bg-red-100 text-red-800 border-red-300'
+                          : 'bg-slate-100 text-slate-700 border-slate-300'
+                    }`}>
                     {getStatusBadge(payment.status)}
                   </span>
                 </td>
@@ -263,8 +262,8 @@ export default function PaymentExportPDF() {
       )}
 
       <div className="mt-8 pt-4 border-t-2 border-slate-200 text-center text-[10px] text-slate-500">
-        <strong className="text-slate-700">INCADEV</strong> - Instituto de Capacitación y Desarrollo | 
-        Reporte generado automáticamente | 
+        <strong className="text-slate-700">INCADEV</strong> - Instituto de Capacitación y Desarrollo |
+        Reporte generado automáticamente |
         Para consultas contactar a tesorería
       </div>
     </div>

@@ -1,11 +1,16 @@
 ---
-import TechWebLayout from "@/process/technology/layouts/TechWebLayout.astro";
+import PublicLayout from "@/layouts/PublicLayout.astro";
 import CourseCatalog from "@/landing/components/CourseCatalog";
 ---
 
-<TechWebLayout
+<PublicLayout
   title="Catálogo de Cursos | INCADEV Tecnológico"
   description="Explora nuestro catálogo completo de cursos certificados en tecnología. Encuentra el curso perfecto para impulsar tu carrera profesional."
+  robots={["index", "follow"]}
+  keywords={["cursos", "tecnología", "certificados", "capacitación", "desarrollo web", "programación", "INCADEV"]}
+  url="https://incadev.com/tecnologico/web/cursos"
+  imageOG="/og-cursos.jpg"
+  imagetwt="/twitter-cursos.jpg"
 >
   <CourseCatalog client:load />
-</TechWebLayout>
+</PublicLayout>

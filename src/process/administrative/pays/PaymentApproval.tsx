@@ -150,6 +150,49 @@ export default function PaymentApproval() {
     return <Badge variant="outline" className={statusInfo.className}>{statusInfo.text}</Badge>;
   };
 
+  const isGoogleDriveUrl = (url: string): boolean => {
+    return url.includes('drive.google.com') || url.includes('docs.google.com');
+  };
+
+  const extractGoogleDriveId = (url: string): string | null => {
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9_-]+)/,
+      /\/presentation\/d\/([a-zA-Z0-9_-]+)/,
+      /\/document\/d\/([a-zA-Z0-9_-]+)/,
+      /id=([a-zA-Z0-9_-]+)/
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return match[1];
+      }
+    }
+    return null;
+  };
+
+  const getGoogleDriveEmbedUrl = (url: string): { embedUrl: string; type: 'pdf' | 'image' | 'presentation' } | null => {
+    const fileId = extractGoogleDriveId(url);
+    if (!fileId) return null;
+
+    if (url.includes('/presentation/')) {
+      return {
+        embedUrl: `https://docs.google.com/presentation/d/${fileId}/embed`,
+        type: 'presentation'
+      };
+    } else if (url.includes('/file/')) {
+      return {
+        embedUrl: `https://drive.google.com/uc?export=view&id=${fileId}`,
+        type: 'image'
+      };
+    }
+
+    return {
+      embedUrl: `https://drive.google.com/file/d/${fileId}/preview`,
+      type: 'pdf'
+    };
+  };
+
   const openEvidenceModal = async (payment: Payment) => {
     setSelectedPayment(payment);
     setShowEvidenceModal(true);
@@ -331,26 +374,82 @@ export default function PaymentApproval() {
                     ) : (
                       <div className="rounded-lg bg-white dark:bg-slate-900 p-4">
                         {selectedPayment.evidence_path && evidenceUrl && !evidenceError ? (
-                          <div className="flex flex-col gap-3">
-                            <div className="flex justify-center bg-white dark:bg-slate-900 rounded-lg p-4">
-                              <img
-                                src={evidenceUrl}
-                                alt="Evidencia de pago"
-                                className="max-w-full h-auto rounded-lg shadow-lg"
-                                onError={() => setEvidenceError(true)}
-                              />
-                            </div>
-                            <div className="text-right">
-                              <a
-                                href={evidenceUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-sky-600 hover:underline"
-                              >
-                                Abrir comprobante en una nueva pestaña
-                              </a>
-                            </div>
-                          </div>
+                          (() => {
+                            if (isGoogleDriveUrl(evidenceUrl)) {
+                              const driveData = getGoogleDriveEmbedUrl(evidenceUrl);
+
+                              if (driveData) {
+                                const { embedUrl, type } = driveData;
+
+                                return (
+                                  <div className="flex flex-col gap-3">
+                                    <div className="flex justify-center bg-white dark:bg-slate-900 rounded-lg p-4">
+                                      {type === 'image' ? (
+                                        <img
+                                          src={embedUrl}
+                                          alt="Evidencia de pago"
+                                          className="max-w-full h-auto rounded-lg shadow-lg max-h-[500px]"
+                                          onError={() => {
+                                            const iframe = document.createElement('iframe');
+                                            iframe.src = `https://drive.google.com/file/d/${extractGoogleDriveId(evidenceUrl)}/preview`;
+                                            iframe.className = 'w-full h-[600px] rounded-lg shadow-lg';
+                                            iframe.allow = 'autoplay';
+                                            const imgElement = document.querySelector(`img[src="${embedUrl}"]`);
+                                            if (imgElement && imgElement.parentNode) {
+                                              imgElement.parentNode.replaceChild(iframe, imgElement);
+                                            }
+                                          }}
+                                        />
+                                      ) : (
+                                        <iframe
+                                          src={embedUrl}
+                                          className="w-full h-[600px] rounded-lg shadow-lg"
+                                          allow="autoplay"
+                                          title="Evidencia de pago"
+                                        />
+                                      )}
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-xs text-muted-foreground">
+                                        {type === 'presentation' ? 'Presentación de Google' : type === 'image' ? 'Imagen' : 'Documento PDF'}
+                                      </span>
+                                      <a
+                                        href={evidenceUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-xs text-sky-600 hover:underline"
+                                      >
+                                        Abrir en Google Drive
+                                      </a>
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            }
+
+                            return (
+                              <div className="flex flex-col gap-3">
+                                <div className="flex justify-center bg-white dark:bg-slate-900 rounded-lg p-4">
+                                  <img
+                                    src={evidenceUrl}
+                                    alt="Evidencia de pago"
+                                    className="max-w-full h-auto rounded-lg shadow-lg"
+                                    onError={() => setEvidenceError(true)}
+                                  />
+                                </div>
+                                <div className="text-right">
+                                  <a
+                                    href={evidenceUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-sky-600 hover:underline"
+                                  >
+                                    Abrir comprobante en una nueva pestaña
+                                  </a>
+                                </div>
+                              </div>
+                            );
+                          })()
                         ) : (
                           <div className="flex items-center gap-3">
                             <div className="flex-shrink-0 flex items-center justify-center h-20 w-28 bg-slate-100 dark:bg-slate-800 rounded-md">

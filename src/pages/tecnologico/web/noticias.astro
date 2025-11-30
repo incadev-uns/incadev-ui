@@ -1,11 +1,16 @@
 ---
-import TechWebLayout from "@/process/technology/layouts/TechWebLayout.astro";
-import NewsPage from "@/landing/components/NewsPage";
+import PublicLayout from "@/layouts/PublicLayout.astro";
+import PublicNewsPage from "@/landing/components/PublicNewsPage";
 ---
 
-<TechWebLayout
+<PublicLayout
   title="Noticias | INCADEV Tecnológico"
   description="Últimas noticias, eventos y logros de nuestra comunidad educativa en INCADEV."
+  robots={["index", "follow"]}
+  keywords={["noticias", "eventos", "anuncios", "educación", "tecnología", "INCADEV"]}
+  url="https://incadev.com/tecnologico/web/noticias"
+  imageOG="/og-noticias.jpg"
+  imagetwt="/twitter-noticias.jpg"
 >
-  <NewsPage client:load />
-</TechWebLayout>
+  <PublicNewsPage client:load />
+</PublicLayout>
