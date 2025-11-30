@@ -223,3 +223,16 @@ body {
 .delay-200 {
   animation-delay: 0.2s;
 }
+
+@keyframes progress-notification {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+.animate-progress-notification {
+  animation: progress-notification 8s linear forwards;
+}

@@ -1,0 +1,24 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import ThreadDetailPage from '@/process/academic/dasboard/foros/thread-detail/ThreadDetailPage';
+
+// Para modo estático, generamos paths vacíos y manejamos el ID desde el cliente
+export function getStaticPaths() {
+  return [];
+}
+
+const robots = ["noindex", "nofollow"];
+
+const { threadId } = Astro.params;
+
+const title = "Hilo de Discusión | Incadev";
+const description = "Participa en esta discusión de la comunidad académica.";
+const keywords = ["foros Incadev", "comunidad estudiantil", "discusiones académicas"];
+const url = `https://instituto.cetivirgendelapuerta.com/academico/foros/hilo/${threadId}`;
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<ThreadDetailPage threadId={parseInt(threadId || "0")} client:load/>
+</DashboardLayout>

@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import AcademicHistory from '@/process/administrative/academic-management/AcademicHistory.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Historial Academico | Incadev";
+const description = "Historial Academico";
+const keywords = ["estudiantes", "gestión académica", "matriculas", "certificados", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/academico/estudiantes";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<AcademicHistory client:load />
+</DashboardLayout>

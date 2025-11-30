@@ -1,0 +1,15 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import PaymentsHistory from '@/process/administrative/pays/PaymentsHistory.tsx';
+const robots = ["noindex", "nofollow"];
+const title = "Historial de Pagos | Incadev";
+const description = "Historial de pagos realizados y pendientes del instituto";
+const keywords = ["pagos", "historial", "gestión financiera", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/pagos/history";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+<PaymentsHistory client:load/>
+</DashboardLayout>

@@ -98,6 +98,7 @@ export function UniversalLogin({ moduleId }: UniversalLoginProps) {
         if (response.ok && result.success) {
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
+          localStorage.setItem("role", data.role); // Guardar el rol seleccionado
 
           toast.success("Inicio de sesión exitoso");
           const dashboardRoute = getRoleRoute(data.role);
@@ -143,6 +144,7 @@ export function UniversalLogin({ moduleId }: UniversalLoginProps) {
           console.log("[UniversalLogin] Login successful, saving token and user data");
           localStorage.setItem("token", result.data.token);
           localStorage.setItem("user", JSON.stringify(result.data.user));
+          localStorage.setItem("role", data.role);
 
           toast.success("Inicio de sesión exitoso");
           const dashboardRoute = getRoleRoute(data.role);

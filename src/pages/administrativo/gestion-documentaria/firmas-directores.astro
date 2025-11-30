@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import InstituteDirectors from '@/process/administrative/document-management/InstituteDirectors.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Firmas de Directores | Incadev";
+const description = "Gestión de firmas autorizadas para certificados y documentos oficiales";
+const keywords = ["firmas", "directores", "certificados", "documentos oficiales", "instituto"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/gestion-documentaria/firmas-directores";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+	<InstituteDirectors client:load />
+</DashboardLayout>

@@ -1,0 +1,32 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import PayrollManagement from '@/process/administrative/humanresources/PayrollManagement.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Gestión de Nómina | Recursos Humanos - Incadev";
+const description = "Administra la nómina y pagos del personal de Incadev. Registra pagos, genera nómina mensual y consulta historial de pagos.";
+const keywords = [
+  "gestión de nómina",
+  "pagos empleados",
+  "recursos humanos",
+  "administración de pagos",
+  "nómina mensual",
+  "contratos laborales",
+  "gestión salarial"
+];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/recursoshumanos/nomina";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout 
+  {robots} 
+  {title} 
+  {description} 
+  {keywords} 
+  {url} 
+  {imageOG} 
+  {imagetwt}
+>
+  <PayrollManagement client:load />
+</DashboardLayout>

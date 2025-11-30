@@ -1,0 +1,485 @@
+---
+// src/pages/marketing/cursos.astro
+import Layout from "../../layouts/MarketingLayout.astro";
+---
+
+<Layout title="Cursos - INCADEV UI">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Gestión de Cursos
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          Administra versiones de cursos y gestiona campañas de captación de
+          alumnos
+        </p>
+      </div>
+
+      <a
+        href="/marketing/propuestas"
+        class="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-medium smooth-transition flex items-center gap-2 shadow-lg hover:shadow-xl"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+          ></path>
+        </svg>
+        Ver Propuestas Aprobadas
+      </a>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div
+        class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg"
+      >
+        <div class="text-center">
+          <p
+            id="publicados"
+            class="text-2xl font-bold text-green-600 dark:text-green-400"
+          >
+            -
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Publicados
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg"
+      >
+        <div class="text-center">
+          <p
+            id="borradores"
+            class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"
+          >
+            -
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Borradores
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="p-4 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-lg"
+      >
+        <div class="text-center">
+          <p
+            id="archivados"
+            class="text-2xl font-bold text-gray-500 dark:text-gray-400"
+          >
+            -
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Archivados
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros por estado -->
+    <div class="flex flex-wrap gap-2">
+      <button
+        class="filter-btn px-4 py-2 rounded-lg font-medium transition-colors"
+        data-filter="todos"
+      >
+        Todos
+      </button>
+      <button
+        class="filter-btn px-4 py-2 rounded-lg font-medium transition-colors"
+        data-filter="published"
+      >
+        Publicados
+      </button>
+      <button
+        class="filter-btn px-4 py-2 rounded-lg font-medium transition-colors"
+        data-filter="draft"
+      >
+        Borradores
+      </button>
+      <button
+        class="filter-btn px-4 py-2 rounded-lg font-medium transition-colors"
+        data-filter="archived"
+      >
+        Archivados
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="flex flex-col lg:flex-row gap-4">
+      <div class="flex-1">
+        <div class="relative">
+          <svg
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Buscar cursos por nombre..."
+            class="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+          />
+        </div>
+      </div>
+
+      <button
+        id="btnLimpiarFiltros"
+        class="px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 smooth-transition font-medium"
+      >
+        Limpiar
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loadingState" class="text-center py-12">
+      <div
+        class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"
+      >
+      </div>
+      <p class="text-gray-600 dark:text-gray-400">Cargando cursos...</p>
+    </div>
+
+    <!-- Cursos List -->
+    <div
+      id="cursosList"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 hidden"
+    >
+      <!-- Los cursos se cargarán aquí dinámicamente -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-12">
+      <div
+        class="w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <svg
+          class="w-10 h-10 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        No se encontraron cursos
+      </h3>
+      <p class="text-gray-600 dark:text-gray-400 mb-4">
+        Intenta ajustar los filtros o revisa las propuestas aprobadas
+      </p>
+    </div>
+
+    <!-- Error State -->
+    <div id="errorState" class="hidden text-center py-12">
+      <div
+        class="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <svg
+          class="w-10 h-10 text-red-500"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        Error al cargar cursos
+      </h3>
+      <p class="text-gray-600 dark:text-gray-400 mb-4">
+        Hubo un problema al obtener los datos. Verifica tu conexión.
+      </p>
+      <button
+        id="btnReintentar"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <script>
+    import {
+      fetchVersions,
+      type CourseVersionForUI,
+    } from "../../services/marketing";
+
+    let versiones: CourseVersionForUI[] = [];
+    let filtroEstado: string = "todos";
+
+    // ============================================
+    // CONFIG DE ESTADOS
+    // ============================================
+    const estadoConfig = {
+      draft: {
+        label: "Borrador",
+        bg: "bg-yellow-50 dark:bg-yellow-950/30",
+        text: "text-yellow-700 dark:text-yellow-400",
+        border: "border-yellow-200 dark:border-yellow-900/50",
+      },
+      published: {
+        label: "Publicado",
+        bg: "bg-green-50 dark:bg-green-950/30",
+        text: "text-green-700 dark:text-green-400",
+        border: "border-green-200 dark:border-green-900/50",
+      },
+      archived: {
+        label: "Archivado",
+        bg: "bg-gray-100 dark:bg-gray-800",
+        text: "text-gray-700 dark:text-gray-400",
+        border: "border-gray-300 dark:border-gray-700",
+      },
+    };
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+    function formatDate(dateString: string): string {
+      return new Date(dateString).toLocaleDateString("es-ES", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    }
+
+    function formatPrice(precio: number): string {
+      return `S/ ${precio.toFixed(2)}`;
+    }
+
+    function updateStats() {
+      const publicadosEl = document.getElementById("publicados");
+      const borradoresEl = document.getElementById("borradores");
+      const archivadosEl = document.getElementById("archivados");
+
+      if (publicadosEl) {
+        publicadosEl.textContent = versiones
+          .filter((v) => v.estado === "published")
+          .length.toString();
+      }
+      if (borradoresEl) {
+        borradoresEl.textContent = versiones
+          .filter((v) => v.estado === "draft")
+          .length.toString();
+      }
+      if (archivadosEl) {
+        archivadosEl.textContent = versiones
+          .filter((v) => v.estado === "archived")
+          .length.toString();
+      }
+    }
+
+    function updateFilterButtons() {
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        const filter = btn.getAttribute("data-filter");
+        if (filter === filtroEstado) {
+          btn.className =
+            "filter-btn px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white";
+        } else {
+          btn.className =
+            "filter-btn px-4 py-2 rounded-lg font-medium transition-colors bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900";
+        }
+      });
+    }
+
+    // ============================================
+    // RENDERIZAR CURSOS
+    // ============================================
+    function renderCursos(busqueda: string = "") {
+      const container = document.getElementById("cursosList");
+      const emptyState = document.getElementById("emptyState");
+      if (!container) return;
+
+      let filtered = versiones;
+
+      // Filtro por estado
+      if (filtroEstado !== "todos") {
+        filtered = filtered.filter((v) => v.estado === filtroEstado);
+      }
+
+      // Filtro por búsqueda
+      if (busqueda) {
+        filtered = filtered.filter(
+          (v) =>
+            v.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
+            v.cursoNombre.toLowerCase().includes(busqueda.toLowerCase()),
+        );
+      }
+
+      if (filtered.length === 0) {
+        container.classList.add("hidden");
+        emptyState?.classList.remove("hidden");
+        return;
+      }
+
+      container.classList.remove("hidden");
+      emptyState?.classList.add("hidden");
+
+      container.innerHTML = filtered
+        .map((v) => {
+          const estado = estadoConfig[v.estado];
+          // Generar HTML de imagen solo si existe
+          const imagenHTML = v.cursoImagen
+            ? `<div class="mb-4 -mx-6 -mt-6">
+                <img
+                  src="${v.cursoImagen}"
+                  alt="${v.cursoNombre}"
+                  class="w-full h-40 object-cover rounded-t-xl"
+                  onerror="this.style.display='none'"
+                />
+              </div>`
+            : "";
+
+          return `
+          <a href="/marketing/cursos/${v.id}" class="block p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700 smooth-transition cursor-pointer group">
+            ${imagenHTML}
+            <!-- Curso Info -->
+            <div class="mb-4">
+              <div class="flex items-start justify-between mb-2">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 smooth-transition">
+                  ${v.cursoNombre}
+                </h3>
+                <span class="px-3 py-1 ${estado.bg} ${estado.text} border ${estado.border} rounded-full text-xs font-medium">
+                  ${estado.label}
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+                ${v.cursoDescripcion}
+              </p>
+            </div>
+
+            <!-- Version Info -->
+            <div class="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg mb-4">
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Versión del curso</p>
+              <p class="text-sm font-semibold text-gray-900 dark:text-white">
+                ${v.nombre} ${v.version ? `(${v.version})` : ""}
+              </p>
+            </div>
+
+            <!-- Precio -->
+            <div class="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg mb-4">
+              <p class="text-xs text-blue-600 dark:text-blue-400 mb-1">Precio</p>
+              <p class="text-lg font-bold text-gray-900 dark:text-white">
+                ${formatPrice(v.precio)}
+              </p>
+            </div>
+
+            <!-- Footer -->
+            <div class="pt-3 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between">
+              <div class="flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span>Creado: ${formatDate(v.fechaCreacion)}</span>
+              </div>
+              <span class="text-blue-600 dark:text-blue-400 group-hover:underline text-xs font-medium">Ver detalles →</span>
+            </div>
+          </a>
+        `;
+        })
+        .join("");
+    }
+
+    // ============================================
+    // CARGAR DATOS
+    // ============================================
+    async function loadCursos() {
+      const loadingState = document.getElementById("loadingState");
+      const errorState = document.getElementById("errorState");
+      const cursosList = document.getElementById("cursosList");
+
+      loadingState?.classList.remove("hidden");
+      errorState?.classList.add("hidden");
+      cursosList?.classList.add("hidden");
+
+      try {
+        versiones = await fetchVersions();
+
+        loadingState?.classList.add("hidden");
+
+        if (versiones.length === 0) {
+          document.getElementById("emptyState")?.classList.remove("hidden");
+        } else {
+          updateStats();
+          renderCursos();
+        }
+      } catch (error) {
+        console.error("[cursos.astro] Error loading courses:", error);
+        loadingState?.classList.add("hidden");
+        errorState?.classList.remove("hidden");
+      }
+    }
+
+    // ============================================
+    // EVENT LISTENERS
+    // ============================================
+    document.addEventListener("DOMContentLoaded", () => {
+      // Inicializar estilos de botones
+      updateFilterButtons();
+      loadCursos();
+
+      // Filtros de estado
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          filtroEstado = btn.getAttribute("data-filter") || "todos";
+          updateFilterButtons();
+          const searchInput = document.getElementById(
+            "searchInput",
+          ) as HTMLInputElement;
+          renderCursos(searchInput?.value || "");
+        });
+      });
+
+      // Búsqueda
+      const searchInput = document.getElementById("searchInput");
+      searchInput?.addEventListener("input", (e) => {
+        const target = e.target as HTMLInputElement;
+        renderCursos(target.value);
+      });
+
+      // Limpiar filtros
+      const btnLimpiarFiltros = document.getElementById("btnLimpiarFiltros");
+      btnLimpiarFiltros?.addEventListener("click", () => {
+        if (searchInput) (searchInput as HTMLInputElement).value = "";
+        filtroEstado = "todos";
+        updateFilterButtons();
+        renderCursos();
+      });
+
+      // Reintentar
+      const btnReintentar = document.getElementById("btnReintentar");
+      btnReintentar?.addEventListener("click", () => {
+        loadCursos();
+      });
+    });
+  </script>
+</Layout>

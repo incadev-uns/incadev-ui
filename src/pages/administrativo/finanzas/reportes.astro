@@ -1,0 +1,38 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import FinancialReportsView from '@/process/administrative/finances/Reports.tsx';
+
+const robots = ["noindex", "nofollow"];
+
+// SEO actualizados correctamente al módulo
+const title = "Reportes Financieros | Módulo Financiero - Incadev";
+const description = "Consulta los reportes financieros institucionales de Incadev: ingresos por matrículas, nómina y rentabilidad.";
+const keywords = [
+  "reportes financieros",
+  "módulo financiero",
+  "gestión financiera",
+  "ingresos por matrículas",
+  "evaluación de costos",
+  "rentabilidad institucional",
+  "indicadores financieros",
+  "análisis financiero educativo",
+  "control de nómina",
+  "finanzas educativas"
+];
+
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/finanzas/reportes";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout
+  {robots}
+  {title}
+  {description}
+  {keywords}
+  {url}
+  {imageOG}
+  {imagetwt}
+>
+  <FinancialReportsView client:load />
+</DashboardLayout>

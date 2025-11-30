@@ -11,19 +11,10 @@ interface PopupAnnouncementProps {
 export function PopupAnnouncement({ announcement, onClose }: PopupAnnouncementProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
-  const [bounce, setBounce] = useState(false)
 
   useEffect(() => {
     // Initial animation
     setTimeout(() => setIsVisible(true), 100)
-
-    // Periodic bounce effect to attract attention
-    const bounceInterval = setInterval(() => {
-      setBounce(true)
-      setTimeout(() => setBounce(false), 500)
-    }, 5000)
-
-    return () => clearInterval(bounceInterval)
   }, [])
 
   const handleClose = () => {
@@ -39,11 +30,11 @@ export function PopupAnnouncement({ announcement, onClose }: PopupAnnouncementPr
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-[90] transition-all duration-500 ease-out ${
+      className={`fixed bottom-24 right-6 z-[90] transition-all duration-500 ease-out ${
         isVisible && !isClosing
           ? "translate-y-0 opacity-100 scale-100"
           : "translate-y-20 opacity-0 scale-75"
-      } ${bounce ? "animate-bounce" : ""}`}
+      }`}
       style={{ maxWidth: "380px", width: "calc(100vw - 3rem)" }}
     >
       <div className="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border-2 border-blue-500 dark:border-purple-500 overflow-hidden">

@@ -1,0 +1,24 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import GroupsManagement from '@/process/administrative/academic-processes/GroupsManagement.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Gestión de Grupos | Incadev";
+const description = "Administración y gestión de grupos académicos para cursos y programas educativos";
+const keywords = ["grupos", "cursos", "gestión académica", "procesos académicos", "instituto", "clases", "secciones"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/procesos-academicos/groups-management";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout 
+    {robots} 
+    {title} 
+    {description} 
+    {keywords} 
+    {url} 
+    {imageOG} 
+    {imagetwt}
+>
+    <GroupsManagement client:load />
+</DashboardLayout>

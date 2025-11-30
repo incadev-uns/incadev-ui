@@ -30,10 +30,10 @@ export default function TutoringHistoryTable({
     }
 
     if (request.status === "completed") {
-      if (request.studentAttended === true) {
+      if (request.student_attended === true) {
         return <Badge className="bg-green-600">Asistió</Badge>;
       }
-      if (request.studentAttended === false) {
+      if (request.student_attended === false) {
         return <Badge variant="secondary">No asistió</Badge>;
       }
       return <Badge variant="outline">Completada</Badge>;
@@ -73,8 +73,8 @@ export default function TutoringHistoryTable({
               <TableCell>{request.studentId}</TableCell>
               <TableCell>{request.subject}</TableCell>
               <TableCell>{request.topic}</TableCell>
-              <TableCell>{formatDate(request.requestedDate)}</TableCell>
-              <TableCell>{request.requestedTime}</TableCell>
+              <TableCell>{formatDate(request.requested_date || request.requestedDate || "")}</TableCell>
+              <TableCell>{request.requested_time || request.requestedTime}</TableCell>
               <TableCell>{getStatusBadge(request)}</TableCell>
             </TableRow>
           ))}

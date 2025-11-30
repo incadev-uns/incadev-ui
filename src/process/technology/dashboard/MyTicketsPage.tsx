@@ -112,7 +112,7 @@ export default function MyTicketsPage() {
   }
 
   const handleViewTicket = (ticketId: number) => {
-    window.location.href = `/tecnologico/support/tickets/detail?id=${ticketId}`
+    window.location.href = `/tecnologico/support/tickets/detail?id=${ticketId}&from=my-tickets`
   }
 
   const formatDate = (dateString: string) => {

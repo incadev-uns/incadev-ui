@@ -1,0 +1,36 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import BalanceGeneralPage from '@/process/administrative/finances/Finance.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Balance General | Módulo Financiero - Incadev";
+const description = "Consulta el balance general financiero de Incadev. Visualiza ingresos verificados, pagos pendientes, gastos en nómina, patrimonio neto e indicadores de salud financiera.";
+const keywords = [
+  "balance general", 
+  "módulo financiero", 
+  "gestión financiera", 
+  "ingresos y gastos", 
+  "estado financiero", 
+  "indicadores financieros", 
+  "patrimonio neto", 
+  "gestión de pagos", 
+  "control financiero",
+  "reportes contables",
+  "finanzas educativas"
+];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/finanzas/balance-general";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout 
+  {robots} 
+  {title} 
+  {description} 
+  {keywords} 
+  {url} 
+  {imageOG} 
+  {imagetwt}
+>
+  <BalanceGeneralPage client:load />
+</DashboardLayout>

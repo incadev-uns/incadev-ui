@@ -51,14 +51,24 @@ export default function TicketDetailPage() {
   const [loading, setLoading] = useState(true)
   const [submittingReply, setSubmittingReply] = useState(false)
   const [ticketId, setTicketId] = useState<number | null>(null)
+  const [returnPath, setReturnPath] = useState<string>("/tecnologico/support/mis-tickets")
 
-  // Obtener el ID del ticket desde la URL (query param ?id=123)
+  // Obtener el ID del ticket y el origen desde la URL
   useEffect(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search)
       const id = params.get("id")
+      const from = params.get("from")
+
       if (id) {
         setTicketId(parseInt(id, 10))
+      }
+
+      // Determinar la ruta de retorno basada en el parámetro 'from'
+      if (from === "all-tickets") {
+        setReturnPath("/tecnologico/support/tickets")
+      } else {
+        setReturnPath("/tecnologico/support/mis-tickets")
       }
     }
   }, [])
@@ -248,8 +258,8 @@ export default function TicketDetailPage() {
           <p className="text-sm text-muted-foreground mt-2">
             Accede desde la lista de tickets o usa la URL correcta: /tecnologico/support/tickets/detail?id=123
           </p>
-          <Button className="mt-4" onClick={() => window.location.href = "/tecnologico/support/tickets"}>
-            Ir a Tickets
+          <Button className="mt-4" onClick={() => window.location.href = returnPath}>
+            {returnPath.includes("all-tickets") || returnPath.includes("/tickets") && !returnPath.includes("mis-tickets") ? "Ir a Todos los Tickets" : "Ir a Mis Tickets"}
           </Button>
         </div>
       </TechnologyLayout>
@@ -262,8 +272,8 @@ export default function TicketDetailPage() {
         <div className="text-center py-12">
           <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
           <p className="text-muted-foreground font-medium">Ticket no encontrado</p>
-          <Button className="mt-4" onClick={() => window.location.href = "/tecnologico/support/tickets"}>
-            Volver a Tickets
+          <Button className="mt-4" onClick={() => window.location.href = returnPath}>
+            {returnPath.includes("all-tickets") || returnPath.includes("/tickets") && !returnPath.includes("mis-tickets") ? "Volver a Todos los Tickets" : "Volver a Mis Tickets"}
           </Button>
         </div>
       </TechnologyLayout>
@@ -282,7 +292,7 @@ export default function TicketDetailPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => window.location.href = "/tecnologico/support/tickets"}
+                onClick={() => window.location.href = returnPath}
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Volver

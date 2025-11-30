@@ -1,0 +1,17 @@
+---
+import { CalidadEducativaPage } from "@/process/strategic/dashboard/calidadeducativa/CalidadEducativaPage";
+import PlanLayout from "@/process/strategic/layouts/PlanLayout.astro";
+import '@/styles/global.css';
+
+const title = "Nódulo de Calidad Educativa";
+const description = "Flujo de Evaluación de Estándares";
+const robots = ["noindex", "nofollow"];
+const keywords = ["INCADEV", "estrategico", "administración", "dashboard", "gestión"];
+const url = "https://instituto.cetivirgendelapuerta.com/estrategico";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+
+---
+<PlanLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+    <CalidadEducativaPage client:load/>
+<PlanLayout />

@@ -1,0 +1,35 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import EmpleadosPage from '@/process/administrative/humanresources/Employees.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Gestión de Empleados | Recursos Humanos - Incadev";
+const description = "Administra el personal de Incadev. Consulta información de empleados, contratos, cargos, áreas y gestiona la plantilla organizacional.";
+const keywords = [
+  "gestión de empleados",
+  "recursos humanos",
+  "administración de personal",
+  "contratos laborales",
+  "plantilla organizacional",
+  "departamentos",
+  "cargos y puestos",
+  "información laboral",
+  "gestión de staff",
+  "personal activo"
+];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/recursoshumanos/empleados";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout 
+  {robots} 
+  {title} 
+  {description} 
+  {keywords} 
+  {url} 
+  {imageOG} 
+  {imagetwt}
+>
+  <EmpleadosPage client:load />
+</DashboardLayout>

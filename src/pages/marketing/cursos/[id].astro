@@ -1,0 +1,1302 @@
+---
+// src/pages/marketing/cursos/[id].astro
+import Layout from "../../../layouts/MarketingLayout.astro";
+import { config } from "../../../config/marketing-config";
+
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// =========================================
+export async function getStaticPaths() {
+  try {
+    // Fetch all versions at build time
+    const url = `${config.apiUrl}${config.endpoints.versions.list}`;
+    console.log("[Build] Fetching versions from:", url);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch versions: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const versions = data.data || [];
+
+    console.log(`[Build] Generating ${versions.length} version pages`);
+
+    // Generate a path for each version
+    return versions.map((version: any) => ({
+      params: { id: version.id.toString() },
+      props: {
+        versionId: version.id,
+        versionName: version.name,
+      },
+    }));
+  } catch (error) {
+    console.error("[Build] Error in getStaticPaths:", error);
+    return [];
+  }
+}
+
+const { versionId, versionName } = Astro.props;
+const mockTitle = `${versionName} - INCADEV UI`;
+---
+
+<Layout title={mockTitle}>
+  <div class="space-y-6" data-version-id={versionId}>
+    <!-- Breadcrumb -->
+    <nav
+      class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400"
+    >
+      <a
+        href="/marketing/dashboard"
+        class="hover:text-blue-600 dark:hover:text-blue-400 smooth-transition"
+        >Dashboard</a
+      >
+      <span>/</span>
+      <a
+        href="/marketing/cursos"
+        class="hover:text-blue-600 dark:hover:text-blue-400 smooth-transition"
+        >Cursos</a
+      >
+      <span>/</span>
+      <span id="breadcrumbTitle" class="text-gray-900 dark:text-white"
+        >Cargando...</span
+      >
+    </nav>
+
+    <!-- Loading State -->
+    <div
+      id="loadingState"
+      class="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center"
+    >
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"
+      >
+      </div>
+      <p class="text-gray-600 dark:text-gray-400">
+        Cargando versión del curso...
+      </p>
+    </div>
+
+    <!-- Error State -->
+    <div
+      id="errorState"
+      class="hidden bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-12 text-center"
+    >
+      <div
+        class="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <svg
+          class="w-10 h-10 text-red-600 dark:text-red-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        Error al cargar la versión
+      </h3>
+      <p id="errorMessage" class="text-gray-600 dark:text-gray-400 mb-4"></p>
+      <button
+        onclick="window.location.reload()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        Reintentar
+      </button>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="hidden space-y-6">
+      <!-- Header de la Versión -->
+      <div
+        class="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800 p-6"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-3 mb-3 flex-wrap">
+              <h1
+                id="versionNombre"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+              </h1>
+              <span
+                id="versionBadge"
+                class="px-3 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-900/50 rounded-full text-sm font-medium"
+              >
+                Versión
+              </span>
+            </div>
+
+            <p
+              id="cursoNombre"
+              class="text-xl text-gray-700 dark:text-gray-300 mb-2"
+            >
+            </p>
+
+            <p
+              id="cursoDescripcion"
+              class="text-gray-600 dark:text-gray-400 mb-4"
+            >
+            </p>
+
+            <!-- Info de la versión -->
+            <div id="versionInfo" class="flex flex-wrap gap-4 text-sm"></div>
+          </div>
+
+          <div class="flex gap-2">
+            <a
+              href="/marketing/cursos"
+              class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 smooth-transition"
+            >
+              Volver
+            </a>
+          </div>
+        </div>
+
+        <!-- Métricas Rápidas -->
+        <div
+          id="quickMetricsContainer"
+          class="pt-4 mt-4 border-t border-gray-200 dark:border-gray-800"
+        >
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="quickMetrics">
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div
+        class="bg-white dark:bg-gray-950 rounded-xl border border-gray-200 dark:border-gray-800"
+      >
+        <div class="border-b border-gray-200 dark:border-gray-800">
+          <nav class="flex gap-1 p-2 overflow-x-auto">
+            <button
+              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 whitespace-nowrap"
+              data-tab="campanas"
+            >
+              Campañas
+            </button>
+            <button
+              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
+              data-tab="metricas"
+            >
+              Métricas
+            </button>
+            <button
+              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
+              data-tab="academico"
+            >
+              Métricas Académicas
+            </button>
+          </nav>
+        </div>
+
+        <!-- Tab Content: Campañas -->
+        <div id="tab-campanas" class="tab-content p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                Campañas de esta Versión
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Campañas de marketing asociadas a esta versión del curso
+              </p>
+            </div>
+            <button
+              id="btnCrearCampana"
+              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium smooth-transition flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"></path>
+              </svg>
+              Crear Campaña
+            </button>
+          </div>
+
+          <!-- Campañas Grid -->
+          <div id="campanasList" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyCampanas" class="hidden text-center py-12">
+            <div
+              class="w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4"
+            >
+              <svg
+                class="w-10 h-10 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
+                ></path>
+              </svg>
+            </div>
+            <h3
+              class="text-lg font-semibold text-gray-900 dark:text-white mb-2"
+            >
+              No hay campañas para esta versión
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-4">
+              Aún no se han creado campañas para esta versión del curso
+            </p>
+          </div>
+        </div>
+
+        <!-- Tab Content: Métricas -->
+        <div id="tab-metricas" class="tab-content hidden p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            Métricas de Campañas
+          </h2>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div
+              class="p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-900/50"
+            >
+              <p
+                class="text-sm font-medium text-blue-600 dark:text-blue-400 mb-2"
+              >
+                Total Alcance
+              </p>
+              <p
+                id="metricaAlcance"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Personas alcanzadas
+              </p>
+            </div>
+            <div
+              class="p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 rounded-xl border border-green-200 dark:border-green-900/50"
+            >
+              <p
+                class="text-sm font-medium text-green-600 dark:text-green-400 mb-2"
+              >
+                Engagement Rate
+              </p>
+              <p
+                id="metricaCTR"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+                --%
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Tasa de interacción
+              </p>
+            </div>
+            <div
+              class="p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/20 rounded-xl border border-orange-200 dark:border-orange-900/50"
+            >
+              <p
+                class="text-sm font-medium text-orange-600 dark:text-orange-400 mb-2"
+              >
+                Interacciones
+              </p>
+              <p
+                id="metricaInteracciones"
+                class="text-3xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+              <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">Total</p>
+            </div>
+          </div>
+
+          <!-- Resumen -->
+          <div
+            class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+          >
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
+              Resumen de Rendimiento
+            </h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400"
+                  >Total de Campañas</span
+                >
+                <span
+                  id="metricaTotalCampanas"
+                  class="text-sm font-bold text-gray-900 dark:text-white"
+                  >--</span
+                >
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400"
+                  >Total de Posts</span
+                >
+                <span
+                  id="metricaTotalPosts"
+                  class="text-sm font-bold text-gray-900 dark:text-white"
+                  >--</span
+                >
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-sm text-gray-600 dark:text-gray-400"
+                  >Precio de la Versión</span
+                >
+                <span
+                  id="metricaPrecio"
+                  class="text-sm font-bold text-gray-900 dark:text-white"
+                  >--</span
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Tab Content: Métricas Académicas -->
+        <div id="tab-academico" class="tab-content hidden p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            Métricas Académicas de Estudiantes
+          </h2>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div
+              class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-900/50"
+            >
+              <p
+                class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1"
+              >
+                Total Matriculados
+              </p>
+              <p
+                id="acadTotalMatriculados"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+            <div
+              class="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 rounded-xl border border-green-200 dark:border-green-900/50"
+            >
+              <p
+                class="text-xs font-medium text-green-600 dark:text-green-400 mb-1"
+              >
+                Activos
+              </p>
+              <p
+                id="acadActivos"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+            <div
+              class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-900/50"
+            >
+              <p
+                class="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1"
+              >
+                Completados
+              </p>
+              <p
+                id="acadCompletados"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+            <div
+              class="p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/30 dark:to-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-900/50"
+            >
+              <p
+                class="text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1"
+              >
+                Egresados
+              </p>
+              <p
+                id="acadEgresados"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+          </div>
+
+          <!-- Promedios -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div
+              class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-gray-900 dark:text-white">
+                  Promedio de Notas
+                </h3>
+                <svg
+                  class="w-8 h-8 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <p
+                id="acadPromedioNotas"
+                class="text-4xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Calificación promedio del curso
+              </p>
+            </div>
+
+            <div
+              class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-gray-900 dark:text-white">
+                  Asistencia Promedio
+                </h3>
+                <svg
+                  class="w-8 h-8 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <p
+                id="acadPromedioAsistencia"
+                class="text-4xl font-bold text-gray-900 dark:text-white"
+              >
+                --%
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Porcentaje de asistencia
+              </p>
+            </div>
+          </div>
+
+          <!-- Estado de Estudiantes -->
+          <div
+            class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 mb-6"
+          >
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
+              Estado de Estudiantes
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div
+                class="text-center p-3 bg-red-50 dark:bg-red-950/20 rounded-lg"
+              >
+                <p
+                  id="acadReprobados"
+                  class="text-2xl font-bold text-red-600 dark:text-red-400"
+                >
+                  --
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Reprobados
+                </p>
+              </div>
+              <div
+                class="text-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg"
+              >
+                <p
+                  id="acadDesertores"
+                  class="text-2xl font-bold text-orange-600 dark:text-orange-400"
+                >
+                  --
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Desertores
+                </p>
+              </div>
+              <div
+                class="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg"
+              >
+                <p
+                  id="acadTasaRetencion"
+                  class="text-2xl font-bold text-blue-600 dark:text-blue-400"
+                >
+                  --%
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Retención
+                </p>
+              </div>
+              <div
+                class="text-center p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg"
+              >
+                <p
+                  id="acadTasaGraduacion"
+                  class="text-2xl font-bold text-purple-600 dark:text-purple-400"
+                >
+                  --%
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Graduación
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detalle de Asistencias -->
+          <div
+            id="acadAsistenciasContainer"
+            class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+          >
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
+              Detalle de Asistencias
+            </h3>
+            <div id="acadAsistenciasDetalle" class="space-y-2">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                No hay información disponible
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: Crear Campaña -->
+    <div
+      id="modalCrearCampana"
+      class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+    >
+      <div
+        class="bg-white dark:bg-gray-950 rounded-2xl border border-gray-200 dark:border-gray-800 w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      >
+        <div
+          class="sticky top-0 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-800 p-6 flex items-center justify-between"
+        >
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+            Crear Nueva Campaña
+          </h2>
+          <button
+            id="btnCerrarModal"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
+          >
+            <svg
+              class="w-6 h-6 text-gray-600 dark:text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+
+        <form id="formCrearCampana" class="p-6 space-y-6">
+          <!-- Nombre -->
+          <div>
+            <label
+              for="campanaNombre"
+              class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+            >
+              Nombre de la Campaña
+              <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="campanaNombre"
+              required
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              placeholder="Ej: Campaña Verano 2025"
+            />
+          </div>
+
+          <!-- Objetivo -->
+          <div>
+            <label
+              for="campanaObjetivo"
+              class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+            >
+              Objetivo de la Campaña
+              <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              id="campanaObjetivo"
+              required
+              rows="3"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white resize-none"
+              placeholder="Describe el objetivo principal de esta campaña..."
+            ></textarea>
+          </div>
+
+          <!-- Fechas -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                for="campanaInicio"
+                class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+              >
+                Fecha de Inicio
+                <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="campanaInicio"
+                required
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label
+                for="campanaFin"
+                class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+              >
+                Fecha de Fin
+                <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="campanaFin"
+                required
+                class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <!-- Proposal ID (Opcional) -->
+          <div>
+            <label
+              for="campanaProposalId"
+              class="block text-sm font-medium text-gray-900 dark:text-white mb-2"
+            >
+              ID de Propuesta (Opcional)
+            </label>
+            <input
+              type="number"
+              id="campanaProposalId"
+              class="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent smooth-transition text-gray-900 dark:text-white"
+              placeholder="Dejar vacío si no aplica"
+            />
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Si esta campaña está asociada a una propuesta específica
+            </p>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex gap-3 pt-4">
+            <button
+              type="button"
+              id="btnCancelarCrear"
+              class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 font-medium smooth-transition"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              class="flex-1 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium smooth-transition"
+            >
+              Crear Campaña
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div id="loadingCrear" class="hidden text-center py-4">
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"
+            >
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+              Creando campaña...
+            </p>
+          </div>
+
+          <!-- Error State -->
+          <div
+            id="errorCrear"
+            class="hidden p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
+          >
+            <p
+              class="text-sm text-red-600 dark:text-red-400"
+              id="errorCrearMessage"
+            >
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import {
+      fetchVersionById,
+      fetchVersionCampaigns,
+    } from "../../../services/marketing/courseService";
+
+    import type {
+      VersionDetailForUI,
+      VersionCampaignsForUI,
+      CampaignWithMetricsForUI,
+      MetricasEstudiantesForUI,
+    } from "../../../services/marketing/types";
+
+    // ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    const mainDiv = document.querySelector("[data-version-id]") as HTMLElement;
+    const versionId = parseInt(mainDiv?.dataset.versionId || "0", 10);
+
+    let versionData: VersionDetailForUI | null = null;
+    let campaignsData: VersionCampaignsForUI | null = null;
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+
+    function mostrarError(mensaje: string) {
+      document.getElementById("loadingState")?.classList.add("hidden");
+      document.getElementById("mainContent")?.classList.add("hidden");
+      const errorState = document.getElementById("errorState");
+      const errorMessage = document.getElementById("errorMessage");
+      if (errorState && errorMessage) {
+        errorState.classList.remove("hidden");
+        errorMessage.textContent = mensaje;
+      }
+    }
+
+    function mostrarContenido() {
+      document.getElementById("loadingState")?.classList.add("hidden");
+      document.getElementById("errorState")?.classList.add("hidden");
+      document.getElementById("mainContent")?.classList.remove("hidden");
+    }
+
+    function getEstadoBadgeHTML(estado: "activa" | "finalizada") {
+      if (estado === "activa") {
+        return `<span class="px-3 py-1 bg-green-50 dark:bg-green-950/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-900/50 rounded-full text-xs font-medium">Activa</span>`;
+      }
+      return `<span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-full text-xs font-medium">Finalizada</span>`;
+    }
+
+    function getVersionEstadoBadge(estado: string) {
+      const configs: Record<
+        string,
+        { bg: string; text: string; label: string }
+      > = {
+        published: {
+          bg: "bg-green-50 dark:bg-green-950/30",
+          text: "text-green-700 dark:text-green-400",
+          label: "Publicado",
+        },
+        draft: {
+          bg: "bg-yellow-50 dark:bg-yellow-950/30",
+          text: "text-yellow-700 dark:text-yellow-400",
+          label: "Borrador",
+        },
+        archived: {
+          bg: "bg-gray-100 dark:bg-gray-800",
+          text: "text-gray-600 dark:text-gray-400",
+          label: "Archivado",
+        },
+      };
+      const config = configs[estado] || configs.draft;
+      return `<span class="px-2 py-1 ${config.bg} ${config.text} rounded text-xs font-medium">${config.label}</span>`;
+    }
+
+    function renderMetricasAcademicas(metricas?: MetricasEstudiantesForUI) {
+      const setText = (id: string, value: string) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+
+      if (!metricas) {
+        [
+          "acadTotalMatriculados",
+          "acadActivos",
+          "acadCompletados",
+          "acadEgresados",
+          "acadPromedioNotas",
+          "acadPromedioAsistencia",
+          "acadReprobados",
+          "acadDesertores",
+          "acadTasaRetencion",
+          "acadTasaGraduacion",
+        ].forEach((id) => setText(id, id.includes("Promedio") ? "--%" : "--"));
+
+        const detalle = document.getElementById("acadAsistenciasDetalle");
+        if (detalle) detalle.textContent = "No hay información disponible";
+        return;
+      }
+
+      setText("acadTotalMatriculados", String(metricas.totalMatriculados));
+      setText("acadActivos", String(metricas.activos));
+      setText("acadCompletados", String(metricas.completados));
+      setText("acadEgresados", String(metricas.egresados ?? 0));
+      setText("acadPromedioNotas", metricas.promedioNotas.toFixed(1));
+      setText(
+        "acadPromedioAsistencia",
+        `${metricas.promedioAsistencia.toFixed(1)}%`,
+      );
+      setText("acadReprobados", String(metricas.reprobados));
+      setText("acadDesertores", String(metricas.desertores));
+      setText("acadTasaRetencion", `${metricas.tasaRetencion.toFixed(1)}%`);
+      setText("acadTasaGraduacion", `${metricas.tasaGraduacion.toFixed(1)}%`);
+
+      const detalle = document.getElementById("acadAsistenciasDetalle");
+      if (!detalle) return;
+
+      if (!metricas.asistencias) {
+        detalle.textContent = "No hay información disponible";
+        return;
+      }
+
+      const a = metricas.asistencias;
+      detalle.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700 dark:text-gray-200">
+          <div>
+            <p class="font-semibold">Clases</p>
+            <p>${a.totalClases}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Estudiantes</p>
+            <p>${a.totalEstudiantes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Total de asistencias</p>
+            <p>${a.totalAsistencias}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Presentes</p>
+            <p>${a.presentes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Tardanzas</p>
+            <p>${a.tardanzas}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Ausentes</p>
+            <p>${a.ausentes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Justificados</p>
+            <p>${a.justificados}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Asistencia</p>
+            <p>${a.porcentaje.toFixed(1)}%</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================
+    // RENDERIZAR VERSIÓN
+    // ============================================
+
+    function renderVersion(version: VersionDetailForUI) {
+      // Breadcrumb
+      const breadcrumb = document.getElementById("breadcrumbTitle");
+      if (breadcrumb) breadcrumb.textContent = version.nombre;
+
+      // Nombre de la versión
+      const nombre = document.getElementById("versionNombre");
+      if (nombre) nombre.textContent = version.nombre;
+
+      // Nombre del curso
+      const cursoNombre = document.getElementById("cursoNombre");
+      if (cursoNombre) cursoNombre.textContent = version.cursoNombre;
+
+      // Descripción del curso
+      const descripcion = document.getElementById("cursoDescripcion");
+      if (descripcion) descripcion.textContent = version.cursoDescripcion;
+
+      // Info
+      const info = document.getElementById("versionInfo");
+      if (info) {
+        info.innerHTML = `
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+            </svg>
+            <span class="text-gray-600 dark:text-gray-400">Versión: ${version.version || "N/A"}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span class="text-gray-600 dark:text-gray-400">Precio: S/ ${version.precio.toFixed(2)}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${getVersionEstadoBadge(version.estado)}
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span class="text-gray-600 dark:text-gray-400">Creado: ${new Date(version.fechaCreacion).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}</span>
+          </div>
+        `;
+      }
+      renderMetricasAcademicas(version.metricasEstudiantes);
+    }
+
+    // ============================================
+    // RENDERIZAR CAMPAÑAS
+    // ============================================
+
+    function renderCampanas(data: VersionCampaignsForUI) {
+      const container = document.getElementById("campanasList");
+      const emptyState = document.getElementById("emptyCampanas");
+
+      if (!container || !emptyState) return;
+
+      if (data.campanas.length === 0) {
+        container.classList.add("hidden");
+        emptyState.classList.remove("hidden");
+        return;
+      }
+
+      container.classList.remove("hidden");
+      emptyState.classList.add("hidden");
+
+      container.innerHTML = data.campanas
+        .map((c) => {
+          return `
+          <div class="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl hover:shadow-lg smooth-transition group">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 smooth-transition">
+                  ${c.nombre}
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">${c.objetivo}</p>
+              </div>
+              ${getEstadoBadgeHTML(c.estado)}
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 mb-4">
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">${c.metricas.totalPosts}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Posts</p>
+              </div>
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">${c.metricas.totalReach > 1000 ? (c.metricas.totalReach / 1000).toFixed(1) + "K" : c.metricas.totalReach}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Alcance</p>
+              </div>
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">${c.metricas.totalInteractions}</p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">Interacciones</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
+              <span>${new Date(c.inicio).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>
+              <span>→</span>
+              <span>${new Date(c.fin).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>
+            </div>
+
+            <div class="flex gap-2">
+              <a href="/marketing/campaigns/${c.id}" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium smooth-transition text-center">
+                Ver Detalles
+              </a>
+            </div>
+          </div>
+        `;
+        })
+        .join("");
+    }
+
+    // ============================================
+    // ACTUALIZAR MÉTRICAS
+    // ============================================
+
+    function actualizarMetricas(
+      data: VersionCampaignsForUI,
+      version: VersionDetailForUI,
+    ) {
+      // Calcular totales
+      let totalReach = 0;
+      let totalInteractions = 0;
+      let totalPosts = 0;
+      let sumCtr = 0;
+
+      data.campanas.forEach((c) => {
+        totalReach += c.metricas.totalReach;
+        totalInteractions += c.metricas.totalInteractions;
+        totalPosts += c.metricas.totalPosts;
+        sumCtr += c.metricas.averageCtr;
+      });
+
+      const avgCtr =
+        data.campanas.length > 0 ? sumCtr / data.campanas.length : 0;
+
+      // Quick Metrics
+      const quickMetrics = document.getElementById("quickMetrics");
+      if (quickMetrics) {
+        quickMetrics.innerHTML = `
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Precio</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">S/ ${version.precio.toFixed(2)}</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Campañas</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${data.totalCampanas}</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Alcance Total</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${totalReach > 1000 ? (totalReach / 1000).toFixed(1) + "K" : totalReach}</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <p class="text-sm text-gray-600 dark:text-gray-400">Interacciones</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${totalInteractions}</p>
+          </div>
+        `;
+      }
+
+      // Tab Métricas
+      const metricaAlcance = document.getElementById("metricaAlcance");
+      const metricaCTR = document.getElementById("metricaCTR");
+      const metricaInteracciones = document.getElementById(
+        "metricaInteracciones",
+      );
+      const metricaTotalCampanas = document.getElementById(
+        "metricaTotalCampanas",
+      );
+      const metricaTotalPosts = document.getElementById("metricaTotalPosts");
+      const metricaPrecio = document.getElementById("metricaPrecio");
+
+      if (metricaAlcance)
+        metricaAlcance.textContent =
+          totalReach > 1000
+            ? (totalReach / 1000).toFixed(1) + "K"
+            : String(totalReach);
+      if (metricaCTR) metricaCTR.textContent = avgCtr.toFixed(1) + "%";
+      if (metricaInteracciones)
+        metricaInteracciones.textContent = String(totalInteractions);
+      if (metricaTotalCampanas)
+        metricaTotalCampanas.textContent = String(data.totalCampanas);
+      if (metricaTotalPosts) metricaTotalPosts.textContent = String(totalPosts);
+      if (metricaPrecio)
+        metricaPrecio.textContent = `S/ ${version.precio.toFixed(2)}`;
+    }
+
+    // ============================================
+    // INICIALIZACION
+    // ============================================
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      console.log("[Version Detail] Loading version:", versionId);
+
+      try {
+        // 1. Cargar versión
+        versionData = await fetchVersionById(versionId);
+        console.log("[Version Detail] Version loaded:", versionData);
+
+        // 2. Renderizar versión
+        renderVersion(versionData);
+
+        // 3. Cargar campañas de la versión
+        campaignsData = await fetchVersionCampaigns(versionId);
+        console.log("[Version Detail] Campaigns loaded:", campaignsData);
+
+        // 4. Renderizar campañas
+        renderCampanas(campaignsData);
+
+        // 5. Actualizar métricas
+        actualizarMetricas(campaignsData, versionData);
+
+        // 6. Mostrar contenido
+        mostrarContenido();
+      } catch (error) {
+        console.error("[Version Detail] Error loading data:", error);
+        mostrarError(
+          error instanceof Error ? error.message : "Error desconocido",
+        );
+      }
+
+      // ============================================
+      // TABS
+      // ============================================
+
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const tab = btn.getAttribute("data-tab");
+
+          document.querySelectorAll(".tab-btn").forEach((b) => {
+            b.classList.remove(
+              "bg-blue-50",
+              "dark:bg-blue-950/30",
+              "text-blue-600",
+              "dark:text-blue-400",
+            );
+            b.classList.add("text-gray-600", "dark:text-gray-400");
+          });
+          btn.classList.add(
+            "bg-blue-50",
+            "dark:bg-blue-950/30",
+            "text-blue-600",
+            "dark:text-blue-400",
+          );
+          btn.classList.remove("text-gray-600", "dark:text-gray-400");
+
+          document.querySelectorAll(".tab-content").forEach((content) => {
+            content.classList.add("hidden");
+          });
+          document.getElementById(`tab-${tab}`)?.classList.remove("hidden");
+        });
+      });
+
+      // ============================================
+      // MODAL CREAR CAMPAÑA
+      // ============================================
+
+      const modal = document.getElementById("modalCrearCampana");
+      const btnCrearCampana = document.getElementById("btnCrearCampana");
+      const btnCerrarModal = document.getElementById("btnCerrarModal");
+      const btnCancelarCrear = document.getElementById("btnCancelarCrear");
+      const formCrearCampana = document.getElementById(
+        "formCrearCampana",
+      ) as HTMLFormElement;
+
+      // Abrir modal
+      if (btnCrearCampana && modal) {
+        btnCrearCampana.addEventListener("click", () => {
+          modal.classList.remove("hidden");
+          // Resetear formulario
+          formCrearCampana?.reset();
+          document.getElementById("errorCrear")?.classList.add("hidden");
+        });
+      }
+
+      // Cerrar modal
+      const cerrarModal = () => {
+        modal?.classList.add("hidden");
+      };
+
+      btnCerrarModal?.addEventListener("click", cerrarModal);
+      btnCancelarCrear?.addEventListener("click", cerrarModal);
+
+      // Cerrar al hacer click fuera del modal
+      modal?.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          cerrarModal();
+        }
+      });
+
+      // Submit del formulario
+      if (formCrearCampana) {
+        formCrearCampana.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const loadingCrear = document.getElementById("loadingCrear");
+          const errorCrear = document.getElementById("errorCrear");
+          const errorCrearMessage =
+            document.getElementById("errorCrearMessage");
+
+          try {
+            // Mostrar loading
+            loadingCrear?.classList.remove("hidden");
+            errorCrear?.classList.add("hidden");
+
+            // Obtener datos del formulario
+            const nombre = (
+              document.getElementById("campanaNombre") as HTMLInputElement
+            ).value;
+            const objetivo = (
+              document.getElementById("campanaObjetivo") as HTMLTextAreaElement
+            ).value;
+            const inicio = (
+              document.getElementById("campanaInicio") as HTMLInputElement
+            ).value;
+            const fin = (
+              document.getElementById("campanaFin") as HTMLInputElement
+            ).value;
+            const proposalIdInput = (
+              document.getElementById("campanaProposalId") as HTMLInputElement
+            ).value;
+            const proposalId = proposalIdInput
+              ? parseInt(proposalIdInput, 10)
+              : null;
+
+            // Validar fechas
+            if (new Date(fin) < new Date(inicio)) {
+              throw new Error(
+                "La fecha de fin debe ser posterior a la fecha de inicio",
+              );
+            }
+
+            // Preparar datos
+            const campaignData = {
+              name: nombre,
+              objective: objetivo,
+              start_date: inicio,
+              end_date: fin,
+              course_version_id: versionId,
+              proposal_id: proposalId,
+            };
+
+            console.log("[Crear Campaña] Sending data:", campaignData);
+
+            // Hacer request a la API
+            const response = await fetch(
+              `https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api/campaigns`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(campaignData),
+              },
+            );
+
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.message || "Error al crear la campaña");
+            }
+
+            const result = await response.json();
+            console.log("[Crear Campaña] Success:", result);
+
+            // Cerrar modal
+            cerrarModal();
+
+            // Recargar campañas
+            campaignsData = await fetchVersionCampaigns(versionId);
+            renderCampanas(campaignsData);
+            actualizarMetricas(campaignsData, versionData!);
+
+            // Mostrar mensaje de éxito
+            alert("¡Campaña creada exitosamente!");
+          } catch (error) {
+            console.error("[Crear Campaña] Error:", error);
+            if (errorCrear && errorCrearMessage) {
+              errorCrear.classList.remove("hidden");
+              errorCrearMessage.textContent =
+                error instanceof Error ? error.message : "Error desconocido";
+            }
+          } finally {
+            loadingCrear?.classList.add("hidden");
+          }
+        });
+      }
+    });
+  </script>
+</Layout>

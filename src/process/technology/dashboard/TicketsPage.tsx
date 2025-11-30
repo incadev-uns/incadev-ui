@@ -125,7 +125,7 @@ export default function TicketsPage() {
   }
 
   const handleViewTicket = (ticketId: number) => {
-    window.location.href = `/tecnologico/support/tickets/detail?id=${ticketId}`
+    window.location.href = `/tecnologico/support/tickets/detail?id=${ticketId}&from=all-tickets`
   }
 
   const formatDate = (dateString: string) => {

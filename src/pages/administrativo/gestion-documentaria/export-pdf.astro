@@ -1,0 +1,25 @@
+---
+import DocumentExportPDF from '@/process/administrative/document-management/components/document-export-pdf.tsx';
+import '@/styles/global.css';
+const title = 'Reporte de Documentos Administrativos';
+const description = 'Reporte de documentos del instituto';
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>{title}</title>
+  <style>
+    @media print {
+      @page {
+        margin: 1.5cm 2cm;
+        size: landscape;
+      }
+    }
+  </style>
+</head>
+<body>
+  <DocumentExportPDF client:load />
+</body>
+</html>

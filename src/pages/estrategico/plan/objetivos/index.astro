@@ -1,0 +1,25 @@
+---
+import ObjetivosPage from "@/process/strategic/dashboard/plan/ObjetivoPage";
+import PlanLayout from "@/process/strategic/layouts/PlanLayout.astro";
+import '@/styles/global.css';
+
+const title = "Dashboard - Gestión de Objetivos";
+const description = "Panel de objetivos del plan seleccionado";
+const robots = ["noindex", "nofollow"];
+const keywords = ["INCADEV", "estrategico", "objetivos", "dashboard", "gestión"];
+const url = "http://localhost:4321/estrategico/plan/objetivos";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<PlanLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+  <ObjetivosPage client:load />
+</PlanLayout>
+
+
+
+
+
+
+
+

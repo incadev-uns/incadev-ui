@@ -40,23 +40,23 @@ export const ROLE_ROUTES: Record<string, string> = {
   // 📋 GRUPO 06 - AUDITORÍA Y ENCUESTAS
   // ========================================
   survey_admin: "/evaluacion/encuestas",
-  audit_manager: "/evaluacion/audit_manager/dashboard",
-  auditor: "/evaluacion/auditor/dashboard",
+  audit_manager: "/evaluacion/auditorias",
+  auditor: "/evaluacion/auditorias",
 
   // ========================================
   // 💼 GRUPO QUEZADA - RECURSOS HUMANOS Y FINANZAS
   // ========================================
-  human_resources: "/administrativo/human_resources/dashboard",
-  financial_manager: "/administrativo/financial_manager/dashboard",
-  system_viewer: "/administrativo/system_viewer/dashboard",
-  enrollment_manager: "/administrativo/enrollment_manager/dashboard",
-  data_analyst: "/administrativo/data_analyst/dashboard",
+  human_resources: "/administrativo/dashboard",
+  financial_manager: "/administrativo/dashboard",
+  system_viewer: "/administrativo/dashboard",
+  enrollment_manager: "/administrativo/dashboard",
+  data_analyst: "/administrativo/dashboard",
 
   // ========================================
   // 📢 GRUPO HURTADO - MARKETING
   // ========================================
-  marketing: "/marketing/marketing/dashboard",
-  marketing_admin: "/marketing/marketing_admin/dashboard",
+  marketing: "/marketing/dashboard",
+  marketing_admin: "/marketing/dashboard",
 
   // ========================================
   // 🎓 GRUPO VÁSQUEZ - ACADÉMICO
@@ -73,8 +73,8 @@ export const ROLE_ROUTES: Record<string, string> = {
   // ========================================
   // ⚙️ GRUPO DE BUSTAMANTE - ESTRATÉGICO
   // ========================================
-  planner_admin: "/estrategico/planner_admin/dashboard",
-  planner: "/estrategico/planner/dashboard",
+  planner_admin: "/estrategico/plan",
+  planner: "/estrategico/plan",
   // auditor: "/estrategico/auditor/dashboard", // NOTA: Comentado porque auditor ya existe en Grupo 06
   continuous_improvement: "/estrategico/continuous_improvement/dashboard",
 }

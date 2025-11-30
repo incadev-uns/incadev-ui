@@ -1,0 +1,16 @@
+---
+import DashboardLayout from '@/layouts/DashboardLayout.astro';
+import ModulesManagement from '@/process/administrative/academic-processes/ModulesManagement.tsx';
+
+const robots = ["noindex", "nofollow"];
+const title = "Gestión de Módulos | Incadev";
+const description = "Administración y gestión de módulos de aprendizaje para cursos académicos";
+const keywords = ["módulos", "cursos", "gestión académica", "procesos académicos", "instituto", "aprendizaje"];
+const url = "https://instituto.cetivirgendelapuerta.com/administrativo/procesos-academicos/modules-management";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<DashboardLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+    <ModulesManagement client:load/>
+</DashboardLayout>

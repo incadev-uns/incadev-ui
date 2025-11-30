@@ -21,9 +21,25 @@ export const routes = {
   general: {
     login: "/auth/evaluacion",
   },
-  dashboard:{
+  dashboard: {
     index: "/evaluacion/encuestas",
     account: "/academico/account"
+  },
+  audits: {
+    index: "/evaluacion/auditorias",
+    reportes: "/evaluacion/auditorias/reportes",
+    create: "/evaluacion/auditorias/crear",
+    getById: "/evaluacion/auditorias/:id",
+    update: "/evaluacion/auditorias/:id",
+    delete: "/evaluacion/auditorias/:id",
+    updateStatus: "/evaluacion/auditorias/:id",
+    updateFinding: "/evaluacion/auditorias/:id",
+    updateAction: "/evaluacion/auditorias/:id",
+    updateActionStatus: "/evaluacion/auditorias/:id",
+    updateFindingStatus: "/evaluacion/auditorias/:id",
+
+
+
   }
 };
 
@@ -62,17 +78,36 @@ export const navSimpleMain: NavSimpleItem[] = [
     icon: IconUsersPlus,
     allowedRoles: ["survey_admin"]
   },
+  {
+    title: "Dashboard",
+    url: "/evaluacion/auditorias",
+    icon: IconChalkboard,
+    allowedRoles: ["audit_manager", "auditor"]
+  },
+  {
+    title: "Auditorias",
+    url: "/evaluacion/auditorias/panel-audit",
+    icon: IconChalkboard,
+    allowedRoles: ["audit_manager", "auditor"]
+  },
+
+  {
+    title: "Reportes",
+    url: "/evaluacion/auditorias/reportes",
+    icon: IconReport,
+    allowedRoles: ["audit_manager"]
+  }
 ];
 
 export const navMainOptions: NavSimpleItem[] = [
-   {
+  {
     title: "Configuración",
     url: "/academico/configuracion",
     icon: IconSettings,
     type: 'link'
   },
   {
-    title: "Ayuda", 
+    title: "Ayuda",
     url: "/academico/ayuda",
     icon: IconHelp,
     type: 'link'

@@ -1,0 +1,16 @@
+---
+import OrganizacionesPage from "@/process/strategic/dashboard/organizaciones/OrganizacionPage";
+import PlanLayout from "@/process/strategic/layouts/PlanLayout.astro";
+import '@/styles/global.css';
+
+const title = "Dashboard - Organizaciones";
+const description = "Panel de gestion de organizaciones";
+const robots = ["noindex", "nofollow"];
+const keywords = ["INCADEV", "estrategico", "administración", "dashboard", "gestión"];
+const url = "https://instituto.cetivirgendelapuerta.com/estrategico";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+<PlanLayout {robots} {title} {description} {keywords} {url} {imageOG} {imagetwt}>
+    <OrganizacionesPage client:load />
+<PlanLayout />

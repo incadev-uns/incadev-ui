@@ -2,129 +2,181 @@ import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TutoringRequestCard from "@/process/academic/dasboard/audits/components/TutoringRequestCard";
 import TutoringHistoryTable from "@/process/academic/dasboard/audits/components/TutoringHistoryTable";
+import AvailabilityManager from "@/process/academic/dasboard/audits/components/AvailabilityManager";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
+import { config } from "@/config/support-config";
+import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
 
 export interface TutoringRequest {
-  id: string;
-  studentName: string;
-  studentId: string;
-  subject: string;
-  topic: string;
-  requestedDate: string;
-  requestedTime: string;
+  id: number;
+  student_id: number;
+  teacher_id: number;
+  start_time: string;
+  end_time: string;
   status: "pending" | "accepted" | "rejected" | "completed";
-  studentAttended?: boolean;
-  notes?: string;
+  rejection_reason?: string;
+  student_attended?: boolean;
+  meet_url?: string;
+  created_at: string;
+  updated_at: string;
+  studentName: string;
+  requested_date: string;
+  requested_time: string;
+  student?: {
+    id: number;
+    name: string;
+    email: string;
+  };
 }
 
 export default function TeacherTutoringView() {
+  const { token, user } = useAcademicAuth();
   const [requests, setRequests] = useState<TutoringRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTutoringRequests();
-  }, []);
+    if (token && user) {
+      fetchTutoringRequests();
+    }
+  }, [token, user]);
 
   const fetchTutoringRequests = async () => {
     try {
       setLoading(true);
-      // TODO: Reemplazar con la llamada real a tu API
-      // const response = await fetch('/api/tutoring/requests');
-      // const data = await response.json();
-      
-      // Datos de ejemplo
-      const mockData: TutoringRequest[] = [
-        {
-          id: "1",
-          studentName: "Juan Pérez",
-          studentId: "20201234",
-          subject: "Cálculo I",
-          topic: "Derivadas parciales",
-          requestedDate: "2025-11-10",
-          requestedTime: "14:00",
-          status: "pending",
-        },
-        {
-          id: "2",
-          studentName: "María García",
-          studentId: "20201235",
-          subject: "Álgebra Lineal",
-          topic: "Espacios vectoriales",
-          requestedDate: "2025-11-11",
-          requestedTime: "15:00",
-          status: "pending",
-        },
-        {
-          id: "3",
-          studentName: "Carlos López",
-          studentId: "20201236",
-          subject: "Física I",
-          topic: "Cinemática",
-          requestedDate: "2025-11-08",
-          requestedTime: "10:00",
-          status: "accepted",
-        },
-      ];
-      
-      setRequests(mockData);
       setError(null);
+      
+      const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
+      const response = await fetch(
+        `${config.apiUrl}${config.endpoints.tutoring.teacherRequests}?status=all&user_id=${user?.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json",
+            "X-User-Id": user?.id?.toString() || ""
+          },
+          credentials: "include"
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const data = result.data || result;
+      setRequests(data);
     } catch (err) {
+      console.error("Error fetching tutoring requests:", err);
       setError("Error al cargar las solicitudes de tutoría");
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAccept = async (requestId: string) => {
+  const handleAccept = async (requestId: number, meetUrl?: string) => {
     try {
-      // TODO: Llamada a la API para aceptar
-      // await fetch(`/api/tutoring/requests/${requestId}/accept`, { method: 'POST' });
+      const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
+      const endpoint = config.endpoints.tutoring.acceptRequest.replace(':id', requestId.toString());
       
+      const response = await fetch(
+        `${config.apiUrl}${endpoint}?user_id=${user?.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json",
+            "X-User-Id": user?.id?.toString() || ""
+          },
+          credentials: "include",
+          body: JSON.stringify({ meet_url: meetUrl })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
       setRequests(prev =>
         prev.map(req =>
-          req.id === requestId ? { ...req, status: "accepted" as const } : req
+          req.id === requestId ? { ...req, status: "accepted" as const, meet_url: meetUrl } : req
         )
       );
     } catch (err) {
-      console.error("Error al aceptar la solicitud:", err);
+      console.error("Error accepting request:", err);
+      alert("Error al aceptar la solicitud");
     }
   };
 
-  const handleReject = async (requestId: string) => {
+  const handleReject = async (requestId: number, reason: string) => {
     try {
-      // TODO: Llamada a la API para rechazar
-      // await fetch(`/api/tutoring/requests/${requestId}/reject`, { method: 'POST' });
+      const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
+      const endpoint = config.endpoints.tutoring.rejectRequest.replace(':id', requestId.toString());
       
+      const response = await fetch(
+        `${config.apiUrl}${endpoint}?user_id=${user?.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json",
+            "X-User-Id": user?.id?.toString() || ""
+          },
+          credentials: "include",
+          body: JSON.stringify({ rejection_reason: reason })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
       setRequests(prev =>
         prev.map(req =>
-          req.id === requestId ? { ...req, status: "rejected" as const } : req
+          req.id === requestId ? { ...req, status: "rejected" as const, rejection_reason: reason } : req
         )
       );
     } catch (err) {
-      console.error("Error al rechazar la solicitud:", err);
+      console.error("Error rejecting request:", err);
+      alert("Error al rechazar la solicitud");
     }
   };
 
-  const handleMarkAttendance = async (requestId: string, attended: boolean) => {
+  const handleMarkAttendance = async (requestId: number, attended: boolean) => {
     try {
-      // TODO: Llamada a la API para marcar asistencia
-      // await fetch(`/api/tutoring/requests/${requestId}/attendance`, {
-      //   method: 'POST',
-      //   body: JSON.stringify({ attended })
-      // });
+      const tokenWithoutQuotes = token?.replace(/^"|"$/g, '');
+      const endpoint = config.endpoints.tutoring.markAttendance.replace(':id', requestId.toString());
       
+      const response = await fetch(
+        `${config.apiUrl}${endpoint}?user_id=${user?.id}`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${tokenWithoutQuotes}`,
+            "Content-Type": "application/json",
+            "X-User-Id": user?.id?.toString() || ""
+          },
+          credentials: "include",
+          body: JSON.stringify({ student_attended: attended })
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+
       setRequests(prev =>
         prev.map(req =>
           req.id === requestId
-            ? { ...req, status: "completed" as const, studentAttended: attended }
+            ? { ...req, status: "completed" as const, student_attended: attended }
             : req
         )
       );
     } catch (err) {
-      console.error("Error al marcar asistencia:", err);
+      console.error("Error marking attendance:", err);
+      alert("Error al marcar la asistencia");
     }
   };
 
@@ -162,7 +214,7 @@ export default function TeacherTutoringView() {
       </div>
 
       <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="pending">
             Pendientes ({pendingRequests.length})
           </TabsTrigger>
@@ -170,6 +222,7 @@ export default function TeacherTutoringView() {
             Aceptadas ({acceptedRequests.length})
           </TabsTrigger>
           <TabsTrigger value="history">Historial</TabsTrigger>
+          <TabsTrigger value="availability">Mi Disponibilidad</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending" className="space-y-4 mt-6">
@@ -204,9 +257,12 @@ export default function TeacherTutoringView() {
             ))
           )}
         </TabsContent>
-
         <TabsContent value="history" className="mt-6">
           <TutoringHistoryTable requests={completedRequests} />
+        </TabsContent>
+
+        <TabsContent value="availability" className="mt-6">
+          <AvailabilityManager />
         </TabsContent>
       </Tabs>
     </div>

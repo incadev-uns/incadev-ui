@@ -1,0 +1,37 @@
+---
+import SecurityEventsPage from '@/process/technology/dashboard/SecurityEventsPage';
+import '@/styles/global.css';
+
+const title = "Eventos de Seguridad | INCADEV Tecnológico";
+const description = "Historial de eventos de seguridad del sistema";
+const robots = ["noindex", "nofollow"];
+const keywords = ["INCADEV", "tecnológico", "seguridad", "eventos"];
+const url = "https://instituto.cetivirgendelapuerta.com/tecnologico/admin/security/eventos";
+const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
+const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords.join(", ")} />
+  <meta name="robots" content={robots.join(", ")} />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={url} />
+  <meta property="og:image" content={imageOG} />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={imagetwt} />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="min-h-screen bg-background font-sans antialiased">
+  <SecurityEventsPage client:load />
+</body>
+</html>

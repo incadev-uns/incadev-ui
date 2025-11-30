@@ -1,0 +1,71 @@
+---
+import '@/styles/global.css';
+
+export interface SEOFields {
+	robots: string[];
+    title: string;
+    description: string;
+    keywords: string[];
+    url: string;
+    imageOG: string;
+	imagetwt: string;
+}
+
+const { 
+	robots = [],
+	title = "", 
+	description = "", 
+	keywords = [], 
+	url="",
+	imageOG = "",
+    imagetwt = ""
+} = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+  <meta name="keywords" content={keywords.join(", ")} />
+  <meta name="robots" content={robots.join(", ")} />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={url} />
+  <meta property="og:image" content={imageOG} />
+  <meta property="og:type" content="website" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content={title} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={imagetwt} />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+</head>
+<body class="min-h-screen bg-background font-sans antialiased">
+    <slot />
+</body>
+<script is:inline>
+   getThemePreference = () => {
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+      return localStorage.getItem('theme');
+    }
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  };
+   isDark = getThemePreference() === 'dark';
+  document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
+
+  if (typeof localStorage !== 'undefined') {
+     observer = new MutationObserver(() => {
+       isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+</script>
+</html>

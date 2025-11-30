@@ -4,14 +4,14 @@ import TeacherTutoringView from "@/process/academic/dasboard/audits/components/T
 import StudentTutoringView from "@/process/academic/dasboard/audits/components/StudentTutoringView";
 
 export default function TutoringPage() {
-  const { user } = useAcademicAuth();
+  const { role } = useAcademicAuth();
 
   return (
     <AcademicLayout title="Módulo de Tutorías">
       <div className="flex flex-1 flex-col p-6">
-        {user?.role === "teacher" ? (
+        {(role === "teacher" || role === "tutor") ? (
           <TeacherTutoringView />
-        ) : user?.role === "student" ? (
+        ) : role === "student" ? (
           <StudentTutoringView />
         ) : (
           <div className="flex items-center justify-center h-full">

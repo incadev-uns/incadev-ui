@@ -1,0 +1,991 @@
+---
+import Layout from "../../layouts/MarketingLayout.astro";
+---
+
+<Layout title="Propuestas - INCADEV UI">
+  <div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Propuestas de Contenido
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400">
+          Gestiona y valida ideas de cursos con campañas educativas
+        </p>
+      </div>
+      <button
+        id="btnNuevaPropuesta"
+        class="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium smooth-transition flex items-center gap-2 shadow-lg hover:shadow-xl"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 4v16m8-8H4"></path>
+        </svg>
+        Nueva Propuesta
+      </button>
+    </div>
+
+    <!-- Stats Grid - 6 estados -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <button
+        class="filter-btn p-4 bg-white dark:bg-gray-950 border-2 border-blue-500 dark:border-blue-500 rounded-lg smooth-transition hover:shadow-md"
+        data-filter="todas"
+      >
+        <div class="text-center">
+          <p
+            id="stat-todas"
+            class="text-2xl font-bold text-gray-900 dark:text-white"
+          >
+            0
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Todas
+          </p>
+        </div>
+      </button>
+
+      <button
+        class="filter-btn p-4 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-800 hover:border-gray-400 dark:hover:border-gray-600 rounded-lg smooth-transition hover:shadow-md"
+        data-filter="borrador"
+      >
+        <div class="text-center">
+          <p
+            id="stat-borrador"
+            class="text-2xl font-bold text-gray-500 dark:text-gray-400"
+          >
+            0
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Borradores
+          </p>
+        </div>
+      </button>
+
+      <button
+        class="filter-btn p-4 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-800 hover:border-green-500 dark:hover:border-green-500 rounded-lg smooth-transition hover:shadow-md"
+        data-filter="activa"
+      >
+        <div class="text-center">
+          <p
+            id="stat-activa"
+            class="text-2xl font-bold text-green-600 dark:text-green-400"
+          >
+            0
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Activas
+          </p>
+        </div>
+      </button>
+
+      <button
+        class="filter-btn p-4 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-800 hover:border-yellow-500 dark:hover:border-yellow-500 rounded-lg smooth-transition hover:shadow-md"
+        data-filter="pausada"
+      >
+        <div class="text-center">
+          <p
+            id="stat-pausada"
+            class="text-2xl font-bold text-yellow-600 dark:text-yellow-400"
+          >
+            0
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Pausadas
+          </p>
+        </div>
+      </button>
+
+      <button
+        class="filter-btn p-4 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-800 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-lg smooth-transition hover:shadow-md"
+        data-filter="aprobada"
+      >
+        <div class="text-center">
+          <p
+            id="stat-aprobada"
+            class="text-2xl font-bold text-emerald-600 dark:text-emerald-400"
+          >
+            0
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Aprobadas
+          </p>
+        </div>
+      </button>
+
+      <button
+        class="filter-btn p-4 bg-white dark:bg-gray-950 border-2 border-gray-200 dark:border-gray-800 hover:border-red-500 dark:hover:border-red-500 rounded-lg smooth-transition hover:shadow-md"
+        data-filter="rechazada"
+      >
+        <div class="text-center">
+          <p
+            id="stat-rechazada"
+            class="text-2xl font-bold text-red-600 dark:text-red-400"
+          >
+            0
+          </p>
+          <p class="text-xs text-gray-600 dark:text-gray-400 mt-1 font-medium">
+            Rechazadas
+          </p>
+        </div>
+      </button>
+    </div>
+
+    <!-- Search and Filter Bar -->
+    <div class="flex flex-col lg:flex-row gap-4">
+      <div class="flex-1">
+        <div class="relative">
+          <svg
+            class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Buscar propuestas por nombre..."
+            class="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+          />
+        </div>
+      </div>
+
+      <select
+        id="filterDepartamento"
+        class="px-4 py-3 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      >
+        <option value="">Todas las áreas</option>
+        <option value="Marketing">Marketing</option>
+        <option value="Producción">Producción</option>
+        <option value="Publicidad">Publicidad</option>
+        <option value="SEO">SEO</option>
+        <option value="Marketing Digital">Marketing Digital</option>
+        <option value="Social Media">Social Media</option>
+      </select>
+
+      <select
+        id="filterPrioridad"
+        class="px-4 py-3 bg-white dark:bg-gray-950 border border-gray-300 dark:border-gray-800 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      >
+        <option value="">Todas las prioridades</option>
+        <option value="alta">Alta</option>
+        <option value="media">Media</option>
+        <option value="baja">Baja</option>
+      </select>
+
+      <button
+        id="btnLimpiarFiltros"
+        class="px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-900 smooth-transition font-medium"
+      >
+        Limpiar
+      </button>
+    </div>
+
+    <!-- Propuestas List -->
+    <div id="propuestasList" class="grid grid-cols-1 gap-4">
+      <!-- Las propuestas se cargarán aquí dinámicamente -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="hidden text-center py-12">
+      <div
+        class="w-20 h-20 bg-gray-100 dark:bg-gray-900 rounded-full flex items-center justify-center mx-auto mb-4"
+      >
+        <svg
+          class="w-10 h-10 text-gray-400"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+          ></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        No se encontraron propuestas
+      </h3>
+      <p class="text-gray-600 dark:text-gray-400 mb-4">
+        Intenta ajustar los filtros o crea una nueva propuesta
+      </p>
+    </div>
+  </div>
+
+  <!-- Modal Nueva Propuesta -->
+  <div
+    id="modalNuevaPropuesta"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
+  >
+    <div
+      class="bg-white dark:bg-gray-950 rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-800"
+    >
+      <div
+        class="p-6 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-950 z-10"
+      >
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+              Nueva Propuesta de Contenido
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              Crea una propuesta para validar el interés del mercado
+            </p>
+          </div>
+          <button
+            id="btnCerrarModal"
+            class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg smooth-transition"
+          >
+            <svg
+              class="w-6 h-6 text-gray-600 dark:text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <form id="formNuevaPropuesta" class="p-6 space-y-6">
+        <!-- Campo oculto para created_by -->
+        <input type="hidden" name="created_by" id="created_by" />
+
+        <!-- Información Básica -->
+        <div class="space-y-4">
+          <h3
+            class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"
+          >
+            <span
+              class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-bold"
+              >1</span
+            >
+            Información Básica
+          </h3>
+
+          <!-- Info del creador (readonly) -->
+          <div
+            class="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg"
+          >
+            <div class="flex items-center gap-3">
+              <div
+                class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center"
+              >
+                <span id="creator-initials" class="text-white font-bold text-sm"
+                  >IC</span
+                >
+              </div>
+              <div>
+                <p class="text-sm font-medium text-gray-900 dark:text-white">
+                  Creado por: <span
+                    id="creator-name"
+                    class="text-blue-600 dark:text-blue-400">Cargando...</span
+                  >
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400">
+                  Esta propuesta se asignará a tu usuario
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+            >
+              Título de la Propuesta *
+            </label>
+            <input
+              type="text"
+              name="title"
+              required
+              placeholder="Ej: Campaña Primavera 2026"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+              >
+                Área *
+              </label>
+              <select
+                name="area"
+                required
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Producción">Producción</option>
+                <option value="Publicidad">Publicidad</option>
+                <option value="SEO">SEO</option>
+                <option value="Marketing Digital">Marketing Digital</option>
+                <option value="Social Media">Social Media</option>
+              </select>
+            </div>
+            <div>
+              <label
+                class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+              >
+                Prioridad *
+              </label>
+              <select
+                name="priority"
+                required
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white"
+              >
+                <option value="">Seleccionar...</option>
+                <option value="alto">Alta</option>
+                <option value="medio">Media</option>
+                <option value="bajo">Baja</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label
+              class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
+            >
+              Descripción *
+            </label>
+            <textarea
+              name="description"
+              required
+              rows="4"
+              placeholder="Describe la propuesta, objetivos y público objetivo..."
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Público Objetivo -->
+        <div class="space-y-4">
+          <h3
+            class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"
+          >
+            <span
+              class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center text-sm font-bold"
+              >2</span
+            >
+            Público Objetivo *
+          </h3>
+
+          <div class="grid grid-cols-2 gap-3">
+            <label
+              class="flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 smooth-transition border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-500"
+            >
+              <input
+                type="radio"
+                name="target_audience"
+                value="principiantes"
+                class="w-4 h-4 text-blue-600"
+                required
+              />
+              <div class="flex-1">
+                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                  >Principiantes</span
+                >
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Sin experiencia previa
+                </p>
+              </div>
+            </label>
+            <label
+              class="flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 smooth-transition border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-500"
+            >
+              <input
+                type="radio"
+                name="target_audience"
+                value="intermedios"
+                class="w-4 h-4 text-blue-600"
+                required
+              />
+              <div class="flex-1">
+                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                  >Intermedios</span
+                >
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Con conocimientos básicos
+                </p>
+              </div>
+            </label>
+            <label
+              class="flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 smooth-transition border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-500"
+            >
+              <input
+                type="radio"
+                name="target_audience"
+                value="avanzados"
+                class="w-4 h-4 text-blue-600"
+                required
+              />
+              <div class="flex-1">
+                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                  >Avanzados</span
+                >
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  Con experiencia sólida
+                </p>
+              </div>
+            </label>
+            <label
+              class="flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 smooth-transition border-2 border-transparent hover:border-blue-500 dark:hover:border-blue-500"
+            >
+              <input
+                type="radio"
+                name="target_audience"
+                value="profesionales"
+                class="w-4 h-4 text-blue-600"
+                required
+              />
+              <div class="flex-1">
+                <span class="text-sm font-medium text-gray-900 dark:text-white"
+                  >Profesionales</span
+                >
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                  En la industria
+                </p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Info Box -->
+        <div
+          class="p-4 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg"
+        >
+          <div class="flex items-start gap-3">
+            <svg
+              class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+            <div>
+              <p
+                class="text-sm font-medium text-blue-900 dark:text-blue-300 mb-1"
+              >
+                📝 Estado inicial: Borrador
+              </p>
+              <p class="text-xs text-blue-700 dark:text-blue-400">
+                La propuesta se creará en estado "Borrador".
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div
+          class="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800"
+        >
+          <button
+            type="button"
+            id="btnCancelar"
+            class="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-900 smooth-transition"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            id="btnSubmitForm"
+            class="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-medium smooth-transition shadow-lg"
+          >
+            Crear Propuesta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    import {
+      fetchProposals,
+      createProposal,
+      deleteProposal,
+      type ProposalForUI,
+      type CreateProposalDTO,
+    } from "../../services/marketing";
+
+    // ============================================
+    // CONFIGURACIÓN DE ESTADOS
+    // ============================================
+    const estadoConfig = {
+      borrador: {
+        label: "Borrador",
+        bg: "bg-gray-100 dark:bg-gray-800",
+        text: "text-gray-700 dark:text-gray-400",
+        border: "border-gray-300 dark:border-gray-700",
+        icon: "📝",
+      },
+      activa: {
+        label: "Activa",
+        bg: "bg-green-50 dark:bg-green-950/30",
+        text: "text-green-700 dark:text-green-400",
+        border: "border-green-200 dark:border-green-900/50",
+        icon: "🟢",
+      },
+      pausada: {
+        label: "Pausada",
+        bg: "bg-yellow-50 dark:bg-yellow-950/30",
+        text: "text-yellow-700 dark:text-yellow-400",
+        border: "border-yellow-200 dark:border-yellow-900/50",
+        icon: "⏸️",
+      },
+      aprobada: {
+        label: "Aprobada",
+        bg: "bg-emerald-50 dark:bg-emerald-950/30",
+        text: "text-emerald-700 dark:text-emerald-400",
+        border: "border-emerald-200 dark:border-emerald-900/50",
+        icon: "✅",
+      },
+      rechazada: {
+        label: "Rechazada",
+        bg: "bg-red-50 dark:bg-red-950/30",
+        text: "text-red-700 dark:text-red-400",
+        border: "border-red-200 dark:border-red-900/50",
+        icon: "❌",
+      },
+    };
+
+    const prioridadColor = {
+      alta: "border-l-red-500",
+      media: "border-l-yellow-500",
+      baja: "border-l-green-500",
+    };
+
+    // Variable global para almacenar las propuestas
+    let propuestas: ProposalForUI[] = [];
+
+    // ============================================
+    // ACTUALIZAR ESTADÍSTICAS
+    // ============================================
+    function updateStats() {
+      const total = propuestas.length;
+      const contadores = propuestas.reduce((acc: Record<string, number>, p) => {
+        acc[p.estado] = (acc[p.estado] || 0) + 1;
+        return acc;
+      }, {});
+
+      const statTotal = document.getElementById("stat-todas");
+      const statBorrador = document.getElementById("stat-borrador");
+      const statActiva = document.getElementById("stat-activa");
+      const statPausada = document.getElementById("stat-pausada");
+      const statAprobada = document.getElementById("stat-aprobada");
+      const statRechazada = document.getElementById("stat-rechazada");
+
+      if (statTotal) statTotal.textContent = String(total);
+      if (statBorrador)
+        statBorrador.textContent = String(contadores.borrador || 0);
+      if (statActiva) statActiva.textContent = String(contadores.activa || 0);
+      if (statPausada)
+        statPausada.textContent = String(contadores.pausada || 0);
+      if (statAprobada)
+        statAprobada.textContent = String(contadores.aprobada || 0);
+      if (statRechazada)
+        statRechazada.textContent = String(contadores.rechazada || 0);
+    }
+
+    // ============================================
+    // RENDERIZAR PROPUESTAS
+    // ============================================
+    interface Filtros {
+      estado?: string;
+      busqueda?: string;
+      departamento?: string;
+      prioridad?: string;
+    }
+
+    function renderPropuestas(filtros: Filtros = {}) {
+      const container = document.getElementById("propuestasList");
+      const emptyState = document.getElementById("emptyState");
+      if (!container) return;
+
+      let filtered = propuestas;
+
+      // Filtro por estado
+      if (filtros.estado && filtros.estado !== "todas") {
+        filtered = filtered.filter((p) => p.estado === filtros.estado);
+      }
+
+      // Filtro por búsqueda
+      if (filtros.busqueda) {
+        filtered = filtered.filter((p) =>
+          p.tema.toLowerCase().includes(filtros.busqueda!.toLowerCase()),
+        );
+      }
+
+      // Filtro por departamento
+      if (filtros.departamento) {
+        filtered = filtered.filter(
+          (p) => p.departamento === filtros.departamento,
+        );
+      }
+
+      // Filtro por prioridad
+      if (filtros.prioridad) {
+        filtered = filtered.filter((p) => p.prioridad === filtros.prioridad);
+      }
+
+      if (filtered.length === 0) {
+        container.classList.add("hidden");
+        emptyState?.classList.remove("hidden");
+        return;
+      }
+
+      container.classList.remove("hidden");
+      emptyState?.classList.add("hidden");
+
+      container.innerHTML = filtered
+        .map((p) => {
+          // ✅ FIX: Manejo seguro de estado (con fallback a 'borrador')
+          const estado =
+            estadoConfig[p.estado as keyof typeof estadoConfig] ||
+            estadoConfig.borrador;
+
+          // ✅ FIX: Manejo seguro de prioridad (con fallback a 'baja')
+          const prioridadClass =
+            prioridadColor[p.prioridad as keyof typeof prioridadColor] ||
+            prioridadColor.baja;
+
+          return `
+  <a 
+    href="/marketing/propuestas/${p.id}"
+    class="block p-6 bg-white dark:bg-gray-950 border-l-4 ${prioridadClass} border-y border-r border-gray-200 dark:border-gray-800 rounded-lg hover:shadow-lg smooth-transition group cursor-pointer"
+  >
+    
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-4">
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-2">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 smooth-transition">
+            ${p.tema}
+          </h3>
+          <span class="px-2 py-0.5 bg-${p.prioridad === "alta" ? "red" : p.prioridad === "media" ? "yellow" : "green"}-100 dark:bg-${p.prioridad === "alta" ? "red" : p.prioridad === "media" ? "yellow" : "green"}-900/30 text-${p.prioridad === "alta" ? "red" : p.prioridad === "media" ? "yellow" : "green"}-700 dark:text-${p.prioridad === "alta" ? "red" : p.prioridad === "media" ? "yellow" : "green"}-400 rounded-full text-xs font-medium">
+            ${p.prioridad === "alta" ? "🔴" : p.prioridad === "media" ? "🟡" : "🟢"} ${p.prioridad.charAt(0).toUpperCase() + p.prioridad.slice(1)}
+          </span>
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+          ${p.descripcion}
+        </p>
+      </div>
+      <span class="px-3 py-1.5 ${estado.bg} ${estado.text} border ${estado.border} rounded-full text-xs font-medium whitespace-nowrap ml-4">
+        ${estado.icon} ${estado.label}
+      </span>
+    </div>
+
+    <!-- Público Tags -->
+    ${
+      p.publico.length > 0
+        ? `
+      <div class="flex flex-wrap gap-2 mb-4">
+        ${p.publico
+          .map(
+            (pub) => `
+          <span class="px-2 py-1 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 text-xs rounded-full">
+            👥 ${pub}
+          </span>
+        `,
+          )
+          .join("")}
+      </div>
+    `
+        : ""
+    }
+
+    <!-- Footer Info -->
+    <div class="flex flex-wrap items-center justify-between gap-4 text-sm text-gray-600 dark:text-gray-400 pt-3 border-t border-gray-200 dark:border-gray-800">
+      <div class="flex items-center gap-4">
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          ${p.departamento}
+        </span>
+        <span class="flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          ${new Date(p.fecha).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span 
+          onclick="event.preventDefault(); event.stopPropagation(); window.location.href='/marketing/propuestas/${p.id}'"
+          class="px-3 py-1.5 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg smooth-transition text-xs font-medium cursor-pointer"
+        >
+          Ver Detalles
+        </span>
+        <button 
+          onclick="event.preventDefault(); event.stopPropagation(); eliminarPropuesta(${p.id})"
+          class="px-3 py-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg smooth-transition text-xs font-medium"
+        >
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </a>
+`;
+        })
+        .join("");
+    }
+
+    // ============================================
+    // FUNCIONES GLOBALES (para onclick)
+    // ============================================
+
+    (window as any).eliminarPropuesta = async function (id: number) {
+      if (!confirm("¿Estás seguro de eliminar esta propuesta?")) return;
+
+      try {
+        await deleteProposal(id);
+        propuestas = propuestas.filter((p) => p.id !== id);
+        updateStats();
+        renderPropuestas();
+        alert("✅ Propuesta eliminada correctamente");
+      } catch (error) {
+        console.error("Error eliminando propuesta:", error);
+        alert("❌ Error al eliminar la propuesta");
+      }
+    };
+
+    // ============================================
+    // CARGAR DATOS Y EVENT LISTENERS
+    // ============================================
+    document.addEventListener("DOMContentLoaded", async () => {
+      const container = document.getElementById("propuestasList");
+      if (container) {
+        container.innerHTML = `
+          <div class="col-span-1 flex items-center justify-center py-12">
+            <div class="text-center">
+              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p class="text-gray-600 dark:text-gray-400">Cargando propuestas...</p>
+            </div>
+          </div>
+        `;
+      }
+
+      try {
+        propuestas = await fetchProposals();
+        updateStats();
+        renderPropuestas();
+      } catch (error) {
+        if (container) {
+          container.innerHTML = `
+            <div class="col-span-1 text-center py-12">
+              <div class="w-20 h-20 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-red-600 dark:text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Error al cargar propuestas
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-4">
+                ${error instanceof Error ? error.message : "No se pudieron cargar los datos"}
+              </p>
+              <button onclick="window.location.reload()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Reintentar
+              </button>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      let filtrosActuales: Filtros = { estado: "todas" };
+
+      // Filtros de estado
+      document.querySelectorAll(".filter-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".filter-btn").forEach((b) => {
+            b.classList.remove("border-blue-500", "dark:border-blue-500");
+            b.classList.add("border-gray-200", "dark:border-gray-800");
+          });
+          btn.classList.remove("border-gray-200", "dark:border-gray-800");
+          btn.classList.add("border-blue-500", "dark:border-blue-500");
+
+          filtrosActuales.estado = btn.getAttribute("data-filter") || "todas";
+          renderPropuestas(filtrosActuales);
+        });
+      });
+
+      // Búsqueda
+      const searchInput = document.getElementById("searchInput");
+      searchInput?.addEventListener("input", (e) => {
+        filtrosActuales.busqueda = (e.target as HTMLInputElement).value;
+        renderPropuestas(filtrosActuales);
+      });
+
+      // Filtro departamento
+      const filterDepartamento = document.getElementById("filterDepartamento");
+      filterDepartamento?.addEventListener("change", (e) => {
+        filtrosActuales.departamento = (e.target as HTMLSelectElement).value;
+        renderPropuestas(filtrosActuales);
+      });
+
+      // Filtro prioridad
+      const filterPrioridad = document.getElementById("filterPrioridad");
+      filterPrioridad?.addEventListener("change", (e) => {
+        filtrosActuales.prioridad = (e.target as HTMLSelectElement).value;
+        renderPropuestas(filtrosActuales);
+      });
+
+      // Limpiar filtros
+      const btnLimpiarFiltros = document.getElementById("btnLimpiarFiltros");
+      btnLimpiarFiltros?.addEventListener("click", () => {
+        filtrosActuales = { estado: "todas" };
+        if (searchInput) (searchInput as HTMLInputElement).value = "";
+        if (filterDepartamento)
+          (filterDepartamento as HTMLSelectElement).value = "";
+        if (filterPrioridad) (filterPrioridad as HTMLSelectElement).value = "";
+
+        document.querySelectorAll(".filter-btn").forEach((b) => {
+          b.classList.remove("border-blue-500", "dark:border-blue-500");
+          b.classList.add("border-gray-200", "dark:border-gray-800");
+        });
+        document
+          .querySelector('[data-filter="todas"]')
+          ?.classList.add("border-blue-500", "dark:border-blue-500");
+        document
+          .querySelector('[data-filter="todas"]')
+          ?.classList.remove("border-gray-200", "dark:border-gray-800");
+
+        renderPropuestas(filtrosActuales);
+      });
+
+      // Modal
+      const modal = document.getElementById("modalNuevaPropuesta");
+      const btnAbrir = document.getElementById("btnNuevaPropuesta");
+      const btnCerrar = document.getElementById("btnCerrarModal");
+      const btnCancelar = document.getElementById("btnCancelar");
+
+      btnAbrir?.addEventListener("click", () => {
+        // Cargar información del usuario
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const user = JSON.parse(userStr);
+
+          // Rellenar campos del creador
+          const createdByInput = document.getElementById(
+            "created_by",
+          ) as HTMLInputElement;
+          const creatorName = document.getElementById("creator-name");
+          const creatorInitials = document.getElementById("creator-initials");
+
+          if (createdByInput) createdByInput.value = String(user.id);
+          if (creatorName) creatorName.textContent = user.name || user.fullname;
+          if (creatorInitials) {
+            const initials = (user.name || user.fullname || "U")
+              .split(" ")
+              .map((n: string) => n[0])
+              .join("")
+              .substring(0, 2)
+              .toUpperCase();
+            creatorInitials.textContent = initials;
+          }
+        }
+
+        modal?.classList.remove("hidden");
+        modal?.classList.add("flex");
+      });
+
+      [btnCerrar, btnCancelar].forEach((btn) => {
+        btn?.addEventListener("click", () => {
+          modal?.classList.add("hidden");
+          modal?.classList.remove("flex");
+        });
+      });
+
+      modal?.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+      });
+
+      // Form submit
+      // Form submit - VERSIÓN SIMPLIFICADA USANDO EL SERVICIO
+      const form = document.getElementById(
+        "formNuevaPropuesta",
+      ) as HTMLFormElement;
+      form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        // Validar que se haya seleccionado un público objetivo
+        const targetAudience = formData.get("target_audience");
+        if (!targetAudience) {
+          alert("⚠️ Por favor selecciona un público objetivo");
+          return;
+        }
+
+        const btnSubmit = document.getElementById(
+          "btnSubmitForm",
+        ) as HTMLButtonElement;
+        const originalText = btnSubmit.textContent;
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Creando...";
+
+        try {
+          // ✅ Usar el servicio que ya maneja todo (config, mapping, etc)
+          const created = await createProposal({
+            title: formData.get("title") as string,
+            description: formData.get("description") as string,
+            area: formData.get("area") as string,
+            priority: formData.get("priority") as "alto" | "medio" | "bajo",
+            target_audience: targetAudience as string,
+          });
+
+          // El servicio ya devuelve ProposalForUI mapeado ✅
+          propuestas.unshift(created);
+          updateStats();
+          renderPropuestas(filtrosActuales);
+
+          modal?.classList.add("hidden");
+          modal?.classList.remove("flex");
+          form.reset();
+
+          alert("✅ ¡Propuesta creada con éxito!");
+        } catch (error) {
+          alert(
+            `❌ Error al crear la propuesta:\n\n${error instanceof Error ? error.message : "Error desconocido"}`,
+          );
+        } finally {
+          btnSubmit.disabled = false;
+          btnSubmit.textContent = originalText;
+        }
+      });
+    });
+  </script>
+</Layout>
