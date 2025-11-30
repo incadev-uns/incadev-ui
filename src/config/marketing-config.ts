@@ -9,10 +9,10 @@ export const config = {
   // Marketing backend auth and related services
   //authApiUrl: "http://127.0.0.1:8001/api", // Backend principal para autenticación
   // Metrics microservice. Used for batch metrics fetching.
-  metricsApiUrl: "http://127.0.0.1:8006/api",
+  //metricsApiUrl: "http://127.0.0.1:8006/api",
 
-  generationApiUrl: "http://127.0.0.1:8002/api",
-  socialApiUrl: "http://127.0.0.1:8005/api", // socialmediaapi
+  //generationApiUrl: "http://127.0.0.1:8002/api",
+  //socialApiUrl: "http://127.0.0.1:8005/api", // socialmediaapi
   environment: "development",
 
   endpoints: {
