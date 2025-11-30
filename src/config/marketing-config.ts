@@ -10,10 +10,13 @@ export const config = {
   //authApiUrl: "http://127.0.0.1:8001/api", // Backend principal para autenticación
   // Metrics microservice. Used for batch metrics fetching.
   //metricsApiUrl: "http://127.0.0.1:8006/api",
-
   //generationApiUrl: "http://127.0.0.1:8002/api",
   //socialApiUrl: "http://127.0.0.1:8005/api", // socialmediaapi
-  environment: "development",
+  environment: "production",
+  //generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/generative/public/api",
+  generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
+  socialApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/socialmedia/public/api",
+  metricsApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/metricsapi/public/api",
 
   endpoints: {
     // Authentication (usa authApiUrl)
