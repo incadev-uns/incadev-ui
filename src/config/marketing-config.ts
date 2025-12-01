@@ -14,7 +14,7 @@ export const config = {
   //socialApiUrl: "http://127.0.0.1:8005/api", // socialmediaapi
   environment: "production",
   //generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/generative/public/api",
-  generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
+  generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/generative/public/api",
   socialApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/socialmedia/public/api",
   metricsApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/metricsapi/public/api",
 
