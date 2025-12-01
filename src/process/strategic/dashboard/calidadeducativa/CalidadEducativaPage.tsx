@@ -307,7 +307,7 @@ export const CalidadEducativaPage = () => {
         {/* KPIs */}
         <section className="space-y-6">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Tablero de Control (KPIs)
+            Tablero de Control
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {/* Promedio */}

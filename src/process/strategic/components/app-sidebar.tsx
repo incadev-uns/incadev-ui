@@ -102,10 +102,7 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href={dashboardRoute}>
-                      <IconHome className="h-4 w-4" />
-                      <span>Dashboard</span>
-                    </a>
+                    
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
