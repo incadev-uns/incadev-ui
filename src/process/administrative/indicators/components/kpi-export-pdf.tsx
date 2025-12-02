@@ -1,6 +1,3 @@
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-
 interface KPI {
   id: number;
   name: string;
@@ -52,9 +49,14 @@ const getStatusColor = (status: string) => {
 
 // ========================================
 // FUNCIÓN PRINCIPAL DE EXPORTACIÓN
+// ✅ AHORA ES ASYNC
 // ========================================
-export const generateKpisPDF = (data: ExportData) => {
+export const generateKpisPDF = async (data: ExportData) => {
   try {
+    // ✅ IMPORTACIÓN DINÁMICA
+    const jsPDF = (await import('jspdf')).default;
+    await import('jspdf-autotable');
+    
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();

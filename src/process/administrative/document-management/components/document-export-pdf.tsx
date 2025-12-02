@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { IconFileTypePdf, IconFileTypeDocx, IconFileTypeXls, IconFileText, IconDownload } from '@tabler/icons-react';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+//import jsPDF from 'jspdf';
+//import autoTable from 'jspdf-autotable';
 import { toast } from '@/utils/toast';
 
 interface Document {
@@ -47,8 +47,11 @@ const generateDocumentId = (id: number): string => {
 // ========================================
 // FUNCIÓN PRINCIPAL DE EXPORTACIÓN
 // ========================================
-export const generateDocumentsPDF = (data: ExportData) => {
+export const generateDocumentsPDF = async (data: ExportData) => {
   try {
+    const jsPDF = (await import('jspdf')).default;
+    const autoTable = (await import('jspdf-autotable')).default;
+
     const doc = new jsPDF('l', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
@@ -189,7 +192,7 @@ export const generateDocumentsPDF = (data: ExportData) => {
     yPosition += 10;
 
     const tableData = data.documents.map(doc => [
-      generateDocumentId(doc.id),
+      generateDocumentId(data),
       doc.name.length > 50 ? doc.name.substring(0, 50) + '...' : doc.name,
       doc.type || 'N/A',
       formatDate(doc.created_at),
