@@ -1,3 +1,4 @@
+//
 import React, { useState, useEffect } from 'react';
 import AdministrativeLayout from '@/process/administrative/AdministrativeLayout';
 import { config } from "@/config/administrative-config";
