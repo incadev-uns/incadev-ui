@@ -47,6 +47,7 @@ const generateDocumentId = (id: number): string => {
 // ========================================
 export const generateDocumentsPDF = async (data: ExportData) => {
   try {
+    // ✅ IMPORTACIÓN DINÁMICA
     const jsPDF = (await import('jspdf')).default;
     const autoTable = (await import('jspdf-autotable')).default;
 
@@ -190,7 +191,7 @@ export const generateDocumentsPDF = async (data: ExportData) => {
     yPosition += 10;
 
     const tableData = data.documents.map(doc => [
-      generateDocumentId(data),
+      generateDocumentId(doc.id),
       doc.name.length > 50 ? doc.name.substring(0, 50) + '...' : doc.name,
       doc.type || 'N/A',
       formatDate(doc.created_at),
@@ -265,3 +266,100 @@ export const generateDocumentsPDF = async (data: ExportData) => {
     throw error;
   }
 };
+
+// ========================================
+// ✅ COMPONENTE REACT (NUEVO - DEFAULT EXPORT)
+// ========================================
+const DocumentExportPDF = () => {
+  const [data, setData] = useState<ExportData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const dataParam = params.get('data');
+    
+    if (dataParam) {
+      try {
+        const parsedData = JSON.parse(decodeURIComponent(dataParam));
+        setData(parsedData);
+      } catch (error) {
+        console.error('Error parsing data:', error);
+        toast.error('Error al cargar los datos');
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  const handleGeneratePDF = async () => {
+    if (!data) return;
+    
+    try {
+      await generateDocumentsPDF(data);
+      toast.success('PDF generado correctamente');
+      setTimeout(() => window.close(), 500);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error al generar el PDF');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando datos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <p className="text-red-600 text-lg">No se encontraron datos para exportar</p>
+          <button 
+            onClick={() => window.close()}
+            className="mt-4 px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+          >
+            Cerrar
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg text-center max-w-md">
+        <IconFileTypePdf className="w-20 h-20 text-red-600 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-gray-800 mb-2">
+          Reporte de Documentos
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Se generará un PDF con {data.documents.length} documento(s)
+        </p>
+        
+        <div className="space-y-3">
+          <button
+            onClick={handleGeneratePDF}
+            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <IconDownload className="w-5 h-5" />
+            Generar PDF
+          </button>
+          
+          <button
+            onClick={() => window.close()}
+            className="w-full bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors"
+          >
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default DocumentExportPDF;
