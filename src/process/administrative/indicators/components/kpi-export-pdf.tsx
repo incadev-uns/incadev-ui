@@ -1,3 +1,4 @@
+//
 interface KPI {
   id: number;
   name: string;

@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { IconFileTypePdf, IconFileTypeDocx, IconFileTypeXls, IconFileText, IconDownload } from '@tabler/icons-react';
-//import jsPDF from 'jspdf';
-//import autoTable from 'jspdf-autotable';
 import { toast } from '@/utils/toast';
 
 interface Document {
