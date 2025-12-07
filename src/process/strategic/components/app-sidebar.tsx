@@ -102,10 +102,7 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href={dashboardRoute}>
-                      <IconHome className="h-4 w-4" />
-                      <span>Dashboard</span>
-                    </a>
+                    
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
@@ -129,6 +126,14 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                     <a href={routes.admin.management.agreements}>
                       <IconFileText className="h-4 w-4" />
                       <span>Convenios</span>
+                    </a>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <a href={routes.admin.management.documents}>
+                      <IconFileText className="h-4 w-4" />
+                      <span>Documentos</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

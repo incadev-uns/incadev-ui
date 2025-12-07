@@ -5,9 +5,30 @@ import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 function Select({
+  value,
+  defaultValue,
+  onValueChange,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root>) {
-  return <SelectPrimitive.Root data-slot="select" {...props} />
+  // Radix Select does not accept empty string values, so normalize them to a sentinel.
+  const normalizeValue = (val?: string) => (val === "" ? "__empty__" : val)
+  const denormalizeValue = (val: string) => (val === "__empty__" ? "" : val)
+
+  return (
+    <SelectPrimitive.Root
+      data-slot="select"
+      value={value !== undefined ? normalizeValue(value) : undefined}
+      defaultValue={
+        defaultValue !== undefined ? normalizeValue(defaultValue) : undefined
+      }
+      onValueChange={
+        onValueChange
+          ? (val) => onValueChange(denormalizeValue(val))
+          : undefined
+      }
+      {...props}
+    />
+  )
 }
 
 function SelectGroup({
@@ -101,8 +122,11 @@ function SelectLabel({
 function SelectItem({
   className,
   children,
+  value,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Item>) {
+  const itemValue = value === "" ? "__empty__" : value
+
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
@@ -110,6 +134,7 @@ function SelectItem({
         "focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
         className
       )}
+      value={itemValue}
       {...props}
     >
       <span className="absolute right-2 flex size-3.5 items-center justify-center">

@@ -8,7 +8,7 @@
 
 export const config = {
   apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/administrativo/public",
-  // apiUrl:  "http://127.0.0.1:8000",
+  //apiUrl:  "http://backend-incadev.test",
   environment:  "development",
   endpoints: {
     //dashboard
