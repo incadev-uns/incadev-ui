@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import PropuestaMetricasTable from './metricas/PropuestaMetricasTable';
 import PublicacionesTable from './metricas/PublicacionesTable';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from '@/components/ui/dialog';
 import GraficoComparativa from './metricas/GraficoComparativa';
 import GraficoTendencia from './metricas/GraficoTendencia';
 
@@ -36,15 +37,18 @@ const colorMap: { [key: string]: string } = {
   yellow: 'bg-yellow-500',
 };
 
-type TabType = 'propuestas' | 'publicaciones' | 'comparativa' | 'chatbot';
+type TabType = 'proposals' | 'publicaciones' | 'comparativa' | 'chatbot';
 
 export default function MetricasManager() {
   const [periodo, setPeriodo] = useState('7dias');
   const [filtroEstado, setFiltroEstado] = useState('todas');
   const [filtroCanal, setFiltroCanal] = useState('todos');
-  const [activeTab, setActiveTab] = useState<TabType>('propuestas');
+  const [activeTab, setActiveTab] = useState<TabType>('proposals');
   const [kpis, setKpis] = useState<KPI[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalContent, setModalContent] = useState('');
 
   // ============================================
   // CARGAR MÉTRICAS GLOBALES
@@ -153,6 +157,68 @@ export default function MetricasManager() {
     loadGlobalMetrics();
   }, [periodo]); // Recargar cuando cambie el periodo
 
+  // ============================================
+  // FETCH METRICS (Manual)
+  // ============================================
+  async function handleFetchMetrics() {
+    try {
+      setLoading(true);
+      console.log('[MetricasManager] Starting batch fetch of metrics...');
+
+      const { batchUpdateMetrics } = await import('../../services/marketing');
+
+      const result = await batchUpdateMetrics([]);
+      console.log('[MetricasManager] Batch fetch result:', result);
+
+      // After updating, reload global metrics to refresh KPIs
+      const { fetchGlobalMetrics } = await import('../../services/marketing');
+      const metrics = await fetchGlobalMetrics();
+      // trigger KPIs reload via same logic
+      // Minor optimization: reuse existing formatting logic
+      const formatNumber = (num: number): string => {
+        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+        if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
+        return num.toString();
+      };
+
+      const newKpis = [
+        { label: 'Campañas Totales', value: metrics.totalCampaigns, icon: Target, color: 'blue' },
+        { label: 'Campañas Activas', value: metrics.activeCampaigns, icon: Target, color: 'green' },
+        { label: 'Publicaciones Totales', value: metrics.totalPosts, icon: MessageSquare, color: 'purple' },
+        { label: 'Publicadas', value: metrics.publishedPosts, icon: TrendingUp, color: 'emerald' },
+        { label: 'Alcance Total', value: formatNumber(metrics.totalReach), icon: Eye, color: 'blue' },
+        { label: 'Total Likes', value: formatNumber(metrics.totalLikes), icon: Heart, color: 'pink' },
+        { label: 'Total Comentarios', value: formatNumber(metrics.totalComments), icon: MessageSquare, color: 'cyan' },
+        { label: 'Total Compartidos', value: formatNumber(metrics.totalShares), icon: Share2, color: 'green' },
+        { label: 'Total Guardados', value: formatNumber(metrics.totalSaves), icon: Bookmark, color: 'yellow' },
+        { label: 'Engagement Total', value: formatNumber(metrics.totalEngagement), icon: TrendingUp, color: 'orange' },
+      ];
+
+      setKpis(newKpis);
+
+      const processedCount = result.posts_processed ?? result.items_processed ?? 'unknown';
+      // Show result in modal instead of alert
+      setModalTitle('Batch update completed');
+      setModalContent(`Items processed: ${processedCount}`);
+      setModalOpen(true);
+
+      // Notify other components to refresh their data (tables that loaded on mount)
+      try {
+        window.dispatchEvent(new CustomEvent('metrics:updated', { detail: { processed: processedCount } }));
+      } catch (e) {
+        // ignore in non-browser environments
+      }
+
+    } catch (error) {
+      console.error('[MetricasManager] Error in batch fetch:', error);
+      setModalTitle('Error updating metrics');
+      setModalContent(String(error));
+      setModalOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -236,11 +302,14 @@ export default function MetricasManager() {
 
       {/* Navigation Buttons */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-800 pb-2 overflow-x-auto">
+        <Button variant="ghost" className="ml-auto" onClick={handleFetchMetrics}>
+          Fetch metrics
+        </Button>
         <Button
-          variant={activeTab === 'propuestas' ? 'default' : 'ghost'}
-          onClick={() => setActiveTab('propuestas')}
+          variant={activeTab === 'proposals' ? 'default' : 'ghost'}
+          onClick={() => setActiveTab('proposals')}
         >
-          Propuestas
+          Proposals
         </Button>
         <Button
           variant={activeTab === 'publicaciones' ? 'default' : 'ghost'}
@@ -263,7 +332,7 @@ export default function MetricasManager() {
       </div>
 
       {/* Tab 1: Propuestas con métricas */}
-      {activeTab === 'propuestas' && (
+      {activeTab === 'proposals' && (
         <div className="space-y-6">
           <div className="flex gap-3">
             <Select value={filtroEstado} onValueChange={setFiltroEstado}>
@@ -292,7 +361,7 @@ export default function MetricasManager() {
             </Select>
           </div>
 
-          <PropuestaMetricasTable />
+          <PropuestaMetricasTable filtroEstado={filtroEstado} filtroCanal={filtroCanal} />
         </div>
       )}
 
@@ -302,6 +371,21 @@ export default function MetricasManager() {
           <PublicacionesTable />
         </div>
       )}
+
+      {/* Generic modal for notices (replaces alert()) */}
+      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+        <DialogContent>
+          <DialogTitle>{modalTitle}</DialogTitle>
+          <DialogDescription>
+            <div className="mt-2">
+              <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300">{modalContent}</pre>
+            </div>
+          </DialogDescription>
+          <DialogFooter>
+            <Button onClick={() => setModalOpen(false)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Tab 3: Comparativa */}
       {activeTab === 'comparativa' && (

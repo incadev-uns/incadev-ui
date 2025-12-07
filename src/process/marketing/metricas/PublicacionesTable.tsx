@@ -120,6 +120,17 @@ export default function PublicacionesTable() {
     }
 
     loadPublicaciones();
+
+    // Listen for global metrics updated event to refresh the posts list
+    function onMetricsUpdated() {
+      loadPublicaciones();
+    }
+
+    window.addEventListener('metrics:updated', onMetricsUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener('metrics:updated', onMetricsUpdated as EventListener);
+    };
   }, []);
 
   const publicacionesFiltradas = publicaciones.filter((pub) => {

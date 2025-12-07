@@ -99,7 +99,8 @@ export {
     updatePost,
     deletePost,
     publishPost,
-    fetchPostMetrics
+    fetchPostMetrics,
+    batchUpdateMetrics
 } from './postService';
 
 // Course Detail (nuevas funciones para detalle de curso)

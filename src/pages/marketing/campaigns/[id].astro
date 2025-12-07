@@ -3,24 +3,19 @@ import Layout from "../../../layouts/MarketingLayout.astro";
 import { config } from "../../../config/marketing-config";
 
 export async function getStaticPaths() {
-    try {
-        const url = `${config.apiUrl}${config.endpoints.campaigns.list}`;
-        const response = await fetch(url);
-        if (!response.ok)
-            throw new Error(
-                `Failed to fetch campaigns: ${response.statusText}`,
-            );
-        const campaigns = await response.json();
-        return campaigns.map((campaign: any) => ({
-            params: { id: campaign.id.toString() },
-            props: { campaignId: campaign.id, campaignName: campaign.name },
-        }));
-    } catch (error) {
-        console.error("[Build] Error in getStaticPaths:", error);
-        return [];
-    }
-}
+    // Lista de IDs que quieres generar como páginas estáticas
+    const staticIds = [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    ];
 
+    return staticIds.map((id) => ({
+        params: { id: id.toString() },
+        props: {
+            campaignId: id,
+            campaignName: `Campaña ${id}`, // Puedes ajustarlo si necesitas otro texto
+        },
+    }));
+}
 const { campaignId, campaignName } = Astro.props;
 ---
 
@@ -328,6 +323,7 @@ const { campaignId, campaignName } = Astro.props;
                     <input type="hidden" id="postId" />
                     <input type="hidden" id="postCampaignId" />
                     <input type="hidden" id="postImageUrl" />
+                    <input type="hidden" id="postImageId" />
 
                     <!-- STEP 1: Configuración -->
                     <div id="step1Content" class="p-6 space-y-6">
@@ -657,11 +653,31 @@ const { campaignId, campaignName } = Astro.props;
                                             class="block text-sm font-semibold text-gray-900 dark:text-white mb-2"
                                             >Fecha</label
                                         >
+                                        <!-- Native control (preferred) -->
                                         <input
                                             type="datetime-local"
+                                            step="60"
                                             id="postScheduledAt"
                                             class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl"
                                         />
+
+                                        <!-- Fallback for browsers that don't support datetime-local -->
+                                        <div
+                                            id="postScheduledFallback"
+                                            class="hidden mt-2 grid grid-cols-2 gap-2"
+                                        >
+                                            <input
+                                                type="date"
+                                                id="postScheduledDate"
+                                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl"
+                                            />
+                                            <input
+                                                type="time"
+                                                id="postScheduledTime"
+                                                step="60"
+                                                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -898,6 +914,39 @@ const { campaignId, campaignName } = Astro.props;
             <div id="metricsContent" class="p-6"></div>
         </div>
     </div>
+
+    <!-- Modal Confirmar Publicación -->
+    <div
+        id="modalPublishConfirm"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 p-4"
+    >
+        <div
+            class="bg-white dark:bg-gray-950 rounded-xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-800 p-6"
+        >
+            <div class="flex items-start justify-between mb-4">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                    🚀 Publicar publicación
+                </h2>
+                <button
+                    id="btnCancelPublish"
+                    class="p-2 hover:bg-gray-100 dark:hover:bg-gray-900 rounded-lg"
+                    >✖</button
+                >
+            </div>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                ¿Deseas publicar esta publicación ahora? Esta acción hará que la
+                publicación sea visible públicamente.
+            </p>
+
+            <div class="flex justify-end gap-2">
+                <button
+                    id="btnConfirmPublish"
+                    class="px-4 py-2 rounded-lg bg-green-600 text-white"
+                    >Publicar</button
+                >
+            </div>
+        </div>
+    </div>
     <script>
         import {
             fetchCampaignById,
@@ -922,10 +971,23 @@ const { campaignId, campaignName } = Astro.props;
         // ============================================
         // VARIABLES GLOBALES
         // ============================================
-        const mainDiv = document.querySelector(
-            "[data-campaign-id]",
-        ) as HTMLElement;
-        const campaignId = parseInt(mainDiv?.dataset.campaignId || "0", 10);
+        let mainDiv: HTMLElement | null = null;
+        let campaignId = 0;
+
+        function getCampaignIdFromUrl(): number {
+            try {
+                const path = decodeURIComponent(window.location.pathname || "");
+                const parts = path.split("/").filter(Boolean);
+                // Look for the last numeric segment, e.g. /marketing/campañas/3
+                for (let i = parts.length - 1; i >= 0; i--) {
+                    const match = parts[i].match(/(\d+)/);
+                    if (match) return parseInt(match[1], 10);
+                }
+            } catch (e) {
+                // ignore
+            }
+            return 0;
+        }
 
         let campaignData: CampaignForUI | null = null;
         let posts: PostForUI[] = [];
@@ -1009,10 +1071,92 @@ const { campaignId, campaignName } = Astro.props;
             }, 3000);
         }
 
+        // Generic confirm modal helper for this page
+        function showConfirmModal(message: string) {
+            return new Promise((resolve) => {
+                const existing = document.getElementById("confirmModal");
+                if (!existing) {
+                    // Create a simple confirm modal DOM
+                    const modal = document.createElement("div");
+                    modal.id = "confirmModal";
+                    modal.className =
+                        "fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4";
+                    modal.innerHTML = `
+                                            <div class="bg-white dark:bg-gray-950 rounded-xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-800">
+                                                <p id="confirmModalMessage" class="text-gray-900 dark:text-white font-medium text-lg"></p>
+                                                <div class="mt-4 flex justify-end gap-2">
+                                                    <button id="confirmModalNo" class="px-4 py-2 bg-gray-200 dark:bg-gray-800 rounded-lg">Cancelar</button>
+                                                    <button id="confirmModalYes" class="px-4 py-2 bg-red-600 text-white rounded-lg">Eliminar</button>
+                                                </div>
+                                            </div>
+                                        `;
+                    document.body.appendChild(modal);
+                }
+
+                const modal = document.getElementById("confirmModal");
+                const msgEl = document.getElementById("confirmModalMessage");
+                const yesBtn = document.getElementById("confirmModalYes");
+                const noBtn = document.getElementById("confirmModalNo");
+                if (!modal || !msgEl || !yesBtn || !noBtn)
+                    return resolve(false);
+
+                msgEl.textContent = message;
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+
+                function cleanup() {
+                    if (!modal || !yesBtn || !noBtn) return;
+                    modal.classList.add("hidden");
+                    modal.classList.remove("flex");
+                    yesBtn.removeEventListener("click", onYes);
+                    noBtn.removeEventListener("click", onNo);
+                }
+
+                function onYes() {
+                    cleanup();
+                    resolve(true);
+                }
+                function onNo() {
+                    cleanup();
+                    resolve(false);
+                }
+
+                yesBtn.addEventListener("click", onYes);
+                noBtn.addEventListener("click", onNo);
+            });
+        }
+
         function showLoading() {
             const overlay = document.getElementById("aiLoadingOverlay");
             overlay?.classList.remove("hidden");
             overlay?.classList.add("flex");
+        }
+
+        // Sanitize strings by replacing lone surrogate halves with the replacement character
+        function sanitizeString(input: string) {
+            if (typeof input !== "string" || input.length === 0) return input;
+            let out = "";
+            for (let i = 0; i < input.length; i++) {
+                const code = input.charCodeAt(i);
+                if (code >= 0xd800 && code <= 0xdbff) {
+                    // High surrogate
+                    const next = input.charCodeAt(i + 1);
+                    if (next >= 0xdc00 && next <= 0xdfff) {
+                        // valid pair, keep both
+                        out += input[i] + input[i + 1];
+                        i++; // skip low surrogate
+                    } else {
+                        // lone high surrogate - replace
+                        out += "\uFFFD";
+                    }
+                } else if (code >= 0xdc00 && code <= 0xdfff) {
+                    // lone low surrogate - replace
+                    out += "\uFFFD";
+                } else {
+                    out += input[i];
+                }
+            }
+            return out;
         }
 
         function hideLoading() {
@@ -1115,15 +1259,26 @@ const { campaignId, campaignName } = Astro.props;
 
             if (post.programadoPara) {
                 const fecha = new Date(post.programadoPara);
-                (
-                    document.getElementById(
-                        "postScheduledAt",
-                    ) as HTMLInputElement
-                ).value = new Date(
+                const dtLocal = new Date(
                     fecha.getTime() - fecha.getTimezoneOffset() * 60000,
                 )
                     .toISOString()
                     .slice(0, 16);
+                const dtDate = dtLocal.split("T")[0];
+                const dtTime = dtLocal.split("T")[1];
+                (
+                    document.getElementById(
+                        "postScheduledAt",
+                    ) as HTMLInputElement
+                ).value = dtLocal;
+                const dateInput = document.getElementById(
+                    "postScheduledDate",
+                ) as HTMLInputElement;
+                const timeInput = document.getElementById(
+                    "postScheduledTime",
+                ) as HTMLInputElement;
+                if (dateInput) dateInput.value = dtDate;
+                if (timeInput) timeInput.value = dtTime;
             }
 
             updatePreview();
@@ -1135,6 +1290,18 @@ const { campaignId, campaignName } = Astro.props;
             selectedPlatform = null;
             selectedContentType = null;
             (document.getElementById("postId") as HTMLInputElement).value = "";
+            // Clear both native and fallback scheduled inputs
+            (
+                document.getElementById("postScheduledAt") as HTMLInputElement
+            ).value = "";
+            const dateInput = document.getElementById(
+                "postScheduledDate",
+            ) as HTMLInputElement;
+            const timeInput = document.getElementById(
+                "postScheduledTime",
+            ) as HTMLInputElement;
+            if (dateInput) dateInput.value = "";
+            if (timeInput) timeInput.value = "";
         }
 
         function updatePreview() {
@@ -1258,7 +1425,7 @@ const { campaignId, campaignName } = Astro.props;
                 renderPosts();
             } catch (error) {
                 console.error("Error loading:", error);
-                alert("Error al cargar la campaña");
+                showToast("Error al cargar la campaña", "error");
                 window.location.href = "/marketing/campaigns";
             }
         }
@@ -1370,6 +1537,7 @@ const { campaignId, campaignName } = Astro.props;
                             </div>
                         </div>
                         <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-2">${p.titulo}</h3>
+                        ${p.metaPostId ? `<p class="text-xs text-gray-500 dark:text-gray-400 mb-2">ID remoto: <code class="bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded">${p.metaPostId}</code> <button onclick="copyRemoteId('${p.metaPostId}')" class="ml-2 text-xs text-blue-600 hover:underline">Copiar</button></p>` : ""}
                         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">${p.contenido}</p>
                         ${p.estado === "scheduled" && fechaProgramada ? `<p class="text-xs text-yellow-600 mb-4">📅 ${fechaProgramada}</p>` : ""}
                         <div class="flex gap-2 pt-3 border-t border-gray-200 dark:border-gray-800">
@@ -1393,7 +1561,8 @@ const { campaignId, campaignName } = Astro.props;
         };
 
         (window as any).eliminarPost = async (postId: number) => {
-            if (!confirm("¿Eliminar esta publicación?")) return;
+            const ok = await showConfirmModal("¿Eliminar esta publicación?");
+            if (!ok) return;
             try {
                 await deletePost(postId);
                 posts = posts.filter((p) => p.id !== postId);
@@ -1405,8 +1574,35 @@ const { campaignId, campaignName } = Astro.props;
             }
         };
 
-        (window as any).publicarPost = async (postId: number) => {
-            if (!confirm("¿Publicar ahora?")) return;
+        // Publish modal flow
+        let postPendingPublish: number | null = null;
+
+        function openPublishModal(postId: number) {
+            postPendingPublish = postId;
+            const modal = document.getElementById("modalPublishConfirm");
+            modal?.classList.remove("hidden");
+            modal?.classList.add("flex");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closePublishModal() {
+            postPendingPublish = null;
+            const modal = document.getElementById("modalPublishConfirm");
+            modal?.classList.add("hidden");
+            modal?.classList.remove("flex");
+            document.body.style.overflow = "";
+        }
+
+        async function confirmPublish() {
+            if (!postPendingPublish) return;
+            const postId = postPendingPublish;
+            const confirmBtn = document.getElementById(
+                "btnConfirmPublish",
+            ) as HTMLButtonElement;
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = "⏳ Publicando...";
+            }
             try {
                 const updated = await publishPost(postId);
                 const idx = posts.findIndex((p) => p.id === postId);
@@ -1414,10 +1610,120 @@ const { campaignId, campaignName } = Astro.props;
                 updateStats();
                 renderPosts(filtrosActuales);
                 showToast("¡Publicado!", "success");
-            } catch (error) {
-                showToast("Error al publicar", "error");
+            } catch (error: any) {
+                console.error(
+                    "[confirmPublish] Error:",
+                    error,
+                    "body:",
+                    error?.body,
+                );
+                // Prefer the backend-provided body.error or body.message for clarity
+                let message = error?.message || "Error al publicar";
+                if (error?.body) {
+                    if (typeof error.body === "string") {
+                        message = error.body;
+                    } else if (error.body.error) {
+                        message = error.body.error;
+                    } else if (error.body.message) {
+                        message = error.body.message;
+                    } else if (error.body.details) {
+                        message = error.body.details;
+                    } else {
+                        try {
+                            message = JSON.stringify(error.body);
+                        } catch (e) {
+                            // ignore
+                        }
+                    }
+                }
+                // Show more specific guidance for unauthenticated upstream responses
+                if (
+                    error?.status === 502 &&
+                    error?.body?.details &&
+                    typeof error.body.details === "string" &&
+                    error.body.details.toLowerCase().includes("unauthenticated")
+                ) {
+                    showToast(
+                        "Error de autenticación con Social Media API. Verifica token o configura services.social_api.token en el backend.",
+                        "error",
+                    );
+                } else {
+                    showToast(message, "error");
+                }
+                // If duplicate meta_post_id was detected (409), refresh posts and show more context
+                if (
+                    error?.status === 409 ||
+                    (message && message.includes("meta_post_id")) ||
+                    (error?.status === 500 &&
+                        message &&
+                        message.toLowerCase().includes("duplicate"))
+                ) {
+                    try {
+                        // Client-side validation to prevent server-side validation errors
+                        if (!selectedPlatform) {
+                            showToast("Selecciona una plataforma", "warning");
+                            return;
+                        }
+                        if (!selectedContentType) {
+                            showToast(
+                                "Selecciona el tipo de contenido",
+                                "warning",
+                            );
+                            return;
+                        }
+                        const titleField = (
+                            document.getElementById(
+                                "postTitle",
+                            ) as HTMLInputElement
+                        ).value.trim();
+                        const contentField = (
+                            document.getElementById(
+                                "postContent",
+                            ) as HTMLTextAreaElement
+                        ).value.trim();
+                        if (!titleField) {
+                            showToast("El título es requerido", "warning");
+                            return;
+                        }
+                        if (!contentField) {
+                            showToast("El contenido es requerido", "warning");
+                            return;
+                        }
+                        // Reload posts for the campaign so UI reflects actual remote state
+                        posts = await fetchCampaignPosts(campaignId);
+                        updateStats();
+                        renderPosts(filtrosActuales);
+                        if (
+                            error?.status === 409 &&
+                            error.body?.existing_post_id
+                        ) {
+                            showToast(
+                                "La publicación ya existe (post #" +
+                                    error.body.existing_post_id +
+                                    "). Se actualizó la lista.",
+                                "warning",
+                            );
+                        } else {
+                            showToast(
+                                "La publicación ya parece existir (duplicada). Se actualizó la lista.",
+                                "warning",
+                            );
+                        }
+                    } catch (e) {
+                        // ignore secondary errors
+                    }
+                }
+            } finally {
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = "Publicar";
+                }
+                closePublishModal();
             }
-        };
+        }
+
+        (window as any).publicarPost = (postId: number) =>
+            openPublishModal(postId);
 
         (window as any).verMetricas = async (postId: number) => {
             try {
@@ -1454,11 +1760,65 @@ const { campaignId, campaignName } = Astro.props;
             }
         };
 
+        (window as any).copyRemoteId = async (id: string) => {
+            try {
+                await navigator.clipboard.writeText(id);
+                showToast("ID copiado al portapapeles", "success");
+            } catch (e) {
+                showToast("No se pudo copiar", "error");
+            }
+        };
+
         // ============================================
         // EVENT LISTENERS
         // ============================================
         document.addEventListener("DOMContentLoaded", async () => {
+            // Find main container and campaign id now that the DOM is ready
+            mainDiv = document.querySelector(
+                "[data-campaign-id]",
+            ) as HTMLElement | null;
+            const datasetId = mainDiv?.dataset?.campaignId;
+            const pathId = getCampaignIdFromUrl();
+            campaignId = parseInt(datasetId || String(pathId) || "0", 10);
+
+            console.log(
+                "[page] campaignId resolved:",
+                campaignId,
+                "dataset:",
+                datasetId,
+                "pathId:",
+                pathId,
+            );
+            if (!campaignId || isNaN(campaignId)) {
+                console.error(
+                    "[page] Missing or invalid campaignId in DOM dataset",
+                );
+                showToast("Error: id de campaña inválido", "error");
+                return;
+            }
+
             await loadCampaignData();
+            // datetime-local support detection (fallback to date + time if not supported)
+            const datetimeInput = document.createElement("input");
+            datetimeInput.setAttribute("type", "datetime-local");
+            const supportsDatetimeLocal =
+                datetimeInput.type === "datetime-local";
+            if (!supportsDatetimeLocal) {
+                // Hide native control and show date+time fallback
+                document
+                    .getElementById("postScheduledAt")
+                    ?.classList.add("hidden");
+                document
+                    .getElementById("postScheduledFallback")
+                    ?.classList.remove("hidden");
+            } else {
+                document
+                    .getElementById("postScheduledAt")
+                    ?.classList.remove("hidden");
+                document
+                    .getElementById("postScheduledFallback")
+                    ?.classList.add("hidden");
+            }
 
             // Platform selection
             document
@@ -1558,12 +1918,17 @@ const { campaignId, campaignName } = Astro.props;
                                     document.getElementById(
                                         "postImageUrl",
                                     ) as HTMLInputElement
-                                ).value = result.imageUrl || "";
+                                ).value =
+                                    `${config.generationApiUrl}/api/generation/image/${result.imageId}` ||
+                                    result.imageUrl ||
+                                    "";
+                                // Ensure we do not store the remote generator URL as image_path.
+                                // image_path is expected to be a local storage path; leave blank so backend downloads the image_url.
                                 (
                                     document.getElementById(
                                         "postImagePath",
                                     ) as HTMLInputElement
-                                ).value = result.imageUrl || "";
+                                ).value = "";
 
                                 // Extraer primera línea para el título
                                 const firstLine = result.text
@@ -1582,10 +1947,28 @@ const { campaignId, campaignName } = Astro.props;
                                         ".p-6.rounded-xl.border-2.border-dashed",
                                     ) as HTMLElement;
                                 if (imagePreviewContainer && result.imageUrl) {
+                                    // Prefer the API download endpoint to avoid CORS issues with the raw storage URL
+                                    // Build the URL using config to avoid duplicating '/api'
+                                    const apiImageUrl = `${config.generationApiUrl}${config.endpoints.generation.image}/${result.imageId}`;
                                     imagePreviewContainer.innerHTML = `
-                            <img src="${result.imageUrl}" alt="Imagen generada" class="w-full h-auto rounded-lg" />
+                            <img src="${apiImageUrl}" alt="Imagen generada" class="w-full h-auto rounded-lg" />
                             <p class="text-xs text-green-600 mt-2">✅ Imagen generada exitosamente</p>
                         `;
+                                    // Save image id returned by generator for backend download
+                                    (
+                                        document.getElementById(
+                                            "postImageId",
+                                        ) as HTMLInputElement
+                                    ).value = result.imageId || "";
+                                    // Use API endpoint for preview and image_url so preview works across origins (do not duplicate api prefix)
+                                    (
+                                        document.getElementById(
+                                            "postImageUrl",
+                                        ) as HTMLInputElement
+                                    ).value =
+                                        `${config.generationApiUrl}${config.endpoints.generation.image}/${result.imageId}` ||
+                                        result.imageUrl ||
+                                        "";
                                 }
 
                                 updatePreview();
@@ -1655,6 +2038,30 @@ const { campaignId, campaignName } = Astro.props;
                 .getElementById("postContent")
                 ?.addEventListener("input", updatePreview);
 
+            // Keep the scheduled fields synced when native datetime is used and fallback values change
+            const dateInput = document.getElementById(
+                "postScheduledDate",
+            ) as HTMLInputElement;
+            const timeInput = document.getElementById(
+                "postScheduledTime",
+            ) as HTMLInputElement;
+            const datetimeInputEl = document.getElementById(
+                "postScheduledAt",
+            ) as HTMLInputElement;
+            if (dateInput && timeInput) {
+                const syncFallback = () => {
+                    if (datetimeInputEl && !datetimeInputEl.value) {
+                        const d = dateInput.value;
+                        const t = timeInput.value;
+                        if (d && t) {
+                            datetimeInputEl.value = `${d}T${t}`;
+                        }
+                    }
+                };
+                dateInput.addEventListener("change", syncFallback);
+                timeInput.addEventListener("change", syncFallback);
+            }
+
             // Open modal
             document
                 .getElementById("btnNuevoPost")
@@ -1667,6 +2074,14 @@ const { campaignId, campaignName } = Astro.props;
             document
                 .getElementById("btnCancelarModal")
                 ?.addEventListener("click", closeModal);
+            // Confirm publish button
+            document
+                .getElementById("btnConfirmPublish")
+                ?.addEventListener("click", confirmPublish);
+            // Cancel publish button
+            document
+                .getElementById("btnCancelPublish")
+                ?.addEventListener("click", closePublishModal);
             document
                 .getElementById("btnCerrarMetrics")
                 ?.addEventListener("click", () => {
@@ -1691,11 +2106,28 @@ const { campaignId, campaignName } = Astro.props;
                     }
                     const user = JSON.parse(userStr);
 
-                    const scheduledAt = (
+                    // Support browsers without native datetime-local: combine date + time fallback values
+                    let scheduledAt = (
                         document.getElementById(
                             "postScheduledAt",
                         ) as HTMLInputElement
                     ).value;
+                    if (!scheduledAt) {
+                        const dateVal =
+                            (
+                                document.getElementById(
+                                    "postScheduledDate",
+                                ) as HTMLInputElement
+                            )?.value || "";
+                        const timeVal =
+                            (
+                                document.getElementById(
+                                    "postScheduledTime",
+                                ) as HTMLInputElement
+                            )?.value || "";
+                        if (dateVal && timeVal)
+                            scheduledAt = `${dateVal}T${timeVal}`;
+                    }
                     const status = (
                         document.getElementById(
                             "postStatus",
@@ -1734,7 +2166,12 @@ const { campaignId, campaignName } = Astro.props;
                                     ) as HTMLInputElement
                                 ).value,
                                 status,
-                                scheduled_at: scheduledAt || null,
+                                scheduled_at: scheduledAt
+                                    ? new Date(scheduledAt + ":00")
+                                          .toISOString()
+                                          .slice(0, 19)
+                                          .replace("T", " ")
+                                    : null,
                             };
                             const updated = await updatePost(
                                 editingPostId,
@@ -1746,19 +2183,33 @@ const { campaignId, campaignName } = Astro.props;
                             if (idx !== -1) posts[idx] = updated;
                             showToast("Publicación actualizada", "success");
                         } else {
+                            // Sanitize title and content to avoid invalid Unicode sequences
+                            const sanitizedTitle = sanitizeString(
+                                (
+                                    document.getElementById(
+                                        "postTitle",
+                                    ) as HTMLInputElement
+                                ).value || "",
+                            );
+                            const sanitizedContent = sanitizeString(
+                                (
+                                    document.getElementById(
+                                        "postContent",
+                                    ) as HTMLTextAreaElement
+                                ).value || "",
+                            );
+
                             const data: CreatePostDTO = {
                                 campaign_id: campaignId,
                                 title: (
                                     document.getElementById(
                                         "postTitle",
                                     ) as HTMLInputElement
-                                ).value,
+                                ).value
+                                    ? sanitizedTitle
+                                    : sanitizedTitle,
                                 platform: selectedPlatform!,
-                                content: (
-                                    document.getElementById(
-                                        "postContent",
-                                    ) as HTMLTextAreaElement
-                                ).value,
+                                content: sanitizedContent,
                                 content_type: selectedContentType!,
                                 image_path: (
                                     document.getElementById(
@@ -1771,13 +2222,24 @@ const { campaignId, campaignName } = Astro.props;
                                             "postImageUrl",
                                         ) as HTMLInputElement
                                     ).value || null,
+                                image_id:
+                                    (
+                                        document.getElementById(
+                                            "postImageId",
+                                        ) as HTMLInputElement
+                                    ).value || null,
                                 link_url: (
                                     document.getElementById(
                                         "postLinkUrl",
                                     ) as HTMLInputElement
                                 ).value,
                                 status,
-                                scheduled_at: scheduledAt || null,
+                                scheduled_at: scheduledAt
+                                    ? new Date(scheduledAt + ":00")
+                                          .toISOString()
+                                          .slice(0, 19)
+                                          .replace("T", " ")
+                                    : null,
                                 published_at:
                                     status === "published"
                                         ? new Date()
@@ -1787,6 +2249,20 @@ const { campaignId, campaignName } = Astro.props;
                                         : null,
                                 created_by: user.id,
                             };
+                            // Extra validation for campaign id
+                            if (!data.campaign_id || data.campaign_id <= 0) {
+                                showToast("Id de campaña inválido", "error");
+                                return;
+                            }
+                            // Debugging: print the payload that will be sent
+                            console.log(
+                                "[formPost] Creating post payload:",
+                                data,
+                            );
+                            console.log(
+                                "[formPost] Creating post payload (stringified):",
+                                JSON.stringify(data),
+                            );
                             const created = await createPost(data);
                             posts.push(created);
                             showToast("Publicación creada", "success");
@@ -1795,8 +2271,24 @@ const { campaignId, campaignName } = Astro.props;
                         updateStats();
                         renderPosts(filtrosActuales);
                         closeModal();
-                    } catch (error) {
-                        showToast("Error al guardar", "error");
+                    } catch (error: any) {
+                        // Better server validation error message handling
+                        console.error("[formPost] Error creating post:", error);
+                        let message = error?.message || "Error al guardar";
+                        // If the backend sent JSON with 'errors' field (Laravel), list the errors
+                        if (error?.body && typeof error.body === "object") {
+                            const errors = error.body.errors || error.body;
+                            if (errors && typeof errors === "object") {
+                                const keys = Object.keys(errors);
+                                if (keys.length > 0) {
+                                    const firstKey = keys[0];
+                                    message = Array.isArray(errors[firstKey])
+                                        ? errors[firstKey].join("; ")
+                                        : String(errors[firstKey]);
+                                }
+                            }
+                        }
+                        showToast(message, "error");
                     } finally {
                         btn.disabled = false;
                         btn.innerHTML =

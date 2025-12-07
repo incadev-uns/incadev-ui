@@ -7,34 +7,18 @@ import { config } from "../../../config/marketing-config";
 // getStaticPaths - Pre-genera páginas estáticas
 // =========================================
 export async function getStaticPaths() {
-  try {
-    // Fetch all versions at build time
-    const url = `${config.apiUrl}${config.endpoints.versions.list}`;
-    console.log("[Build] Fetching versions from:", url);
+  // Lista de IDs que quieres generar como páginas estáticas
+  const staticIds = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  ];
 
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch versions: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const versions = data.data || [];
-
-    console.log(`[Build] Generating ${versions.length} version pages`);
-
-    // Generate a path for each version
-    return versions.map((version: any) => ({
-      params: { id: version.id.toString() },
-      props: {
-        versionId: version.id,
-        versionName: version.name,
-      },
-    }));
-  } catch (error) {
-    console.error("[Build] Error in getStaticPaths:", error);
-    return [];
-  }
+  return staticIds.map((id) => ({
+    params: { id: id.toString() },
+    props: {
+      versionId: id,
+      versionName: `Version ${id}`, // Puedes ajustarlo si necesitas otro texto
+    },
+  }));
 }
 
 const { versionId, versionName } = Astro.props;
@@ -1283,8 +1267,8 @@ const mockTitle = `${versionName} - INCADEV UI`;
             renderCampanas(campaignsData);
             actualizarMetricas(campaignsData, versionData!);
 
-            // Mostrar mensaje de éxito
-            alert("¡Campaña creada exitosamente!");
+            // Mostrar mensaje de éxito usando modal
+            window.showSuccessModal("🎉 ¡Campaña creada exitosamente!");
           } catch (error) {
             console.error("[Crear Campaña] Error:", error);
             if (errorCrear && errorCrearMessage) {
@@ -1297,6 +1281,67 @@ const mockTitle = `${versionName} - INCADEV UI`;
           }
         });
       }
+    });
+  </script>
+  <!-- Success Modal (global for this page) -->
+  <div
+    id="successModal"
+    class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4"
+  >
+    <div
+      class="bg-white dark:bg-gray-950 rounded-xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-800"
+    >
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">🎉</div>
+        <div>
+          <p
+            id="successModalMessage"
+            class="text-gray-900 dark:text-white font-medium text-lg"
+          >
+          </p>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button
+          id="successModalClose"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >Aceptar</button
+        >
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Extend Window interface to include custom functions
+    declare global {
+      interface Window {
+        showSuccessModal: (message: string) => void;
+        closeSuccessModal: () => void;
+      }
+    }
+
+    // Helper global para mostrar y cerrar el modal de éxito
+    window.showSuccessModal = function (message: string) {
+      const modal = document.getElementById("successModal");
+      const msg = document.getElementById("successModalMessage");
+      if (!modal || !msg) return;
+      msg.textContent = message;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    };
+
+    window.closeSuccessModal = function () {
+      const modal = document.getElementById("successModal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    };
+
+    // Registrar listener al cerrar cuando el DOM esté listo
+    document.addEventListener("DOMContentLoaded", () => {
+      document
+        .getElementById("successModalClose")
+        ?.addEventListener("click", window.closeSuccessModal);
     });
   </script>
 </Layout>
