@@ -94,7 +94,7 @@ export default function PropuestasPreview() {
           Propuestas de Contenido
         </CardTitle>
         <a
-          href="/marketing/propuestas"
+          href="/marketing/proposals"
           className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline smooth-transition"
         >
           Ver todas →
@@ -115,7 +115,7 @@ export default function PropuestasPreview() {
               return (
                 <a
                   key={p.id}
-                  href={'/marketing/propuestas/' + p.id}
+                  href={'/marketing/proposals/' + p.id}
                   className={
                     'flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg smooth-transition border border-gray-200 dark:border-gray-800 group ' +
                     prioridadClass
@@ -143,7 +143,7 @@ export default function PropuestasPreview() {
           )}
 
           <a
-            href="/marketing/propuestas"
+            href="/marketing/proposals"
             className="flex items-center justify-center w-full mt-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:border-blue-500 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 smooth-transition group"
           >
             <Plus className="w-4 h-4 mr-2 group-hover:scale-110 smooth-transition" />

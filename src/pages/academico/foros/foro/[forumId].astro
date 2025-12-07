@@ -1,10 +1,43 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import ThreadListPage from '@/process/academic/dasboard/foros/thread-list/ThreadListPage';
+import { config } from '@/config/support-config';
 
-// Para modo estático, generamos paths vacíos y manejamos el ID desde el cliente
-export function getStaticPaths() {
-  return [];
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// ============================================
+export async function getStaticPaths() {
+  try {
+    // Fetch all forums at build time
+    const url = `${config.apiUrl}${config.endpoints.forums.list}`;
+    console.log("[Build] Fetching forums from:", url);
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error('[Build] Error fetching forums:', response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+
+    // Manejar respuesta paginada o array directo
+    const forums = data.data || data;
+
+    console.log(`[Build] Generating ${forums.length} forum pages`);
+
+    // Generate a path for each forum
+    return forums.map((forum: any) => ({
+      params: { forumId: forum.id.toString() },
+      props: {
+        forumId: forum.id,
+        forumName: forum.name,
+      },
+    }));
+  } catch (error) {
+    console.error('[Build] Error in getStaticPaths:', error);
+    return [];
+  }
 }
 
 const robots = ["noindex", "nofollow"];

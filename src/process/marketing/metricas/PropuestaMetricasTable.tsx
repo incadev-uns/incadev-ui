@@ -5,6 +5,14 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 interface PropuestaMetrica {
   id: number;
@@ -83,10 +91,85 @@ const calcularScore = (propuesta: PropuestaMetrica): number => {
   return Math.min(score, 10);
 };
 
-export default function PropuestaMetricasTable() {
+export default function PropuestaMetricasTable({ filtroEstado, filtroCanal }: { filtroEstado?: string; filtroCanal?: string }) {
   const [propuestas, setPropuestas] = useState<PropuestaMetrica[]>([]);
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Subcomponent: dropdown + modal to list posts for a campaign
+  function CampaignPostsDropdown({ campaignId, campaignNombre }: { campaignId: number; campaignNombre: string }) {
+    const [posts, setPosts] = useState<Array<any>>([]);
+    const [loadingPosts, setLoadingPosts] = useState(false);
+    const [selectedPost, setSelectedPost] = useState<any | null>(null);
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+      let mounted = true;
+      async function loadPosts() {
+        try {
+          setLoadingPosts(true);
+          const { fetchCampaignPosts } = await import('../../../services/marketing');
+          const res = await fetchCampaignPosts(campaignId);
+          if (!mounted) return;
+          setPosts(res || []);
+        } catch (e) {
+          console.warn('Error loading posts for campaign', campaignId, e);
+          setPosts([]);
+        } finally {
+          setLoadingPosts(false);
+        }
+      }
+      loadPosts();
+      return () => { mounted = false; };
+    }, [campaignId]);
+
+    async function onSelectPost(postId: string) {
+      if (!postId) return;
+      const id = Number(postId);
+      const { fetchPostMetrics, fetchCampaignPosts } = await import('../../../services/marketing');
+      const post = (posts || []).find(p => p.id === id) || null;
+      let metrics = null;
+      try {
+        metrics = await fetchPostMetrics(id);
+      } catch (e) {
+        metrics = null;
+      }
+      setSelectedPost({ ...post, metrics });
+      setOpen(true);
+    }
+
+    return (
+      <div>
+        <Select onValueChange={onSelectPost}>
+          <SelectTrigger className="w-[260px]">
+            <SelectValue placeholder={loadingPosts ? 'Cargando posts...' : `Posts de ${campaignNombre}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {posts.map((p: any) => (
+              <SelectItem key={p.id} value={String(p.id)}>{p.titulo || `#${p.id}`}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent>
+            <DialogTitle>{selectedPost?.titulo ?? 'Post'}</DialogTitle>
+            <DialogDescription>
+              <div className="mt-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{selectedPost?.contenido}</p>
+                {selectedPost?.metrics && (
+                  <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-3 rounded">{JSON.stringify(selectedPost.metrics, null, 2)}</pre>
+                )}
+              </div>
+            </DialogDescription>
+            <DialogFooter>
+              <Button onClick={() => setOpen(false)}>Cerrar</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
 
   // ============================================
   // CARGAR PROPUESTAS CON MÉTRICAS
@@ -224,6 +307,16 @@ export default function PropuestaMetricasTable() {
     }
 
     loadPropuestasConMetricas();
+
+    function onMetricsUpdated() {
+      loadPropuestasConMetricas();
+    }
+
+    window.addEventListener('metrics:updated', onMetricsUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener('metrics:updated', onMetricsUpdated as EventListener);
+    };
   }, []);
 
   const toggleExpand = (id: number) => {
@@ -261,7 +354,14 @@ export default function PropuestaMetricasTable() {
 
   return (
     <div className="space-y-3">
-      {propuestas.map((propuesta) => (
+      {propuestas
+        .filter((p) => {
+          if (filtroEstado && filtroEstado !== 'todas') {
+            return p.estado === filtroEstado;
+          }
+          return true;
+        })
+        .map((propuesta) => (
         <Card key={propuesta.id} className="overflow-hidden">
           {/* Header - Info principal */}
           <div className="p-4">
@@ -389,7 +489,7 @@ export default function PropuestaMetricasTable() {
                   variant="outline"
                   size="sm"
                   className="gap-2"
-                  onClick={() => window.location.href = `/marketing/propuestas/${propuesta.id}`}
+                  onClick={() => window.location.href = `/marketing/proposals/${propuesta.id}`}
                 >
                   Ver más
                   <ExternalLink className="w-3 h-3" />
@@ -460,6 +560,9 @@ export default function PropuestaMetricasTable() {
                           {formatNumber(campaña.engagement)}
                         </p>
                       </div>
+                    </div>
+                    <div className="mt-3">
+                      <CampaignPostsDropdown campaignId={campaña.id} campaignNombre={campaña.nombre} />
                     </div>
                   </div>
                 ))}

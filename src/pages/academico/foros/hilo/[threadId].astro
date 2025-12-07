@@ -1,10 +1,61 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import ThreadDetailPage from '@/process/academic/dasboard/foros/thread-detail/ThreadDetailPage';
+import { config } from '@/config/support-config';
 
-// Para modo estático, generamos paths vacíos y manejamos el ID desde el cliente
-export function getStaticPaths() {
-  return [];
+// ============================================
+// getStaticPaths - Pre-genera páginas estáticas
+// ============================================
+export async function getStaticPaths() {
+  try {
+    // Primero obtenemos todos los foros
+    const forumsUrl = `${config.apiUrl}${config.endpoints.forums.list}`;
+    console.log("[Build] Fetching forums from:", forumsUrl);
+
+    const forumsResponse = await fetch(forumsUrl);
+
+    if (!forumsResponse.ok) {
+      console.error('[Build] Error fetching forums:', forumsResponse.statusText);
+      return [];
+    }
+
+    const forumsData = await forumsResponse.json();
+    const forums = forumsData.data || forumsData;
+
+    console.log(`[Build] Found ${forums.length} forums`);
+
+    // Para cada foro, obtenemos sus threads
+    const allThreads = [];
+
+    for (const forum of forums) {
+      try {
+        const threadsUrl = `${config.apiUrl}${config.endpoints.threads.listByForum.replace(':forumId', forum.id)}`;
+        const threadsResponse = await fetch(threadsUrl);
+
+        if (threadsResponse.ok) {
+          const threadsData = await threadsResponse.json();
+          const threads = threadsData.data || threadsData;
+          allThreads.push(...threads);
+        }
+      } catch (error) {
+        console.warn(`[Build] Error fetching threads for forum ${forum.id}:`, error);
+      }
+    }
+
+    console.log(`[Build] Generating ${allThreads.length} thread pages`);
+
+    // Generate a path for each thread
+    return allThreads.map((thread: any) => ({
+      params: { threadId: thread.id.toString() },
+      props: {
+        threadId: thread.id,
+        threadTitle: thread.title,
+      },
+    }));
+  } catch (error) {
+    console.error('[Build] Error in getStaticPaths:', error);
+    return [];
+  }
 }
 
 const robots = ["noindex", "nofollow"];

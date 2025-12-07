@@ -5,14 +5,18 @@
 
 export const config = {
   apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
-  //apiUrl: "http://127.0.0.1:8000/api",
+  //apiUrl: "http://127.0.0.1:8002/api",
   // Marketing backend auth and related services
   //authApiUrl: "http://127.0.0.1:8001/api", // Backend principal para autenticación
-  // Explicit base URLs for related microservices so the UI can target the right hosts
-  generationApiUrl: "http://127.0.0.1:8004/api", // generativeapi
-  socialApiUrl: "http://127.0.0.1:8005/api", // socialmediaapi
-  //metricsApiUrl: "http://127.0.0.1:8006", // metricsapi (same host used for auth/service)
-  environment: "development",
+  // Metrics microservice. Used for batch metrics fetching.
+  //metricsApiUrl: "http://127.0.0.1:8006/api",
+  //generationApiUrl: "http://127.0.0.1:8002/api",
+  //socialApiUrl: "http://127.0.0.1:8005/api", // socialmediaapi
+  environment: "production",
+  //generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/generative/public/api",
+  generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
+  socialApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/socialmedia/public/api",
+  metricsApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/metricsapi/public/api",
 
   endpoints: {
     // Authentication (usa authApiUrl)

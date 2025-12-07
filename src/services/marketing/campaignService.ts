@@ -95,6 +95,7 @@ function mapPostFromAPI(apiPost: PostFromAPI): PostForUI {
         contenido: apiPost.content,
         tipo: apiPost.content_type,
         imagen: apiPost.image_path,
+        metaPostId: apiPost.meta_post_id ?? null,
         enlace: apiPost.link_url,
         estado: apiPost.status,
         programadoPara: apiPost.scheduled_at,
@@ -285,12 +286,11 @@ export async function fetchAllCampaigns(): Promise<CampaignForUI[]> {
  */
 export async function fetchCampaignMetrics(campaignId: number): Promise<CampaignMetricsForUI> {
     try {
-        const endpoint = marketingConfig.endpoints.campaigns.metrics.replace(':id', String(campaignId));
-        const url = endpoint.startsWith('http')
-            ? endpoint
-            : `${marketingConfig.apiUrl}${endpoint}`;
+        // Use metrics microservice for metrics data (reads DB in metricsapi)
+        const endpoint = `/v1/marketing/metrics/campaign/${campaignId}`;
+        const url = `${marketingConfig.metricsApiUrl}${endpoint}`;
 
-        console.log('[campaignService] Fetching metrics for campaign:', campaignId);
+        console.log('[campaignService] Fetching metrics for campaign (metricsapi):', url);
 
         const response = await authenticatedFetch(url);
 
@@ -298,10 +298,43 @@ export async function fetchCampaignMetrics(campaignId: number): Promise<Campaign
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: CampaignMetricsFromAPI = await response.json();
-        console.log('[campaignService] Metrics fetched for campaign:', campaignId);
+        // metricsapi returns an array of Metric rows for the campaign (or 404 if none)
+        const rows: Array<any> = await response.json();
+        console.log('[campaignService] Metric rows fetched for campaign:', rows.length);
 
-        return mapCampaignMetricsFromAPI(data);
+        // Aggregate summary totals and build per-post metrics
+        const summary = {
+            campaign_id: campaignId,
+            campaign_name: '',
+            metrics_summary: {
+                total_reach: 0,
+                total_interactions: 0,
+                total_likes: 0,
+                total_comments: 0,
+            },
+            posts_metrics: [] as any[],
+        };
+
+        const perPost: Record<number, any> = {};
+        for (const r of rows) {
+            const pid = r.post_id;
+            if (!perPost[pid]) {
+                perPost[pid] = { post_id: pid, platform: r.platform, total_reach: 0, total_interactions: 0, likes: 0, comments: 0 };
+            }
+            perPost[pid].total_reach += (r.reach || 0) + (r.impressions || 0);
+            perPost[pid].likes += (r.likes || 0);
+            perPost[pid].comments += (r.comments || 0);
+            perPost[pid].total_interactions += ((r.likes || 0) + (r.comments || 0) + (r.shares || 0));
+
+            summary.metrics_summary.total_reach += (r.reach || 0) + (r.impressions || 0);
+            summary.metrics_summary.total_likes += (r.likes || 0);
+            summary.metrics_summary.total_comments += (r.comments || 0);
+            summary.metrics_summary.total_interactions += ((r.likes || 0) + (r.comments || 0) + (r.shares || 0));
+        }
+
+        summary.posts_metrics = Object.values(perPost);
+
+        return mapCampaignMetricsFromAPI(summary as any);
     } catch (error) {
         console.error('[campaignService] Error fetching campaign metrics:', error);
         throw error;

@@ -28,6 +28,7 @@ function mapPostFromAPI(apiPost: PostFromAPI): PostForUI {
         tipo: apiPost.content_type,
         imagen: apiPost.image_path,
         enlace: apiPost.link_url,
+        metaPostId: apiPost.meta_post_id ?? null,
         estado: apiPost.status,
         programadoPara: apiPost.scheduled_at,
         publicadoEn: apiPost.published_at,
@@ -79,8 +80,12 @@ export async function createPost(post: CreatePostDTO): Promise<PostForUI> {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                let errorData = null;
+                try { errorData = await response.json(); } catch (e) { /* ignore */ }
+                const err: any = new Error((errorData && (errorData.message || errorData.error)) || `HTTP error! status: ${response.status}`);
+                err.status = response.status;
+                err.body = errorData;
+                throw err;
         }
 
         const data: PostFromAPI = await response.json();
@@ -139,8 +144,12 @@ export async function updatePost(id: number, updates: UpdatePostDTO): Promise<Po
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                let errorData = null;
+                try { errorData = await response.json(); } catch (e) { /* ignore */ }
+                const err: any = new Error((errorData && (errorData.message || errorData.error)) || `HTTP error! status: ${response.status}`);
+                err.status = response.status;
+                err.body = errorData;
+                throw err;
         }
 
         const data: PostFromAPI = await response.json();
@@ -183,7 +192,8 @@ export async function deletePost(id: number): Promise<void> {
  */
 export async function publishPost(id: number): Promise<PostForUI> {
     try {
-        const base = marketingConfig.socialApiUrl;
+        // Publish should be handled by marketing backend which forwards the call to socialmediaapi
+        const base = marketingConfig.apiUrl;
         const url = `${base}/posts/${id}/publish`;
 
         console.log('[postService] Publishing post:', url);
@@ -193,8 +203,27 @@ export async function publishPost(id: number): Promise<PostForUI> {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            // Try parse as JSON, fallback to text
+            let errMsg = `HTTP error! status: ${response.status}`;
+            let errorData: any = null;
+            try {
+                errorData = await response.json();
+                // Prefer server-provided message, otherwise the entire payload
+                errMsg = (
+                    (errorData && (errorData.message || errorData.error || JSON.stringify(errorData))) || errMsg
+                );
+            } catch (parseErr) {
+                try {
+                    const txt = await response.text();
+                    if (txt) errMsg = txt;
+                } catch (t) {
+                    // ignore
+                }
+            }
+            const err: any = new Error(errMsg);
+            err.status = response.status;
+            err.body = errorData || null;
+            throw err;
         }
 
         const data: any = await response.json();
@@ -218,9 +247,11 @@ export async function publishPost(id: number): Promise<PostForUI> {
  */
 export async function fetchPostMetrics(postId: number): Promise<PostMetricsForUI> {
     try {
-        const url = `${marketingConfig.apiUrl}/posts/${postId}/metrics`;
+        // Query metrics microservice for post metrics (reads metrics DB)
+        const base = (marketingConfig as any).metricsApiUrl || marketingConfig.apiUrl;
+        const url = `${base}/v1/marketing/metrics/post/${postId}`;
 
-        console.log('[postService] Fetching metrics for post:', postId);
+        console.log('[postService] Fetching metrics for post (metricsapi):', postId, url);
 
         const response = await authenticatedFetch(url);
 
@@ -228,43 +259,63 @@ export async function fetchPostMetrics(postId: number): Promise<PostMetricsForUI
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: PostMetricsResponseFromAPI = await response.json();
+        const data: any = await response.json();
 
-        console.log('[postService] Metrics fetched for post:', postId);
+        console.log('[postService] Metrics fetched for post:', postId, data.id ?? null);
 
-        // Mapear métricas
-        const metricas = data.metrics.map(mapMetricFromAPI);
+        // metricsapi returns a single latest Metric row for the post
+        const metricRow = data;
+        const mapped = mapMetricFromAPI(metricRow as any);
 
-        // Calcular totales (suma de todas las plataformas)
-        const totales = metricas.reduce((acc, m) => ({
-            vistas: acc.vistas + m.vistas,
-            likes: acc.likes + m.likes,
-            comentarios: acc.comentarios + m.comentarios,
-            compartidos: acc.compartidos + m.compartidos,
-            engagement: acc.engagement + m.engagement,
-            alcance: acc.alcance + m.alcance,
-            impresiones: acc.impresiones + m.impresiones,
-            guardados: acc.guardados + m.guardados,
-        }), {
-            vistas: 0,
-            likes: 0,
-            comentarios: 0,
-            compartidos: 0,
-            engagement: 0,
-            alcance: 0,
-            impresiones: 0,
-            guardados: 0,
-        });
+        const totales = {
+            vistas: mapped.vistas,
+            likes: mapped.likes,
+            comentarios: mapped.comentarios,
+            compartidos: mapped.compartidos,
+            engagement: mapped.engagement,
+            alcance: mapped.alcance,
+            impresiones: mapped.impresiones,
+            guardados: mapped.guardados,
+        };
 
         return {
-            postId: data.post_id,
-            postTitle: data.post_title,
-            platform: data.platform,
-            metricas,
+            postId: metricRow.post_id ?? postId,
+            postTitle: metricRow.post_title ?? '',
+            platform: metricRow.platform ?? '',
+            metricas: metricRow ? [mapped] : [],
             totales
         };
     } catch (error) {
         console.error('[postService] Error fetching post metrics:', error);
+        throw error;
+    }
+}
+
+/**
+ * Batch update metrics by calling the metrics microservice.
+ * Payload: { items: [ { post_id: number, platform: 'facebook'|'instagram' }, ... ] }
+ */
+export async function batchUpdateMetrics(items: Array<{ post_id?: number; meta_post_id?: string; platform: string }>): Promise<any> {
+    try {
+        // New: metrics microservice fetch endpoint does not accept items; call fetch trigger instead
+        const base = (marketingConfig as any).metricsApiUrl || marketingConfig.apiUrl;
+        const url = `${base}/v1/marketing/metrics/fetch`;
+
+        console.log('[postService] Triggering metrics fetch (metricsapi):', url);
+
+        const response = await authenticatedFetch(url, {
+            method: 'POST'
+        });
+
+        if (!response.ok) {
+            const errBody = await response.text().catch(() => null);
+            throw new Error(`HTTP error! status: ${response.status} body: ${errBody}`);
+        }
+
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('[postService] Error calling batchUpdateMetrics:', error);
         throw error;
     }
 }
