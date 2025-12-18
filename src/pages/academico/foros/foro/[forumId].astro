@@ -26,7 +26,7 @@ export async function getStaticPaths() {
 
     console.log(`[Build] Generating ${forums.length} forum pages`);
 
-    // Generate a path for each forum
+    // Generate a path for each forum fetched
     return forums.map((forum: any) => ({
       params: { forumId: forum.id.toString() },
       props: {
