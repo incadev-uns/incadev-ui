@@ -7,8 +7,8 @@
 type apiProps = string | number;
 
 export const config = {
-  apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/estrategico/public",
-  //apiUrl: "http://strategicprocessapp.test",
+  //apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/estrategico/public",
+  apiUrl: "http://strategicprocessapp.test",
   environment: "development",
   endpoints: {
     messageFiles: {
@@ -67,11 +67,14 @@ export const config = {
     },
 
     strategicObjectives: {
-      list: "/api/strategic-objectives",
-      create: "/api/strategic-objectives",
-      get: (id: apiProps) => `/api/strategic-objectives/${id}`,
-      update: (id: apiProps) => `/api/strategic-objectives/${id}`,
-      delete: (id: apiProps) => `/api/strategic-objectives/${id}`,
+      list: (planId: apiProps) => `/api/strategic-plans/${planId}/objectives`,
+      create: (planId: apiProps) => `/api/strategic-plans/${planId}/objectives`,
+      get: (planId: apiProps, id: apiProps) =>
+        `/api/strategic-plans/${planId}/objectives/${id}`,
+      update: (planId: apiProps, id: apiProps) =>
+        `/api/strategic-plans/${planId}/objectives/${id}`,
+      delete: (planId: apiProps, id: apiProps) =>
+        `/api/strategic-plans/${planId}/objectives/${id}`,
     },
 
     strategicPlans: {
@@ -115,6 +118,8 @@ export const config = {
       update: (id: apiProps) => `/api/iniciative-evaluations/${id}`,
       delete: (id: apiProps) => `/api/iniciative-evaluations/${id}`,
     },
+
+    planningUsers: "/api/planning-users",
 
     user: {
       me: "/api/user",

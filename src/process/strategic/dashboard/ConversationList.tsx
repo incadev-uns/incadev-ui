@@ -14,6 +14,7 @@ import {
 } from "@tabler/icons-react"
 import StrategicLayout from "../StrategicLayout"
 import { routes } from "../strategic-site"
+import { config } from "@/config/strategic-config"
 
 interface Conversation {
   id: string
@@ -27,46 +28,93 @@ interface Conversation {
 }
 
 export default function ConversationList() {
-  const [conversations, setConversations] = useState<Conversation[]>([])
+  const [conversations, setConversations] = useState<any[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Simular carga de conversaciones
-    const mockConversations: Conversation[] = [
-      {
-        id: "1",
-        name: "Plan Estratégico 2024-2028",
-        lastMessage: "¿Han revisado los objetivos del segundo trimestre?",
-        lastMessageTime: "10:30 AM",
-        unreadCount: 3,
-        participantCount: 8,
-        isArchived: false,
-        isPinned: true
-      },
-      {
-        id: "2", 
-        name: "Coordinación General",
-        lastMessage: "La reunión de mañana se pospone para el viernes",
-        lastMessageTime: "9:15 AM",
-        unreadCount: 0,
-        participantCount: 15,
-        isArchived: false,
-        isPinned: false
-      },
-      {
-        id: "3",
-        name: "Indicadores de Calidad",
-        lastMessage: "Los resultados del último trimestre están listos",
-        lastMessageTime: "Ayer",
-        unreadCount: 1,
-        participantCount: 5,
-        isArchived: false,
-        isPinned: false
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+    if (!token) {
+      setLoading(false)
+      return
+    }
+
+    const fetchConversations = async () => {
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(
+          `${config.apiUrl}${config.endpoints.messages.list}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        )
+        const data = await res.json()
+        console.log("[ConversationList] GET /messages response:", data)
+
+        if (!res.ok) {
+          throw new Error(data?.message || "No se pudieron cargar las conversaciones")
+        }
+
+        const items = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
+        const grouped = new Map<string, Conversation>()
+
+        items.forEach((msg: any) => {
+          const convId =
+            msg.conversation_id ??
+            msg.conversation?.id ??
+            msg.conversationId ??
+            msg.id?.toString() ??
+            crypto.randomUUID()
+
+          const existing = grouped.get(convId)
+          const unread = msg.unread_count ?? msg.unreadCount ?? 0
+          const lastTime = msg.created_at ?? msg.updated_at ?? msg.timestamp ?? ""
+          const lastContent = msg.content ?? msg.last_message ?? ""
+
+          if (!existing) {
+            grouped.set(convId, {
+              id: convId,
+              name:
+                msg.conversation?.name ??
+                msg.conversation_name ??
+                `Conversación ${convId}`,
+              lastMessage: lastContent,
+              lastMessageTime: lastTime,
+              unreadCount: unread,
+              participantCount:
+                msg.conversation?.participants?.length ??
+                msg.participants_count ??
+                0,
+              isArchived: Boolean(msg.conversation?.is_archived),
+              isPinned: Boolean(msg.conversation?.is_pinned),
+            })
+          } else {
+            // Actualiza último mensaje si es más reciente
+            grouped.set(convId, {
+              ...existing,
+              lastMessage: lastContent || existing.lastMessage,
+              lastMessageTime: lastTime || existing.lastMessageTime,
+              unreadCount: existing.unreadCount + unread,
+            })
+          }
+        })
+
+        setConversations(Array.from(grouped.values()))
+      } catch (err: any) {
+        console.error("[ConversationList] Error:", err)
+        setError(err?.message || "Error al cargar conversaciones")
+        setConversations([])
+      } finally {
+        setLoading(false)
       }
-    ]
-    setConversations(mockConversations)
-    setLoading(false)
+    }
+
+    fetchConversations()
   }, [])
 
   const filteredConversations = conversations.filter(conv =>
@@ -75,6 +123,14 @@ export default function ConversationList() {
 
   const pinnedConversations = filteredConversations.filter(conv => conv.isPinned)
   const regularConversations = filteredConversations.filter(conv => !conv.isPinned && !conv.isArchived)
+
+  if (loading) {
+    return (
+      <StrategicLayout title="Comunicaciones - Gestión Estratégica">
+        <div className="p-6 text-muted-foreground">Cargando conversaciones...</div>
+      </StrategicLayout>
+    )
+  }
 
   return (
     <StrategicLayout title="Comunicaciones - Gestión Estratégica">
