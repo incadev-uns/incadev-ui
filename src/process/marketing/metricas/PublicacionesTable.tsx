@@ -120,6 +120,17 @@ export default function PublicacionesTable() {
     }
 
     loadPublicaciones();
+
+    // Listen for global metrics updated event to refresh the posts list
+    function onMetricsUpdated() {
+      loadPublicaciones();
+    }
+
+    window.addEventListener('metrics:updated', onMetricsUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener('metrics:updated', onMetricsUpdated as EventListener);
+    };
   }, []);
 
   const publicacionesFiltradas = publicaciones.filter((pub) => {
@@ -271,7 +282,7 @@ export default function PublicacionesTable() {
                       </div>
                     )}
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => window.location.href = `/marketing/campañas/${pub.campaignId}`}>
+                  <Button variant="outline" size="sm" onClick={() => window.location.href = `/marketing/campaigns/${pub.campaignId}`}>
                     Ver campaña
                   </Button>
                 </div>

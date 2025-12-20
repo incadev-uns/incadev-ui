@@ -20,8 +20,9 @@ export const config = {
     assignTeacher: "/api/academic-processes/teacher-groups/assign",
     removeTeacher: "/api/academic-processes/teacher-groups/remove",
 
-    //pagos
+   //pagos
     pagos: "/api/pagos",
+    pagosApproval: "/api/pagos/approval",
     pagosExportCsv: "/api/pagos/export-csv",
     pagosExportData: "/api/pagos/export-data",
 
@@ -29,9 +30,7 @@ export const config = {
     balance_general: "/api/finanzas/balance-general",
     financialReports: "/api/financial-reports/report",
 
-
     //estudiantes
-
     students:"/api/gestion-academica/estudiantes",
     studentsExportCsv: '/api/gestion-academica/estudiantes/export/csv',
     studentsExportData: '/api/gestion-academica/estudiantes/export-data',
@@ -44,7 +43,6 @@ export const config = {
 
     //Firmas del director
     instituteDirectors: "/api/gestion-documentaria/institute-directors",
-
 
     // Historial Académico
     academicHistory: "/api/gestion-academica/historial-academico",
@@ -67,7 +65,6 @@ export const config = {
     groupsCourseVersions: "/api/academic-processes/groups/course-versions",
     groupsStatistics: "/api/academic-processes/groups/statistics",
 
-
     //Configuración Académica
     academicSettings: "/api/academic-processes/academic-settings",
 
@@ -88,7 +85,6 @@ export const config = {
     contracts: '/api/rrhh/employees',
     offers: "/api/rrhh/offers",
     applicants: "/api/rrhh/applicants",
-
 
     // ✅ NUEVOS ENDPOINTS DE NÓMINA
     payroll: "/api/rrhh/payroll",

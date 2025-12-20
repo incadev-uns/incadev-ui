@@ -7,7 +7,7 @@ import {
     DialogDescription,
     DialogHeader,
     DialogTitle,
-} from "@/components/ui/dialog"
+} from "@/process/evaluation/audits/components/dialog"
 import { Badge } from "@/components/ui/badge"
 import {
     Card,
@@ -150,15 +150,15 @@ export function AuditFindingsDialog({
     return (
         <>
             <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-                    <DialogHeader>
+                <DialogContent className="max-w-4xl h-[90vh] p-0 rounded-xl">
+                    <DialogHeader className="flex-shrink-0 border-b px-4 py-3 sm:px-6 sm:py-4">
                         <DialogTitle>Gestión de Hallazgos</DialogTitle>
                         <DialogDescription>
                             Auditoría: {audit.summary}
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex flex-col h-full">
+                    <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-4 pt-3 sm:px-6 sm:pb-6 sm:pt-4">
                         <div className="flex items-center justify-between mb-4">
                             <div>
                                 <h3 className="text-lg font-semibold">Hallazgos Registrados</h3>

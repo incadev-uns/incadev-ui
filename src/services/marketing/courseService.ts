@@ -1,14 +1,80 @@
 import { authenticatedFetch } from './authService';
 import { config } from '../../config/marketing-config';
-import type { CourseFromAPI, CourseForUI, CourseVersionFromAPI, CourseVersionForUI } from './types';
+import type {
+    CourseFromAPI,
+    CourseForUI,
+    CourseVersionFromAPI,
+    CourseVersionForUI,
+    CourseDetailFromAPI,
+    CourseDetailForUI,
+    CampaignWithMetricsFromAPI,
+    CampaignWithMetricsForUI,
+    CourseCampaignsFromAPI,
+    CourseCampaignsForUI,
+    VersionDetailFromAPI,
+    VersionDetailForUI,
+    VersionCampaignsFromAPI,
+    VersionCampaignsForUI,
+    MetricasEstudiantesFromAPI,
+    MetricasEstudiantesForUI,
+    GrupoActivoFromAPI,
+    GrupoActivoForUI
+} from './types';
+
+// ============================================
+// HELPERS
+// ============================================
+
+function mapMetricasEstudiantes(metricas?: MetricasEstudiantesFromAPI): MetricasEstudiantesForUI | undefined {
+    if (!metricas) return undefined;
+
+    const asistencias = metricas.asistencias
+        ? {
+            totalClases: metricas.asistencias.total_clases,
+            totalEstudiantes: metricas.asistencias.total_estudiantes,
+            totalAsistencias: metricas.asistencias.esperadas,
+            presentes: metricas.asistencias.presentes,
+            tardanzas: metricas.asistencias.tardanzas,
+            ausentes: metricas.asistencias.ausentes,
+            justificados: metricas.asistencias.justificados,
+            porcentaje: metricas.asistencias.porcentaje
+        }
+        : undefined;
+
+    return {
+        totalMatriculados: metricas.total_matriculados,
+        activos: metricas.activos,
+        completados: metricas.completados,
+        reprobados: metricas.reprobados,
+        desertores: metricas.desertores,
+        promedioAsistencia: metricas.promedio_asistencia,
+        promedioNotas: metricas.promedio_notas,
+        tasaRetencion: metricas.tasa_retencion,
+        tasaGraduacion: metricas.tasa_graduacion,
+        egresados: metricas.egresados,
+        asistencias
+    };
+}
+
+function mapGruposActivos(grupos?: GrupoActivoFromAPI[]): GrupoActivoForUI[] | undefined {
+    if (!grupos) return undefined;
+
+    return grupos.map(grupo => ({
+        grupoId: grupo.grupo_id,
+        nombre: grupo.nombre,
+        version: grupo.version,
+        estudiantes: grupo.estudiantes,
+        promedioAsistencia: grupo.promedio_asistencia,
+        progreso: grupo.progreso,
+        totalClases: grupo.total_clases,
+        clasesRealizadas: grupo.clases_realizadas
+    }));
+}
 
 // ============================================
 // MAPPERS
 // ============================================
 
-/**
- * Mapea los datos de curso de la API a la estructura que necesita la UI
- */
 function mapCourseToUI(course: CourseFromAPI): CourseForUI {
     const imagePath = course.image_path;
     const imagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
@@ -16,16 +82,15 @@ function mapCourseToUI(course: CourseFromAPI): CourseForUI {
     return {
         id: course.id,
         nombre: course.name,
-        descripcion: course.description || 'Sin descripción',
+        descripcion: course.description || 'Sin descripcion',
         imagen,
         fechaCreacion: course.created_at,
-        fechaActualizacion: course.updated_at
+        fechaActualizacion: course.updated_at,
+        metricasEstudiantes: mapMetricasEstudiantes(course.metricas_estudiantes),
+        gruposActivos: mapGruposActivos(course.grupos_activos)
     };
 }
 
-/**
- * Mapea los datos de versión de curso de la API a la estructura que necesita la UI
- */
 function mapVersionToUI(version: CourseVersionFromAPI): CourseVersionForUI {
     const imagePath = version.course?.image_path;
     const cursoImagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
@@ -34,106 +99,19 @@ function mapVersionToUI(version: CourseVersionFromAPI): CourseVersionForUI {
         id: version.id,
         cursoId: version.course_id,
         cursoNombre: version.course?.name || 'Curso desconocido',
-        cursoDescripcion: version.course?.description || 'Sin descripción',
+        cursoDescripcion: version.course?.description || 'Sin descripcion',
         cursoImagen,
         nombre: version.name,
         version: version.version || '',
         precio: parseFloat(version.price) || 0,
         estado: version.status,
         fechaCreacion: version.created_at,
-        fechaActualizacion: version.updated_at
+        fechaActualizacion: version.updated_at,
+        metricasEstudiantes: mapMetricasEstudiantes(version.metricas_estudiantes),
+        gruposActivos: mapGruposActivos(version.grupos_activos)
     };
 }
 
-// ============================================
-// API FUNCTIONS
-// ============================================
-
-/**
- * Obtiene la lista de cursos desde la API
- */
-export async function fetchCourses(): Promise<CourseForUI[]> {
-    try {
-        const url = `${config.apiUrl}${config.endpoints.courses.list}`;
-
-        console.log('[courseService] Fetching courses from:', url);
-
-        const response = await authenticatedFetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Error fetching courses: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('[courseService] Courses response:', data);
-
-        const courses: CourseFromAPI[] = data.data || [];
-
-        return courses.map(mapCourseToUI);
-    } catch (error) {
-        console.error('[courseService] Error fetching courses:', error);
-
-        if (error instanceof Error && error.message.includes('login')) {
-            if (typeof window !== 'undefined') {
-                window.location.href = '/auth/marketing';
-            }
-        }
-
-        return [];
-    }
-}
-
-/**
- * Obtiene la lista de versiones de cursos desde la API
- */
-export async function fetchVersions(): Promise<CourseVersionForUI[]> {
-    try {
-        const url = `${config.apiUrl}${config.endpoints.versions.list}`;
-
-        console.log('[courseService] Fetching versions from:', url);
-
-        const response = await authenticatedFetch(url);
-
-        if (!response.ok) {
-            throw new Error(`Error fetching versions: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        console.log('[courseService] Versions response:', data);
-
-        const versions: CourseVersionFromAPI[] = data.data || [];
-
-        return versions.map(mapVersionToUI);
-    } catch (error) {
-        console.error('[courseService] Error fetching versions:', error);
-
-        if (error instanceof Error && error.message.includes('login')) {
-            if (typeof window !== 'undefined') {
-                window.location.href = '/auth/marketing';
-            }
-        }
-
-        return [];
-    }
-}
-
-// ============================================
-// FUNCIONES PARA DETALLE DE CURSO (marketing-backend)
-// ============================================
-
-import { config as marketingConfig } from '../../config/marketing-config';
-import type {
-    CourseDetailFromAPI,
-    CourseDetailForUI,
-    CourseCampaignsFromAPI,
-    CourseCampaignsForUI,
-    CampaignWithMetricsFromAPI,
-    CampaignWithMetricsForUI
-} from './types';
-
-/**
- * Mapea el detalle de curso de la API a la estructura de UI
- */
 function mapCourseDetailToUI(course: CourseDetailFromAPI): CourseDetailForUI {
     const imagePath = course.image_path;
     const imagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
@@ -141,7 +119,7 @@ function mapCourseDetailToUI(course: CourseDetailFromAPI): CourseDetailForUI {
     return {
         id: course.id,
         nombre: course.name,
-        descripcion: course.description || 'Sin descripción',
+        descripcion: course.description || 'Sin descripcion',
         imagen,
         fechaCreacion: course.created_at,
         fechaActualizacion: course.updated_at,
@@ -149,15 +127,11 @@ function mapCourseDetailToUI(course: CourseDetailFromAPI): CourseDetailForUI {
     };
 }
 
-/**
- * Mapea una campaña con métricas de la API a UI
- */
 function mapCampaignWithMetricsToUI(campaign: CampaignWithMetricsFromAPI): CampaignWithMetricsForUI {
     const now = new Date();
     const endDate = new Date(campaign.end_date);
     const estado = endDate >= now ? 'activa' : 'finalizada';
 
-    // Validar que existan las métricas
     const metrics = campaign.metrics || {
         total_posts: 0,
         total_reach: 0,
@@ -187,11 +161,98 @@ function mapCampaignWithMetricsToUI(campaign: CampaignWithMetricsFromAPI): Campa
     };
 }
 
-/**
- * Obtiene el detalle de un curso por ID desde marketing-backend
- */
+function mapVersionDetailToUI(version: VersionDetailFromAPI): VersionDetailForUI {
+    const imagePath = version.course?.image_path;
+    const cursoImagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
+
+    return {
+        id: version.id,
+        cursoId: parseInt(version.course_id, 10),
+        cursoNombre: version.course?.name || 'Curso desconocido',
+        cursoDescripcion: version.course?.description || 'Sin descripcion',
+        cursoImagen,
+        nombre: version.name,
+        version: version.version || '',
+        precio: parseFloat(version.price) || 0,
+        estado: version.status,
+        fechaCreacion: version.created_at,
+        fechaActualizacion: version.updated_at,
+        campanas: (version.campaigns || []).map(mapCampaignWithMetricsToUI),
+        metricasEstudiantes: mapMetricasEstudiantes(version.metricas_estudiantes),
+        gruposActivos: mapGruposActivos(version.grupos_activos)
+    };
+}
+
+// ============================================
+// API FUNCTIONS
+// ============================================
+
+export async function fetchCourses(): Promise<CourseForUI[]> {
+    try {
+        const url = `${config.apiUrl}${config.endpoints.courses.list}`;
+
+        console.log('[courseService] Fetching courses from:', url);
+
+        const response = await authenticatedFetch(url);
+
+        if (!response.ok) {
+            throw new Error(`Error fetching courses: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('[courseService] Courses response:', data);
+
+        const courses: CourseFromAPI[] = data.data || [];
+        return courses.map(mapCourseToUI);
+    } catch (error) {
+        console.error('[courseService] Error fetching courses:', error);
+
+        if (error instanceof Error && error.message.includes('login')) {
+            if (typeof window !== 'undefined') {
+                window.location.href = '/auth/marketing';
+            }
+        }
+
+        return [];
+    }
+}
+
+export async function fetchVersions(): Promise<CourseVersionForUI[]> {
+    try {
+        const url = `${config.apiUrl}${config.endpoints.versions.list}`;
+
+        console.log('[courseService] Fetching versions from:', url);
+
+        const response = await authenticatedFetch(url);
+
+        if (!response.ok) {
+            throw new Error(`Error fetching versions: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        console.log('[courseService] Versions response:', data);
+
+        const versions: CourseVersionFromAPI[] = data.data || [];
+        return versions.map(mapVersionToUI);
+    } catch (error) {
+        console.error('[courseService] Error fetching versions:', error);
+
+        if (error instanceof Error && error.message.includes('login')) {
+            if (typeof window !== 'undefined') {
+                window.location.href = '/auth/marketing';
+            }
+        }
+
+        return [];
+    }
+}
+
+// ============================================
+// DETALLE DE CURSO (marketing-backend)
+// ============================================
+
 export async function fetchCourseById(courseId: number): Promise<CourseDetailForUI> {
-    const url = `${marketingConfig.apiUrl}/courses/${courseId}`;
+    const url = `${config.apiUrl}/courses/${courseId}`;
 
     console.log('[courseService] Fetching course detail from:', url);
 
@@ -207,11 +268,8 @@ export async function fetchCourseById(courseId: number): Promise<CourseDetailFor
     return mapCourseDetailToUI(data);
 }
 
-/**
- * Obtiene las versiones de un curso específico desde marketing-backend
- */
 export async function fetchCourseVersions(courseId: number): Promise<CourseVersionForUI[]> {
-    const url = `${marketingConfig.apiUrl}/courses/${courseId}/versions`;
+    const url = `${config.apiUrl}/courses/${courseId}/versions`;
 
     console.log('[courseService] Fetching course versions from:', url);
 
@@ -228,11 +286,8 @@ export async function fetchCourseVersions(courseId: number): Promise<CourseVersi
     return versions.map(mapVersionToUI);
 }
 
-/**
- * Obtiene las campañas relacionadas a un curso desde marketing-backend
- */
 export async function fetchCourseCampaigns(courseId: number): Promise<CourseCampaignsForUI> {
-    const url = `${marketingConfig.apiUrl}/courses/${courseId}/campaigns`;
+    const url = `${config.apiUrl}/courses/${courseId}/campaigns`;
 
     console.log('[courseService] Fetching course campaigns from:', url);
 
@@ -249,60 +304,29 @@ export async function fetchCourseCampaigns(courseId: number): Promise<CourseCamp
         curso: {
             id: data.course.id,
             nombre: data.course.name,
-            descripcion: data.course.description || 'Sin descripción'
+            descripcion: data.course.description || 'Sin descripcion'
         },
         totalVersiones: data.total_versions,
-        totalCampañas: data.total_campaigns,
-        campañas: data.campaigns.map(mapCampaignWithMetricsToUI)
+        totalCampanas: data.total_campaigns,
+        campanas: (data.campaigns || []).map(mapCampaignWithMetricsToUI),
+        metricasEstudiantes: mapMetricasEstudiantes(data.metricas_estudiantes),
+        gruposActivos: mapGruposActivos(data.grupos_activos)
     };
 }
 
 // ============================================
-// FUNCIONES PARA DETALLE DE VERSIÓN
+// DETALLE DE VERSION
 // ============================================
 
-import type {
-    VersionDetailFromAPI,
-    VersionDetailForUI,
-    VersionCampaignsFromAPI,
-    VersionCampaignsForUI
-} from './types';
-
-/**
- * Mapea el detalle de versión de la API a la estructura de UI
- */
-function mapVersionDetailToUI(version: VersionDetailFromAPI): VersionDetailForUI {
-    const imagePath = version.course?.image_path;
-    const cursoImagen = imagePath && imagePath.trim() !== '' ? imagePath : null;
-
-    return {
-        id: version.id,
-        cursoId: parseInt(version.course_id, 10),
-        cursoNombre: version.course?.name || 'Curso desconocido',
-        cursoDescripcion: version.course?.description || 'Sin descripción',
-        cursoImagen,
-        nombre: version.name,
-        version: version.version || '',
-        precio: parseFloat(version.price) || 0,
-        estado: version.status,
-        fechaCreacion: version.created_at,
-        fechaActualizacion: version.updated_at,
-        campañas: (version.campaigns || []).map(mapCampaignWithMetricsToUI)
-    };
-}
-
-/**
- * Obtiene el detalle de una versión por ID desde marketing-backend
- */
 export async function fetchVersionById(versionId: number): Promise<VersionDetailForUI> {
-    const url = `${marketingConfig.apiUrl}/versions/${versionId}`;
+    const url = `${config.apiUrl}/versions/${versionId}`;
 
     console.log('[courseService] Fetching version detail from:', url);
 
     const response = await authenticatedFetch(url);
 
     if (!response.ok) {
-        throw new Error(`Error al cargar la versión: ${response.statusText}`);
+        throw new Error(`Error al cargar la version: ${response.statusText}`);
     }
 
     const data: VersionDetailFromAPI = await response.json();
@@ -311,18 +335,15 @@ export async function fetchVersionById(versionId: number): Promise<VersionDetail
     return mapVersionDetailToUI(data);
 }
 
-/**
- * Obtiene las campañas de una versión específica desde marketing-backend
- */
 export async function fetchVersionCampaigns(versionId: number): Promise<VersionCampaignsForUI> {
-    const url = `${marketingConfig.apiUrl}/versions/${versionId}/campaigns`;
+    const url = `${config.apiUrl}/versions/${versionId}/campaigns`;
 
     console.log('[courseService] Fetching version campaigns from:', url);
 
     const response = await authenticatedFetch(url);
 
     if (!response.ok) {
-        throw new Error(`Error al cargar las campañas de la versión: ${response.statusText}`);
+        throw new Error(`Error al cargar las campañas de la version: ${response.statusText}`);
     }
 
     const data: VersionCampaignsFromAPI = await response.json();
@@ -336,7 +357,9 @@ export async function fetchVersionCampaigns(versionId: number): Promise<VersionC
             precio: parseFloat(data.version.price) || 0,
             estado: data.version.status
         },
-        totalCampañas: data.total_campaigns,
-        campañas: data.campaigns.map(mapCampaignWithMetricsToUI)
+        totalCampanas: data.total_campaigns,
+        campanas: (data.campaigns || []).map(mapCampaignWithMetricsToUI),
+        metricasEstudiantes: mapMetricasEstudiantes(data.metricas_estudiantes),
+        gruposActivos: mapGruposActivos(data.grupos_activos)
     };
 }

@@ -5,36 +5,20 @@ import { config } from "../../../config/marketing-config";
 
 // ============================================
 // getStaticPaths - Pre-genera páginas estáticas
-// ============================================
+// =========================================
 export async function getStaticPaths() {
-  try {
-    // Fetch all versions at build time
-    const url = `${config.apiUrl}${config.endpoints.versions.list}`;
-    console.log("[Build] Fetching versions from:", url);
+  // Lista de IDs que quieres generar como páginas estáticas
+  const staticIds = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  ];
 
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch versions: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    const versions = data.data || [];
-
-    console.log(`[Build] Generating ${versions.length} version pages`);
-
-    // Generate a path for each version
-    return versions.map((version: any) => ({
-      params: { id: version.id.toString() },
-      props: {
-        versionId: version.id,
-        versionName: version.name,
-      },
-    }));
-  } catch (error) {
-    console.error("[Build] Error in getStaticPaths:", error);
-    return [];
-  }
+  return staticIds.map((id) => ({
+    params: { id: id.toString() },
+    props: {
+      versionId: id,
+      versionName: `Version ${id}`, // Puedes ajustarlo si necesitas otro texto
+    },
+  }));
 }
 
 const { versionId, versionName } = Astro.props;
@@ -186,6 +170,12 @@ const mockTitle = `${versionName} - INCADEV UI`;
               data-tab="metricas"
             >
               Métricas
+            </button>
+            <button
+              class="tab-btn px-6 py-3 rounded-lg font-medium smooth-transition text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 whitespace-nowrap"
+              data-tab="academico"
+            >
+              Métricas Académicas
             </button>
           </nav>
         </div>
@@ -355,6 +345,219 @@ const mockTitle = `${versionName} - INCADEV UI`;
                   >--</span
                 >
               </div>
+            </div>
+          </div>
+        </div>
+        <!-- Tab Content: Métricas Académicas -->
+        <div id="tab-academico" class="tab-content hidden p-6">
+          <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            Métricas Académicas de Estudiantes
+          </h2>
+
+          <!-- Stats Grid -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div
+              class="p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-900/50"
+            >
+              <p
+                class="text-xs font-medium text-blue-600 dark:text-blue-400 mb-1"
+              >
+                Total Matriculados
+              </p>
+              <p
+                id="acadTotalMatriculados"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+            <div
+              class="p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/20 rounded-xl border border-green-200 dark:border-green-900/50"
+            >
+              <p
+                class="text-xs font-medium text-green-600 dark:text-green-400 mb-1"
+              >
+                Activos
+              </p>
+              <p
+                id="acadActivos"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+            <div
+              class="p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-900/50"
+            >
+              <p
+                class="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1"
+              >
+                Completados
+              </p>
+              <p
+                id="acadCompletados"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+            <div
+              class="p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-950/30 dark:to-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-900/50"
+            >
+              <p
+                class="text-xs font-medium text-yellow-600 dark:text-yellow-400 mb-1"
+              >
+                Egresados
+              </p>
+              <p
+                id="acadEgresados"
+                class="text-2xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+            </div>
+          </div>
+
+          <!-- Promedios -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div
+              class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-gray-900 dark:text-white">
+                  Promedio de Notas
+                </h3>
+                <svg
+                  class="w-8 h-8 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <p
+                id="acadPromedioNotas"
+                class="text-4xl font-bold text-gray-900 dark:text-white"
+              >
+                --
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Calificación promedio del curso
+              </p>
+            </div>
+
+            <div
+              class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+            >
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-gray-900 dark:text-white">
+                  Asistencia Promedio
+                </h3>
+                <svg
+                  class="w-8 h-8 text-green-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <p
+                id="acadPromedioAsistencia"
+                class="text-4xl font-bold text-gray-900 dark:text-white"
+              >
+                --%
+              </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Porcentaje de asistencia
+              </p>
+            </div>
+          </div>
+
+          <!-- Estado de Estudiantes -->
+          <div
+            class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 mb-6"
+          >
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
+              Estado de Estudiantes
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div
+                class="text-center p-3 bg-red-50 dark:bg-red-950/20 rounded-lg"
+              >
+                <p
+                  id="acadReprobados"
+                  class="text-2xl font-bold text-red-600 dark:text-red-400"
+                >
+                  --
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Reprobados
+                </p>
+              </div>
+              <div
+                class="text-center p-3 bg-orange-50 dark:bg-orange-950/20 rounded-lg"
+              >
+                <p
+                  id="acadDesertores"
+                  class="text-2xl font-bold text-orange-600 dark:text-orange-400"
+                >
+                  --
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Desertores
+                </p>
+              </div>
+              <div
+                class="text-center p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg"
+              >
+                <p
+                  id="acadTasaRetencion"
+                  class="text-2xl font-bold text-blue-600 dark:text-blue-400"
+                >
+                  --%
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Retención
+                </p>
+              </div>
+              <div
+                class="text-center p-3 bg-purple-50 dark:bg-purple-950/20 rounded-lg"
+              >
+                <p
+                  id="acadTasaGraduacion"
+                  class="text-2xl font-bold text-purple-600 dark:text-purple-400"
+                >
+                  --%
+                </p>
+                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Graduación
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detalle de Asistencias -->
+          <div
+            id="acadAsistenciasContainer"
+            class="p-6 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800"
+          >
+            <h3 class="font-semibold text-gray-900 dark:text-white mb-4">
+              Detalle de Asistencias
+            </h3>
+            <div id="acadAsistenciasDetalle" class="space-y-2">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                No hay información disponible
+              </p>
             </div>
           </div>
         </div>
@@ -538,6 +741,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
       VersionDetailForUI,
       VersionCampaignsForUI,
       CampaignWithMetricsForUI,
+      MetricasEstudiantesForUI,
     } from "../../../services/marketing/types";
 
     // ============================================
@@ -602,6 +806,92 @@ const mockTitle = `${versionName} - INCADEV UI`;
       return `<span class="px-2 py-1 ${config.bg} ${config.text} rounded text-xs font-medium">${config.label}</span>`;
     }
 
+    function renderMetricasAcademicas(metricas?: MetricasEstudiantesForUI) {
+      const setText = (id: string, value: string) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
+
+      if (!metricas) {
+        [
+          "acadTotalMatriculados",
+          "acadActivos",
+          "acadCompletados",
+          "acadEgresados",
+          "acadPromedioNotas",
+          "acadPromedioAsistencia",
+          "acadReprobados",
+          "acadDesertores",
+          "acadTasaRetencion",
+          "acadTasaGraduacion",
+        ].forEach((id) => setText(id, id.includes("Promedio") ? "--%" : "--"));
+
+        const detalle = document.getElementById("acadAsistenciasDetalle");
+        if (detalle) detalle.textContent = "No hay información disponible";
+        return;
+      }
+
+      setText("acadTotalMatriculados", String(metricas.totalMatriculados));
+      setText("acadActivos", String(metricas.activos));
+      setText("acadCompletados", String(metricas.completados));
+      setText("acadEgresados", String(metricas.egresados ?? 0));
+      setText("acadPromedioNotas", metricas.promedioNotas.toFixed(1));
+      setText(
+        "acadPromedioAsistencia",
+        `${metricas.promedioAsistencia.toFixed(1)}%`,
+      );
+      setText("acadReprobados", String(metricas.reprobados));
+      setText("acadDesertores", String(metricas.desertores));
+      setText("acadTasaRetencion", `${metricas.tasaRetencion.toFixed(1)}%`);
+      setText("acadTasaGraduacion", `${metricas.tasaGraduacion.toFixed(1)}%`);
+
+      const detalle = document.getElementById("acadAsistenciasDetalle");
+      if (!detalle) return;
+
+      if (!metricas.asistencias) {
+        detalle.textContent = "No hay información disponible";
+        return;
+      }
+
+      const a = metricas.asistencias;
+      detalle.innerHTML = `
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-700 dark:text-gray-200">
+          <div>
+            <p class="font-semibold">Clases</p>
+            <p>${a.totalClases}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Estudiantes</p>
+            <p>${a.totalEstudiantes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Total de asistencias</p>
+            <p>${a.totalAsistencias}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Presentes</p>
+            <p>${a.presentes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Tardanzas</p>
+            <p>${a.tardanzas}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Ausentes</p>
+            <p>${a.ausentes}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Justificados</p>
+            <p>${a.justificados}</p>
+          </div>
+          <div>
+            <p class="font-semibold">Asistencia</p>
+            <p>${a.porcentaje.toFixed(1)}%</p>
+          </div>
+        </div>
+      `;
+    }
+
     // ============================================
     // RENDERIZAR VERSIÓN
     // ============================================
@@ -650,6 +940,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
           </div>
         `;
       }
+      renderMetricasAcademicas(version.metricasEstudiantes);
     }
 
     // ============================================
@@ -662,7 +953,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
 
       if (!container || !emptyState) return;
 
-      if (data.campañas.length === 0) {
+      if (data.campanas.length === 0) {
         container.classList.add("hidden");
         emptyState.classList.remove("hidden");
         return;
@@ -671,7 +962,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
       container.classList.remove("hidden");
       emptyState.classList.add("hidden");
 
-      container.innerHTML = data.campañas
+      container.innerHTML = data.campanas
         .map((c) => {
           return `
           <div class="p-6 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 rounded-xl hover:shadow-lg smooth-transition group">
@@ -707,7 +998,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
             </div>
 
             <div class="flex gap-2">
-              <a href="/marketing/campañas/${c.id}" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium smooth-transition text-center">
+              <a href="/marketing/campaigns/${c.id}" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium smooth-transition text-center">
                 Ver Detalles
               </a>
             </div>
@@ -731,7 +1022,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
       let totalPosts = 0;
       let sumCtr = 0;
 
-      data.campañas.forEach((c) => {
+      data.campanas.forEach((c) => {
         totalReach += c.metricas.totalReach;
         totalInteractions += c.metricas.totalInteractions;
         totalPosts += c.metricas.totalPosts;
@@ -739,7 +1030,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
       });
 
       const avgCtr =
-        data.campañas.length > 0 ? sumCtr / data.campañas.length : 0;
+        data.campanas.length > 0 ? sumCtr / data.campanas.length : 0;
 
       // Quick Metrics
       const quickMetrics = document.getElementById("quickMetrics");
@@ -751,7 +1042,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
           </div>
           <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <p class="text-sm text-gray-600 dark:text-gray-400">Campañas</p>
-            <p class="text-2xl font-bold text-gray-900 dark:text-white">${data.totalCampañas}</p>
+            <p class="text-2xl font-bold text-gray-900 dark:text-white">${data.totalCampanas}</p>
           </div>
           <div class="text-center p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <p class="text-sm text-gray-600 dark:text-gray-400">Alcance Total</p>
@@ -785,7 +1076,7 @@ const mockTitle = `${versionName} - INCADEV UI`;
       if (metricaInteracciones)
         metricaInteracciones.textContent = String(totalInteractions);
       if (metricaTotalCampanas)
-        metricaTotalCampanas.textContent = String(data.totalCampañas);
+        metricaTotalCampanas.textContent = String(data.totalCampanas);
       if (metricaTotalPosts) metricaTotalPosts.textContent = String(totalPosts);
       if (metricaPrecio)
         metricaPrecio.textContent = `S/ ${version.precio.toFixed(2)}`;
@@ -976,8 +1267,8 @@ const mockTitle = `${versionName} - INCADEV UI`;
             renderCampanas(campaignsData);
             actualizarMetricas(campaignsData, versionData!);
 
-            // Mostrar mensaje de éxito
-            alert("¡Campaña creada exitosamente!");
+            // Mostrar mensaje de éxito usando modal
+            window.showSuccessModal("🎉 ¡Campaña creada exitosamente!");
           } catch (error) {
             console.error("[Crear Campaña] Error:", error);
             if (errorCrear && errorCrearMessage) {
@@ -990,6 +1281,67 @@ const mockTitle = `${versionName} - INCADEV UI`;
           }
         });
       }
+    });
+  </script>
+  <!-- Success Modal (global for this page) -->
+  <div
+    id="successModal"
+    class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 items-center justify-center p-4"
+  >
+    <div
+      class="bg-white dark:bg-gray-950 rounded-xl p-6 max-w-md w-full border border-gray-200 dark:border-gray-800"
+    >
+      <div class="flex items-center gap-3">
+        <div class="text-2xl">🎉</div>
+        <div>
+          <p
+            id="successModalMessage"
+            class="text-gray-900 dark:text-white font-medium text-lg"
+          >
+          </p>
+        </div>
+      </div>
+      <div class="mt-6 flex justify-end">
+        <button
+          id="successModalClose"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >Aceptar</button
+        >
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Extend Window interface to include custom functions
+    declare global {
+      interface Window {
+        showSuccessModal: (message: string) => void;
+        closeSuccessModal: () => void;
+      }
+    }
+
+    // Helper global para mostrar y cerrar el modal de éxito
+    window.showSuccessModal = function (message: string) {
+      const modal = document.getElementById("successModal");
+      const msg = document.getElementById("successModalMessage");
+      if (!modal || !msg) return;
+      msg.textContent = message;
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    };
+
+    window.closeSuccessModal = function () {
+      const modal = document.getElementById("successModal");
+      if (!modal) return;
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    };
+
+    // Registrar listener al cerrar cuando el DOM esté listo
+    document.addEventListener("DOMContentLoaded", () => {
+      document
+        .getElementById("successModalClose")
+        ?.addEventListener("click", window.closeSuccessModal);
     });
   </script>
 </Layout>

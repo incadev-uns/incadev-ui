@@ -1,5 +1,6 @@
 ---
 import EnrollmentExportPDF from '@/process/administrative/academic-management/components/enrollment-export-pdf.tsx';
+import '@/styles/global.css';
 const title = 'Reporte de Matrículas';
 const description = 'Reporte de matrículas del instituto';
 ---
@@ -10,7 +11,6 @@ const description = 'Reporte de matrículas del instituto';
   <meta charset="UTF-8"/>
   <title>{title}</title>
   <meta name="description" content={description} />
-  <link rel="stylesheet" href="/src/styles/global.css" />
   <style>
     @media print {
       @page {

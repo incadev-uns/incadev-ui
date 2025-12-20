@@ -1,5 +1,6 @@
 ---
 import PaymentInvoice from '@/process/administrative/pays/PaymentInvoice.tsx';
+import '@/styles/global.css';
 const paymentId = Astro.url.searchParams.get('id') || '';
 const stream = Astro.url.searchParams.get('stream') === 'true';
 const title = `Factura ${paymentId ? `#${paymentId}` : ''}`;
@@ -11,7 +12,6 @@ const description = 'Comprobante de pago del estudiante';
 <head>
   <meta charset="utf-8" />
   <title>{title}</title>
-  <link rel="stylesheet" href="/src/styles/global.css" />
   <style>
     @media print {
       @page {
