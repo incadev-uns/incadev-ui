@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,14 +16,16 @@ export function DashboardBreadcrumb({ items }: Props) {
     <Breadcrumb className="mb-6">
       <BreadcrumbList>
         {items.map((item, i) => (
-          <BreadcrumbItem key={i}>
-            {item.href ? (
-              <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
-            ) : (
-              <span>{item.label}</span>
-            )}
-            {i < items.length - 1 && <BreadcrumbSeparator />}
-          </BreadcrumbItem>
+          <Fragment key={i}>
+            <BreadcrumbItem>
+              {item.href ? (
+                <BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
+              ) : (
+                <span>{item.label}</span>
+              )}
+            </BreadcrumbItem>
+            {i < items.length - 1 ? <BreadcrumbSeparator /> : null}
+          </Fragment>
         ))}
       </BreadcrumbList>
     </Breadcrumb>

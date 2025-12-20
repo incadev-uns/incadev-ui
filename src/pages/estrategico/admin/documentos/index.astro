@@ -1,24 +1,24 @@
 ---
-import ObjetivosPage from "@/process/strategic/dashboard/plan/ObjetivoPage";
+import DocumentManagementPage from "@/process/strategic/dashboard/documents/DocumentManagementPage";
 import PlanLayout from "@/process/strategic/layouts/PlanLayout.astro";
 import "@/styles/global.css";
 
-const title = "Dashboard - Gestion de Objetivos";
-const description = "Panel de objetivos por plan con modal de KPIs detallados";
+const title = "Dashboard - Gestion documentaria";
+const description =
+  "Modulo de gestion documentaria vinculada a objetivos estrategicos.";
 const robots = ["noindex", "nofollow"];
 const keywords = [
   "INCADEV",
   "estrategico",
+  "documentos",
   "objetivos",
-  "dashboard",
   "gestion",
 ];
 const url =
-  "https://instituto.cetivirgendelapuerta.com/estrategico/plan/objetivos";
+  "https://instituto.cetivirgendelapuerta.com/estrategico/admin/documentos";
 const imageOG = "/ISOLOGOTIPO_VERTICAL.svg";
 const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
 ---
-
 <PlanLayout
   {robots}
   {title}
@@ -28,5 +28,5 @@ const imagetwt = "/ISOLOGOTIPO_VERTICAL.svg";
   {imageOG}
   {imagetwt}
 >
-  <ObjetivosPage client:load />
+  <DocumentManagementPage client:load />
 </PlanLayout>

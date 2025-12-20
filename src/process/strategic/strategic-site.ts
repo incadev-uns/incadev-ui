@@ -23,9 +23,9 @@ import {
 } from "@tabler/icons-react"
 
 export const routes = {
-  base: "/estrategico/",
+  base: "/estrategico/index",
   general: {
-    login: "/estrategico/login",
+    login: "/auth/estrategico",
   },
   dashboard: {
     index: "/estrategico/admin/dashboard",
