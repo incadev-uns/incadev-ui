@@ -7,8 +7,10 @@
 // import DashboardICV from "@/process/academic/dasboard/Dashboard";
 
 export const config = {
-  apiUrl:"https://instituto.cetivirgendelapuerta.com/backend/administrativo/public",
-  // apiUrl:  "http://127.0.0.1:8000",
+
+  //apiUrl:"https://incadev-481821.rj.r.appspot.com",
+  apiUrl: "http://localhost:8000",
+  // apiUrl:  "http://backend-incadev.test",
   environment:  "development",
   endpoints: {
     //dashboard

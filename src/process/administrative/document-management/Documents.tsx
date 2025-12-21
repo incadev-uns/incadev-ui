@@ -14,10 +14,11 @@ import {
   IconFileTypePdf,
   IconFileTypeCsv,
 } from '@tabler/icons-react';
-import { toast } from '@/utils/toast'; // ← IMPORTAR TOAST
+import { toast } from '@/utils/toast';
 import DocumentTable from './components/document-table';
 import DocumentUploadModal from './components/document-upload-modal';
 import DocumentDetailModal from './components/document-detail-modal';
+import DeleteConfirmationModal from './components/delete-confirmation-modal';
 
 interface Document {
   id: number;
@@ -59,6 +60,11 @@ export default function DocumentsManagement() {
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+
+  // Estados para el modal de confirmación de eliminación
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<Document | null>(null);
+  const [deletingDocument, setDeletingDocument] = useState(false);
 
   const [paginationMeta, setPaginationMeta] = useState<PaginationMeta>({
     current_page: 1,
@@ -161,35 +167,119 @@ export default function DocumentsManagement() {
 
   const handleDownload = async (document: Document) => {
     try {
+      // ⬇️ NUEVO: Si el path es una URL (Drive), abrir directamente
+      if (document.path && document.path.startsWith('https://')) {
+        console.log('✅ Abriendo desde Google Drive:', document.path);
+        window.open(document.path, '_blank');
+        toast.success('Abriendo archivo en Google Drive', 'Descarga');
+        return;
+      }
+
+      // Si es archivo local, usar el endpoint de descarga
       const url = `${config.apiUrl}${config.endpoints.documentsDownload}/${document.id}/download`;
-      window.open(url, '_blank');
-      toast.success('Descarga iniciada correctamente', 'Descargando');
+      
+      console.log('🔽 Descargando archivo local:', url);
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { 
+          'Accept': 'application/json, application/pdf, application/octet-stream' 
+        }
+      });
+
+      console.log('📡 Respuesta del servidor:', {
+        status: response.status,
+        contentType: response.headers.get('content-type')
+      });
+
+      if (!response.ok) {
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          const errorData = await response.json();
+          console.error('❌ Error del servidor:', errorData);
+          throw new Error(errorData.message || errorData.error || 'Archivo no encontrado');
+        } else {
+          throw new Error(`Error al descargar: ${response.status} ${response.statusText}`);
+        }
+      }
+
+      const blob = await response.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = window.document.createElement('a');
+      link.href = downloadUrl;
+      
+      const contentDisposition = response.headers.get('Content-Disposition');
+      let filename = document.name;
+      
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1].replace(/['"]/g, '');
+        }
+      } else {
+        filename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+      }
+      
+      link.download = filename;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+      window.URL.revokeObjectURL(downloadUrl);
+      
+      console.log('✅ Descarga completada:', filename);
+      toast.success('Archivo descargado exitosamente', 'Descarga completada');
+      
     } catch (error) {
-      console.error('Error al descargar documento:', error);
-      toast.error('No se pudo descargar el documento', 'Error');
+      console.error('❌ Error al descargar documento:', error);
+      const errorMessage = error instanceof Error ? error.message : 'No se pudo descargar el documento';
+      toast.error(errorMessage, 'Error de descarga');
     }
   };
 
-  const handleDelete = async (documentId: number) => {
-    if (!confirm('¿Estás seguro de eliminar este documento?')) return;
+  // Nueva función para abrir el modal de confirmación
+  // Acepta tanto el documento completo como solo el ID
+  const handleDeleteClick = (documentOrId: Document | number) => {
+    // Si recibe un número (ID), buscar el documento en la lista
+    const doc = typeof documentOrId === 'number' 
+      ? documents.find(d => d.id === documentOrId)
+      : documentOrId;
+    
+    if (doc) {
+      setDocumentToDelete(doc);
+      setDeleteModalOpen(true);
+    }
+  };
 
+  // Nueva función para confirmar la eliminación
+  const handleDeleteConfirm = async () => {
+    if (!documentToDelete) return;
+
+    setDeletingDocument(true);
+    
     try {
-      const response = await fetch(`${config.apiUrl}${config.endpoints.documents}/${documentId}`, {
-        method: 'DELETE',
-        headers: { 'Accept': 'application/json' }
-      });
+      const response = await fetch(
+        `${config.apiUrl}${config.endpoints.documents}/${documentToDelete.id}`, 
+        {
+          method: 'DELETE',
+          headers: { 'Accept': 'application/json' }
+        }
+      );
 
       if (!response.ok) throw new Error('Error al eliminar documento');
 
       loadDocuments();
       loadStatistics();
       setSelectedDocument(null);
+      setDeleteModalOpen(false);
+      setDocumentToDelete(null);
       
-      // ✅ USAR TOAST EN VEZ DE ALERT
       toast.success('El documento se eliminó correctamente', 'Eliminado');
     } catch (error) {
       console.error('Error deleting document:', error);
       toast.error('No se pudo eliminar el documento', 'Error');
+    } finally {
+      setDeletingDocument(false);
     }
   };
 
@@ -218,8 +308,6 @@ export default function DocumentsManagement() {
       if (!response.ok) throw new Error(`Error ${response.status}`);
 
       const data = await response.json();
-      
-      // Llamar a la función que genera el PDF
       generateDocumentsPDF(data);
       
       toast.success('PDF descargado exitosamente', 'Descargado');
@@ -414,7 +502,7 @@ export default function DocumentsManagement() {
                     loading={false}
                     onDocumentSelect={setSelectedDocument}
                     onDownload={handleDownload}
-                    onDelete={handleDelete}
+                    onDelete={handleDeleteClick}
                     onUpdate={handleUpdate}
                   />
 
@@ -475,8 +563,20 @@ export default function DocumentsManagement() {
           document={selectedDocument}
           onClose={() => setSelectedDocument(null)}
           onDownload={handleDownload}
-          onDelete={handleDelete}
+          onDelete={handleDeleteClick}
           onUpdate={handleUpdate}
+        />
+
+        {/* Modal de confirmación de eliminación */}
+        <DeleteConfirmationModal
+          isOpen={deleteModalOpen}
+          onClose={() => {
+            setDeleteModalOpen(false);
+            setDocumentToDelete(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+          documentName={documentToDelete?.name || ''}
+          loading={deletingDocument}
         />
       </div>
     </AdministrativeLayout>
