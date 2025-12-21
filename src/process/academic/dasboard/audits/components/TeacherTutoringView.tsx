@@ -56,8 +56,7 @@ export default function TeacherTutoringView() {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
-          },
-          credentials: "include"
+          }
         }
       );
 
@@ -90,7 +89,6 @@ export default function TeacherTutoringView() {
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
           },
-          credentials: "include",
           body: JSON.stringify({ meet_url: meetUrl })
         }
       );
@@ -124,7 +122,6 @@ export default function TeacherTutoringView() {
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
           },
-          credentials: "include",
           body: JSON.stringify({ rejection_reason: reason })
         }
       );
@@ -158,7 +155,6 @@ export default function TeacherTutoringView() {
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
           },
-          credentials: "include",
           body: JSON.stringify({ student_attended: attended })
         }
       );
