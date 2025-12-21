@@ -275,7 +275,7 @@ export default function HeroSection() {
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl">
               Más de 15 cursos certificados con instructores expertos. Aprende a
-              tu ritmo y alcanza tus metas profesionales.
+              tu ritmo y alcanza tus metas profesionales. TEST1
             </p>
           </div>
 
