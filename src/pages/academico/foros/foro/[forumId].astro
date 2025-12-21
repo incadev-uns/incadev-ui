@@ -1,43 +1,23 @@
 ---
 import DashboardLayout from '@/layouts/DashboardLayout.astro';
 import ThreadListPage from '@/process/academic/dasboard/foros/thread-list/ThreadListPage';
-import { config } from '@/config/support-config';
 
 // ============================================
-// getStaticPaths - Pre-genera páginas estáticas
+// getStaticPaths - Pre-genera páginas estáticas con IDs fijos (1-20)
 // ============================================
 export async function getStaticPaths() {
-  try {
-    // Fetch all forums at build time
-    const url = `${config.apiUrl}${config.endpoints.forums.list}`;
-    console.log("[Build] Fetching forums from:", url);
+  // IDs estáticos del 1 al 20 - No requiere fetch al API durante el build
+  // El componente React ThreadListPage hace fetch de los datos en el cliente
+  const staticIds = [
+    1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+  ];
 
-    const response = await fetch(url);
+  console.log(`[Build] Generating ${staticIds.length} forum pages (static IDs)`);
 
-    if (!response.ok) {
-      console.error('[Build] Error fetching forums:', response.statusText);
-      return [];
-    }
-
-    const data = await response.json();
-
-    // Manejar respuesta paginada o array directo
-    const forums = data.data || data;
-
-    console.log(`[Build] Generating ${forums.length} forum pages`);
-
-    // Generate a path for each forum fetched
-    return forums.map((forum: any) => ({
-      params: { forumId: forum.id.toString() },
-      props: {
-        forumId: forum.id,
-        forumName: forum.name,
-      },
-    }));
-  } catch (error) {
-    console.error('[Build] Error in getStaticPaths:', error);
-    return [];
-  }
+  return staticIds.map((id) => ({
+    params: { forumId: id.toString() },
+  }));
 }
 
 const robots = ["noindex", "nofollow"];
