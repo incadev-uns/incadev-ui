@@ -60,8 +60,7 @@ export default function StudentTutoringView() {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
-          },
-          credentials: "include"
+          }
         }
       );
 
@@ -96,7 +95,6 @@ export default function StudentTutoringView() {
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
           },
-          credentials: "include",
           body: JSON.stringify({
             teacher_id: Number(data.teacherId),
             requested_date: data.requestedDate,

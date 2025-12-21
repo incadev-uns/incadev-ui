@@ -89,8 +89,7 @@ export default function TutoringRequestForm({
           headers: {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
             "Content-Type": "application/json"
-          },
-          credentials: "include"
+          }
         }
       );
 
@@ -121,8 +120,7 @@ export default function TutoringRequestForm({
           headers: {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
             "Content-Type": "application/json"
-          },
-          credentials: "include"
+          }
         }
       );
 
