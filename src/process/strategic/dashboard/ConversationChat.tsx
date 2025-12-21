@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { 
+import {
   IconSend,
   IconPaperclip,
   IconUsers,
@@ -52,6 +52,7 @@ export default function ConversationChat({ conversationId = "1" }) {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
@@ -93,21 +94,21 @@ export default function ConversationChat({ conversationId = "1" }) {
           timestamp: msg.created_at ?? msg.timestamp ?? "",
           files: Array.isArray(msg.files)
             ? msg.files.map((f: any) => ({
-                id: f.id?.toString() ?? crypto.randomUUID(),
-                name: f.name ?? f.filename ?? "archivo",
-                type: f.type ?? "file",
-                size: f.size ?? "",
-                url: f.url ?? "#",
-              }))
+              id: f.id?.toString() ?? crypto.randomUUID(),
+              name: f.name ?? f.filename ?? "archivo",
+              type: f.type ?? "file",
+              size: f.size ?? "",
+              url: f.url ?? "#",
+            }))
             : [],
         }))
 
         setMessages(mapped)
         setConversationName(
           data?.meta?.conversation?.name ??
-            items[0]?.conversation?.name ??
-            items[0]?.conversation_name ??
-            `Conversación ${conversationId}`
+          items[0]?.conversation?.name ??
+          items[0]?.conversation_name ??
+          `Conversación ${conversationId}`
         )
 
         const participantMap = new Map<string, Participant>()
@@ -165,10 +166,37 @@ export default function ConversationChat({ conversationId = "1" }) {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
   }
 
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (!token) return
+
+      try {
+        const res = await fetch(
+          `${config.apiUrl}${config.endpoints.user.me}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
+          }
+        )
+        const data = await res.json()
+        if (res.ok) {
+          setCurrentUserId(data?.data?.id?.toString() ?? data?.id?.toString())
+          console.log("[ConversationChat] Current user ID:", data?.data?.id ?? data?.id)
+        }
+      } catch (err) {
+        console.error("[ConversationChat] Error fetching current user:", err)
+      }
+    }
+
+    fetchCurrentUser()
+  }, [token])
+
   const handleSendMessage = async () => {
     if (!newMessage.trim() && selectedFiles.length === 0) return
-    if (!token) {
-      setError("No hay token de autenticación")
+    if (!token || !currentUserId) {
+      setError("Error: Sesión no inicializada")
       return
     }
 
@@ -186,14 +214,27 @@ export default function ConversationChat({ conversationId = "1" }) {
 
       if (hasFiles) {
         const form = new FormData()
+        console.log("Appending to form:", {
+          conversation_id: conversationId,
+          user_id: currentUserId,
+          content: newMessage,
+          files: selectedFiles,
+        })
         form.append("conversation_id", conversationId)
+        form.append("user_id", currentUserId)
         form.append("content", newMessage)
         selectedFiles.forEach((file) => form.append("files[]", file))
         body = form
       } else {
         headers["Content-Type"] = "application/json"
+        console.log("Sending JSON body:", {
+          conversation_id: conversationId,
+          user_id: currentUserId,
+          content: newMessage,
+        })
         body = JSON.stringify({
           conversation_id: conversationId,
+          user_id: currentUserId,
           content: newMessage,
         })
       }
@@ -213,7 +254,7 @@ export default function ConversationChat({ conversationId = "1" }) {
       const saved = data?.data ?? data
       const appended: Message = {
         id: saved.id?.toString() ?? Date.now().toString(),
-        userId: saved.user_id?.toString() ?? "current-user",
+        userId: saved.user_id?.toString() ?? currentUserId,
         userName: saved.user?.name ?? "Tú",
         userAvatar: saved.user?.avatar ?? "",
         content: saved.content ?? newMessage,
@@ -222,12 +263,12 @@ export default function ConversationChat({ conversationId = "1" }) {
           new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         files: Array.isArray(saved.files)
           ? saved.files.map((f: any) => ({
-              id: f.id?.toString() ?? crypto.randomUUID(),
-              name: f.name ?? f.filename ?? "archivo",
-              type: f.type ?? "file",
-              size: f.size ?? "",
-              url: f.url ?? "#",
-            }))
+            id: f.id?.toString() ?? crypto.randomUUID(),
+            name: f.name ?? f.filename ?? "archivo",
+            type: f.type ?? "file",
+            size: f.size ?? "",
+            url: f.url ?? "#",
+          }))
           : [],
       }
 
@@ -250,7 +291,11 @@ export default function ConversationChat({ conversationId = "1" }) {
           {/* Header */}
           <div className="border-b p-4 flex items-center justify-between bg-background">
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.location.href = "/estrategico/conversation/list"}
+              >
                 <IconArrowLeft className="h-4 w-4" />
               </Button>
               <div>
@@ -354,7 +399,7 @@ export default function ConversationChat({ conversationId = "1" }) {
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={participant.avatar} />
                       <AvatarFallback>
-                        {participant.name.split(' ').map((n:any) => n[0]).join('').toUpperCase()}
+                        {participant.name.split(' ').map((n: any) => n[0]).join('').toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     {participant.isOnline && (
@@ -391,11 +436,10 @@ function MessageBubble({ message }: { message: Message }) {
           <span className="text-sm font-medium">{message.userName}</span>
           <span className="text-xs text-muted-foreground">{message.timestamp}</span>
         </div>
-        <div className={`rounded-lg p-3 ${
-          isCurrentUser 
-            ? 'bg-primary text-primary-foreground ml-auto' 
+        <div className={`rounded-lg p-3 ${isCurrentUser
+            ? 'bg-primary text-primary-foreground ml-auto'
             : 'bg-muted'
-        }`}>
+          }`}>
           {message.content && (
             <p className="text-sm whitespace-pre-wrap">{message.content}</p>
           )}
