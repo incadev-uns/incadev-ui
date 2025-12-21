@@ -39,5 +39,4 @@ deploy-gcp.ps1
 DEPLOYMENT.md
 setup-cdn.ps1
 setup-service-account.ps1
-.github/workflows/deploy-gcp.yml
 .gcloudignore
