@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { User, Reply, Trash2 } from "lucide-react";
+import { User, Reply, Trash2, Play } from "lucide-react";
 import { useAcademicAuth } from "@/process/academic/hooks/useAcademicAuth";
 import { useVotes } from "../hooks/useVotes";
 import CommentForm from "./CommentForm";
@@ -9,7 +9,7 @@ import type { Comment } from "../types";
 
 interface CommentItemProps {
   comment: Comment;
-  onReply: (body: string, parentId: number) => Promise<void>;
+  onReply: (body: string, parentId: number, attachmentUrl?: string) => Promise<void>;
   onDelete: (commentId: number) => Promise<void>;
   depth?: number;
   maxDepth?: number;
@@ -44,10 +44,16 @@ export default function CommentItem({
     }
   };
 
-  const handleReply = async (body: string) => {
-    await onReply(body, comment.id);
+  const handleReply = async (body: string, attachmentUrl?: string) => {
+    await onReply(body, comment.id, attachmentUrl);
     setShowReplyForm(false);
   };
+
+  // Detectar si el attachment es video
+  const isVideo = comment.attachment_url && (
+    comment.attachment_url.includes('/video/') ||
+    comment.attachment_url.match(/\.(mp4|webm|mov|avi)$/i)
+  );
 
   const handleDelete = async () => {
     if (!confirm("¿Estás seguro de eliminar este comentario?")) return;
@@ -93,7 +99,37 @@ export default function CommentItem({
               </span>
             </div>
 
-            <p className="text-sm whitespace-pre-wrap mb-3">{comment.body}</p>
+            {comment.body && (
+              <p className="text-sm whitespace-pre-wrap mb-3">{comment.body}</p>
+            )}
+
+            {/* Mostrar imagen o video adjunto */}
+            {comment.attachment_url && (
+              <div className="mb-3 rounded-lg overflow-hidden border bg-muted/50 max-w-md">
+                {isVideo ? (
+                  <div className="relative">
+                    <video
+                      src={comment.attachment_url}
+                      controls
+                      className="w-full max-h-64 object-contain"
+                    />
+                  </div>
+                ) : (
+                  <a
+                    href={comment.attachment_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <img
+                      src={comment.attachment_url}
+                      alt="Imagen adjunta"
+                      className="w-full max-h-64 object-contain hover:opacity-90 transition-opacity"
+                    />
+                  </a>
+                )}
+              </div>
+            )}
 
             <div className="flex items-center gap-2">
               <VoteControls

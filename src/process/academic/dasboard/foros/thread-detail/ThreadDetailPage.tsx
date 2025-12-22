@@ -96,12 +96,12 @@ export default function ThreadDetailPage({ threadId }: ThreadDetailPageProps) {
     }
   };
 
-  const handleAddComment = async (body: string) => {
-    await addComment({ body });
+  const handleAddComment = async (body: string, attachmentUrl?: string) => {
+    await addComment({ body, attachment_url: attachmentUrl || null });
   };
 
-  const handleReply = async (body: string, parentId: number) => {
-    await addComment({ body, parent_id: parentId });
+  const handleReply = async (body: string, parentId: number, attachmentUrl?: string) => {
+    await addComment({ body, parent_id: parentId, attachment_url: attachmentUrl || null });
   };
 
   const formatDate = (dateString: string) => {
@@ -161,7 +161,24 @@ export default function ThreadDetailPage({ threadId }: ThreadDetailPageProps) {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="whitespace-pre-wrap">{thread.body}</p>
-              
+
+              {/* Mostrar imagen del hilo si existe */}
+              {thread.image_url && (
+                <div className="rounded-lg overflow-hidden border bg-muted/50">
+                  <a
+                    href={thread.image_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={thread.image_url}
+                      alt="Imagen del hilo"
+                      className="w-full max-h-96 object-contain hover:opacity-90 transition-opacity"
+                    />
+                  </a>
+                </div>
+              )}
+
               <div className="flex items-center gap-4">
                 <VoteControls
                   voteCount={voteCount}
