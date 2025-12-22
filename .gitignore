@@ -17,6 +17,11 @@ pnpm-debug.log*
 .env
 .env.production
 
+# GCP credentials (NEVER commit these!)
+gcp-key.json
+*.json.key
+service-account*.json
+
 # macOS-specific files
 .DS_Store
 
@@ -27,3 +32,6 @@ magenta-motion/
 
 package-lock.json
 vendor/composer/**
+
+# Claude Code
+.claude/
