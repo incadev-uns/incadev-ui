@@ -174,6 +174,7 @@ export interface AlumnoDetalleFromAPI {
         fecha_registro: string;
         interests: string[];
         learning_goal: string;
+        engagement_score: number;
     };
     asistencias: {
         resumen: AsistenciasFromAPI;

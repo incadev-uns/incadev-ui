@@ -1,0 +1,22 @@
+# This file specifies files that are *not* uploaded to Google Cloud
+# using gcloud. It follows the same syntax as .gitignore
+
+.git
+.gitignore
+node_modules/
+.env
+.env.*
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.md
+src/
+public/
+.github/
+.astro/
+pnpm-lock.yaml
+package.json
+astro.config.mjs
+tsconfig.json
+tailwind.config.js
