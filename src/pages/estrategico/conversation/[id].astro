@@ -1,15 +1,70 @@
 ---
 import ConversationChat from '@/process/strategic/dashboard/ConversationChat';
 import '@/styles/global.css';
+import { config } from '@/config/strategic-config'
+
 export async function getStaticPaths() {
-  // Aquí defines todos los IDs posibles
-  // Podrías obtenerlos de una API o hardcodearlos
-  return [
-    { params: { id: '1' } },
-    { params: { id: '2' } },
-    { params: { id: 'abc' } },
-  ];
+  try {
+    const url = `${config.apiUrl}${config.endpoints.conversation.list}`
+    console.log('[getStaticPaths] Fetching conversations from:', url)
+
+    const res = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+      },
+    })
+
+    const contentType = res.headers.get('content-type')
+    console.log('[getStaticPaths] Content-Type:', contentType)
+    console.log('[getStaticPaths] Status:', res.status)
+
+    const fallbackPaths = Array.from({ length: 1000 }, function (_, i) {
+      return { params: { id: String(i + 1) } }
+    })
+
+    if (!res.ok || !contentType?.includes('application/json')) {
+      if (!contentType?.includes('application/json')) {
+        const text = await res.text()
+        console.error(
+          '[getStaticPaths] Response is not JSON:',
+          text.substring(0, 500)
+        )
+      }
+
+      console.warn('[getStaticPaths] Falling back to default conversations')
+      return fallbackPaths
+    }
+
+    const json = await res.json()
+    console.log('[getStaticPaths] Response data:', json)
+
+    const items = Array.isArray(json?.data)
+      ? json.data
+      : Array.isArray(json)
+      ? json
+      : []
+
+    if (items.length === 0) {
+      console.warn('[getStaticPaths] No conversations found, using defaults')
+      return fallbackPaths
+    }
+
+    const paths = items.map(function (c: any) {
+      return { params: { id: String(c.id) } }
+    })
+
+    console.log('[getStaticPaths] Generated paths:', paths)
+    return paths
+  } catch (error) {
+    console.error('[getStaticPaths] Error fetching conversations:', error)
+
+    return Array.from({ length: 1000 }, function (_, i) {
+      return { params: { id: String(i + 1) } }
+    })
+  }
 }
+
+
 const { id } = Astro.params;
 
 const title = "Chat | INCADEV Estratégico";

@@ -200,14 +200,14 @@ export function AppSidebar({ token, user, ...props }: AppSidebarProps) {
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
+                {/* <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <a href={routes.coordination.collaboration}>
                       <IconUsers className="h-4 w-4" />
                       <span>Colaboración</span>
                     </a>
                   </SidebarMenuButton>
-                </SidebarMenuItem>
+                </SidebarMenuItem> */}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     

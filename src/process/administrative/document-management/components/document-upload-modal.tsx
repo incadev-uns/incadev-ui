@@ -17,7 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { IconUpload, IconFile, IconX } from '@tabler/icons-react';
+import { IconUpload } from '@tabler/icons-react';
+import DriveUploader from "@/services/academico/DriveUploader";
 
 interface Document {
   id: number;
@@ -45,8 +46,8 @@ export default function DocumentUploadModal({
   const [formData, setFormData] = useState({
     name: '',
     type: 'Académico',
+    drive_url: '', // ⬅️ NUEVO: URL de Google Drive
   });
-  const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Cargar datos del documento si es actualización
@@ -55,46 +56,29 @@ export default function DocumentUploadModal({
       setFormData({
         name: document.name,
         type: document.type,
+        drive_url: '', // Se llenará cuando suba un nuevo archivo
       });
     } else {
       setFormData({
         name: '',
         type: 'Académico',
+        drive_url: '',
       });
     }
   }, [isUpdate, document]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      // Validar tamaño (10MB máximo)
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        setError('El archivo no debe superar los 10MB');
-        return;
-      }
-
-      // Solo permitir PDF
-      if (selectedFile.type !== 'application/pdf') {
-        setError('Solo se permiten archivos PDF');
-        return;
-      }
-
-      setFile(selectedFile);
-      setError(null);
-
-      // Auto-completar nombre si está vacío y no es actualización
-      if (!formData.name && !isUpdate) {
-        const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '');
-        setFormData(prev => ({ ...prev, name: nameWithoutExt }));
-      }
-    }
+  // ⬅️ NUEVO: Callback cuando DriveUploader termina
+  const handleDriveUpload = (url: string) => {
+    console.log('✅ URL recibida de Drive:', url);
+    setFormData(prev => ({ ...prev, drive_url: url }));
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!file) {
-      setError('Debes seleccionar un archivo PDF');
+    if (!formData.drive_url) {
+      setError('Debes subir un archivo a Google Drive');
       return;
     }
 
@@ -107,30 +91,29 @@ export default function DocumentUploadModal({
     setError(null);
 
     try {
-      const uploadData = new FormData();
-      uploadData.append('name', formData.name.trim());
-      uploadData.append('type', formData.type);
-      uploadData.append('file', file);
-
       const url = isUpdate && document
         ? `${config.apiUrl}${config.endpoints.documents}/${document.id}`
         : `${config.apiUrl}${config.endpoints.documents}`;
 
-      const method = isUpdate ? 'POST' : 'POST';
+      const method = isUpdate ? 'PUT' : 'POST';
 
-      // Si es actualización, agregar _method para Laravel
-      if (isUpdate) {
-        uploadData.append('_method', 'PUT');
-      }
-
+      // ⬅️ CAMBIO: Ahora envía JSON en lugar de FormData
       const response = await fetch(url, {
         method,
-        body: uploadData,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          type: formData.type,
+          drive_url: formData.drive_url // ⬅️ Envía la URL de Drive
+        }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al subir el documento');
+        throw new Error(errorData.error || errorData.message || 'Error al subir el documento');
       }
 
       // Éxito
@@ -145,15 +128,9 @@ export default function DocumentUploadModal({
   };
 
   const handleClose = () => {
-    setFormData({ name: '', type: 'Académico' });
-    setFile(null);
+    setFormData({ name: '', type: 'Académico', drive_url: '' });
     setError(null);
     onClose();
-  };
-
-  const removeFile = () => {
-    setFile(null);
-    setError(null);
   };
 
   return (
@@ -165,8 +142,8 @@ export default function DocumentUploadModal({
           </DialogTitle>
           <DialogDescription>
             {isUpdate 
-              ? `Sube una nueva versión del documento. Versión actual: v${document?.version ? Number(document.version).toFixed(1) : '1.0'}, nueva versión: v${document ? (Number(document.version || 1.0) + 0.5).toFixed(1) : '1.5'}`
-              : 'Sube un nuevo documento al repositorio institucional'
+              ? `Sube una nueva versión del documento a Google Drive. Versión actual: v${document?.version ? Number(document.version).toFixed(1) : '1.0'}, nueva versión: v${document ? (Number(document.version || 1.0) + 0.5).toFixed(1) : '1.5'}`
+              : 'Sube un nuevo documento al repositorio institucional usando Google Drive'
             }
           </DialogDescription>
         </DialogHeader>
@@ -214,47 +191,16 @@ export default function DocumentUploadModal({
             )}
           </div>
 
-          {/* Upload de archivo */}
+          {/* ⬇️ REEMPLAZADO: Ahora usa DriveUploader */}
           <div className="space-y-2">
-            <Label>Archivo *</Label>
-            {!file ? (
-              <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-900/50 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-900">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <IconUpload className="w-8 h-8 mb-2 text-slate-500 dark:text-slate-400" />
-                    <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                      <span className="font-semibold">Click para subir</span> o arrastra el archivo
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      Solo archivos PDF (MAX. 10MB)
-                    </p>
-                  </div>
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept=".pdf"
-                  />
-                </label>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 p-3 border rounded-lg bg-slate-50 dark:bg-slate-900/50">
-                <IconFile className="h-8 w-8 text-slate-600 dark:text-slate-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {(file.size / 1024).toFixed(2)} KB
-                  </p>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={removeFile}
-                >
-                  <IconX className="h-4 w-4" />
-                </Button>
-              </div>
+            <DriveUploader
+              onUpload={handleDriveUpload}
+              label="Archivo del documento *"
+            />
+            {formData.drive_url && (
+              <p className="text-xs text-green-600 dark:text-green-400">
+                ✓ Archivo subido correctamente a Google Drive
+              </p>
             )}
           </div>
 
@@ -272,7 +218,7 @@ export default function DocumentUploadModal({
             </Button>
             <Button 
               type="submit" 
-              disabled={loading || !file}
+              disabled={loading || !formData.drive_url}
               className="bg-slate-700 hover:bg-slate-800"
             >
               {loading ? (

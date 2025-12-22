@@ -55,10 +55,12 @@ const normalizeDocuments = (input: any): StrategicDocument[] => {
   const list = Array.isArray(input?.data)
     ? input.data
     : Array.isArray(input)
-      ? input
-      : input?.data
-        ? [input.data]
-        : [];
+    ? input
+    : input?.data
+    ? [input.data]
+    : input?.id
+    ? [input]
+    : [];
 
   return list
     .map((doc: any) => ({
@@ -70,11 +72,7 @@ const normalizeDocuments = (input: any): StrategicDocument[] => {
       description: doc.description ?? "",
       file_id: doc.file_id ?? doc.file?.id ?? null,
       file_url:
-        doc.file?.secure_url ??
-        doc.file?.url ??
-        doc.file_url ??
-        doc.path ??
-        "",
+        doc.file_url ?? doc.file?.secure_url ?? doc.file?.url ?? doc.path ?? "",
       updated_at: doc.updated_at ?? doc.modified_at ?? doc.created_at ?? "",
     }))
     .filter((doc: StrategicDocument) => doc.id > 0);
@@ -117,6 +115,24 @@ export default function DocumentManagementPage() {
       fetchDocuments();
     }
   }, [token]);
+
+  const fetchDocumentDetail = async (id: number) => {
+    const res = await fetch(
+      `${
+        strategicConfig.apiUrl
+      }${strategicConfig.endpoints.strategicDocuments.get(id)}`,
+      {
+        headers: {
+          Accept: "application/json",
+          Authorization: token,
+        },
+      }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    const [doc] = normalizeDocuments(json);
+    return doc ?? null;
+  };
 
   const fetchDocuments = async () => {
     if (!token) return;
@@ -169,9 +185,30 @@ export default function DocumentManagementPage() {
     setEditOpen(true);
   };
 
-  const openDetail = (id: number) => {
+  const openDetail = async (id: number) => {
     setSelectedId(id);
     setDetailOpen(true);
+
+    const doc = documents.find((d) => d.id === id);
+    if (doc?.file_url) return;
+
+    try {
+      const detail = await fetchDocumentDetail(id);
+      if (!detail) return;
+      setDocuments((prev) => {
+        const exists = prev.some((d) => d.id === id);
+        const next = exists
+          ? prev.map((d) => (d.id === id ? { ...d, ...detail } : d))
+          : [...prev, detail];
+        return next.sort((a, b) => a.id - b.id);
+      });
+    } catch (err: any) {
+      toast({
+        title: "No se pudo cargar el detalle",
+        description: err?.message || "Intenta nuevamente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const submitForm = async () => {
@@ -213,7 +250,9 @@ export default function DocumentManagementPage() {
 
     const isEdit = formMode === "edit" && selectedId;
     const url = isEdit
-      ? `${strategicConfig.apiUrl}${strategicConfig.endpoints.strategicDocuments.update(
+      ? `${
+          strategicConfig.apiUrl
+        }${strategicConfig.endpoints.strategicDocuments.update(
           selectedId as number
         )}`
       : `${strategicConfig.apiUrl}${strategicConfig.endpoints.strategicDocuments.create}`;
@@ -251,7 +290,9 @@ export default function DocumentManagementPage() {
         const doc = updated[0];
         setDocuments((prev) =>
           prev
-            .map((d) => (d.id === (selectedId as number) ? { ...d, ...doc } : d))
+            .map((d) =>
+              d.id === (selectedId as number) ? { ...d, ...doc } : d
+            )
             .sort((a, b) => a.id - b.id)
         );
       } else {
@@ -289,9 +330,9 @@ export default function DocumentManagementPage() {
 
     try {
       const res = await fetch(
-        `${strategicConfig.apiUrl}${strategicConfig.endpoints.strategicDocuments.delete(
-          id
-        )}`,
+        `${
+          strategicConfig.apiUrl
+        }${strategicConfig.endpoints.strategicDocuments.delete(id)}`,
         {
           method: "DELETE",
           headers: {
@@ -328,7 +369,9 @@ export default function DocumentManagementPage() {
         ? (doc.visibility ?? "").toLowerCase() ===
           filters.visibility.toLowerCase()
         : true;
-      const text = `${doc.name} ${doc.description ?? ""} ${doc.category ?? ""}`.toLowerCase();
+      const text = `${doc.name} ${doc.description ?? ""} ${
+        doc.category ?? ""
+      }`.toLowerCase();
       const matchesSearch = filters.search
         ? text.includes(filters.search.toLowerCase())
         : true;
@@ -371,7 +414,9 @@ export default function DocumentManagementPage() {
               <Label>Visibilidad</Label>
               <Select
                 value={filters.visibility}
-                onValueChange={(v) => setFilters((f) => ({ ...f, visibility: v }))}
+                onValueChange={(v) =>
+                  setFilters((f) => ({ ...f, visibility: v }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos" />
@@ -527,7 +572,7 @@ export default function DocumentManagementPage() {
                   </a>
                 ) : null}
                 <p className="text-xs text-muted-foreground">
-                  Tamano maximo 10MB. Se almacenara en Cloudinary.
+                  Tamano maximo 10MB.
                 </p>
               </div>
             </div>
@@ -548,7 +593,7 @@ export default function DocumentManagementPage() {
         </Dialog>
 
         <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-          <DialogContent className="w-[92vw] sm:max-w-3xl">
+          <DialogContent className="w-[96vw] sm:w-[90vw] lg:w-[80vw] max-w-6xl p-4 sm:p-6 lg:p-8">
             <DialogHeader>
               <DialogTitle>Detalle de documento</DialogTitle>
               <DialogDescription>
@@ -556,32 +601,35 @@ export default function DocumentManagementPage() {
               </DialogDescription>
             </DialogHeader>
             {selectedDoc ? (
-              <div className="space-y-3 text-sm">
-                <div>
-                  <span className="font-semibold">Nombre: </span>
-                  {selectedDoc.name}
+              <div className="space-y-4 text-sm max-h-[85vh] overflow-y-auto pr-1">
+                <div className="space-y-2">
+                  <p className="text-base font-semibold">{selectedDoc.name}</p>
+                  <p className="text-muted-foreground">
+                    {selectedDoc.description || "Sin descripcion"}
+                  </p>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   <div>
-                    <span className="font-semibold">Tipo: </span>
-                    {selectedDoc.type || "-"}
+                    <span className="font-semibold">Nombre: </span>
+                    {selectedDoc.name}
                   </div>
                   <div>
                     <span className="font-semibold">Categoria: </span>
                     {selectedDoc.category || "-"}
                   </div>
                   <div>
+                    <span className="font-semibold">Tipo: </span>
+                    {selectedDoc.type || "-"}
+                  </div>
+                  <div>
                     <span className="font-semibold">Visibilidad: </span>
                     {selectedDoc.visibility || "-"}
                   </div>
-                  <div>
+                  <div className="sm:col-span-2">
                     <span className="font-semibold">Actualizado: </span>
                     {selectedDoc.updated_at || "-"}
                   </div>
                 </div>
-                <p className="text-muted-foreground whitespace-pre-line">
-                  {selectedDoc.description || "Sin descripcion"}
-                </p>
                 <div className="truncate">
                   <span className="font-semibold">Archivo: </span>
                   {selectedDoc.file_url ? (
@@ -600,11 +648,11 @@ export default function DocumentManagementPage() {
                 {selectedDoc.file_url ? (
                   <div className="mt-4 space-y-2">
                     <span className="font-semibold">Vista previa:</span>
-                    <div className="rounded-md border overflow-hidden">
+                    <div className="rounded-md border overflow-hidden bg-muted">
                       <iframe
                         title="Vista previa del documento"
                         src={selectedDoc.file_url}
-                        className="w-full h-96"
+                        className="w-full min-h-[50vh] sm:min-h-[60vh] max-h-[75vh] bg-background"
                       />
                     </div>
                   </div>

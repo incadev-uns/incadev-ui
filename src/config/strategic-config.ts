@@ -26,6 +26,14 @@ export const config = {
       delete: (id: apiProps) => `/api/messages/${id}`,
     },
 
+    conversation: {
+      list: "/api/conversations",
+      create: "/api/conversations",
+      get: (id: apiProps) => `/api/conversations/${id}`,
+      update: (id: apiProps) => `/api/conversations/${id}`,
+      delete: (id: apiProps) => `/api/conversations/${id}`,
+    },
+
     organizations: {
       list: "/api/organizations",
       create: "/api/organizations",

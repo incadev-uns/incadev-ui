@@ -14,49 +14,45 @@ import { Label } from "@/components/ui/label";
 import { Loader2, ImageIcon, X } from "lucide-react";
 import CloudinaryUploader from "@/services/academico/CloudinaryUploader";
 
-interface CreateThreadDialogProps {
+interface CreateForumDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { title: string; body: string; image_url?: string }) => Promise<void>;
+  onSubmit: (data: { name: string; description: string; image_url?: string }) => Promise<void>;
 }
 
-export default function CreateThreadDialog({
+export default function CreateForumDialog({
   open,
   onOpenChange,
   onSubmit,
-}: CreateThreadDialogProps) {
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+}: CreateForumDialogProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [showUploader, setShowUploader] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showUploader, setShowUploader] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title.trim() || !body.trim()) {
-      return;
-    }
-
-    if (body.trim().length < 10) {
-      alert("La descripción debe tener al menos 10 caracteres");
+    if (!name.trim() || !description.trim()) {
       return;
     }
 
     setIsSubmitting(true);
     try {
       await onSubmit({
-        title: title.trim(),
-        body: body.trim(),
+        name: name.trim(),
+        description: description.trim(),
         image_url: imageUrl || undefined
       });
-      setTitle("");
-      setBody("");
+      // Limpiar formulario
+      setName("");
+      setDescription("");
       setImageUrl("");
       setShowUploader(false);
       onOpenChange(false);
     } catch (error) {
-      console.error("Error creating thread:", error);
+      console.error("Error creating forum:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -75,55 +71,51 @@ export default function CreateThreadDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Crear Nuevo Hilo</DialogTitle>
+          <DialogTitle>Crear Nuevo Foro</DialogTitle>
           <DialogDescription>
-            Comparte una pregunta o inicia una discusión en el foro
+            Crea un nuevo espacio de discusión para la comunidad
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Título</Label>
+              <Label htmlFor="name">Nombre del foro</Label>
               <Input
-                id="title"
-                placeholder="¿Cuál es tu pregunta o tema?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                id="name"
+                placeholder="Ej: Preguntas sobre JavaScript"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 maxLength={255}
                 required
               />
             </div>
-            
+
             <div className="space-y-2">
-              <Label htmlFor="body">Descripción</Label>
+              <Label htmlFor="description">Descripción</Label>
               <Textarea
-                id="body"
-                placeholder="Describe tu pregunta o tema con más detalle... (mínimo 10 caracteres)"
-                value={body}
-                onChange={(e) => setBody(e.target.value)}
-                rows={6}
+                id="description"
+                placeholder="Describe de qué trata este foro..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={4}
                 required
                 className="resize-none"
-                minLength={10}
               />
-              <p className="text-xs text-muted-foreground">
-                {body.length} caracteres {body.length < 10 && `(mínimo 10)`}
-              </p>
             </div>
 
             <div className="space-y-2">
-              <Label>Imagen adjunta (opcional)</Label>
+              <Label>Imagen de portada (opcional)</Label>
 
               {!imageUrl && !showUploader && (
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full h-16 border-dashed"
+                  className="w-full h-20 border-dashed"
                   onClick={() => setShowUploader(true)}
                 >
-                  <ImageIcon className="mr-2 h-4 w-4" />
-                  Agregar imagen
+                  <ImageIcon className="mr-2 h-5 w-5" />
+                  Agregar imagen de portada
                 </Button>
               )}
 
@@ -131,7 +123,7 @@ export default function CreateThreadDialog({
                 <div className="space-y-2">
                   <CloudinaryUploader
                     onUpload={handleImageUpload}
-                    label="Subir imagen"
+                    label="Subir imagen de portada"
                     acceptType="image"
                   />
                   <Button
@@ -149,7 +141,7 @@ export default function CreateThreadDialog({
                 <div className="relative rounded-lg overflow-hidden border">
                   <img
                     src={imageUrl}
-                    alt="Imagen adjunta"
+                    alt="Portada del foro"
                     className="w-full h-32 object-cover"
                   />
                   <Button
@@ -175,9 +167,9 @@ export default function CreateThreadDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" disabled={isSubmitting || !title.trim() || body.trim().length < 10}>
+            <Button type="submit" disabled={isSubmitting || !name.trim() || !description.trim()}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Crear Hilo
+              Crear Foro
             </Button>
           </DialogFooter>
         </form>
