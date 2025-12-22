@@ -51,7 +51,6 @@ export default function ConversationList() {
 
   // Form estados
   const [newConversationName, setNewConversationName] = useState("")
-  const [selectedParticipants, setSelectedParticipants] = useState<Set<string | number>>(new Set())
   const [editingConversation, setEditingConversation] = useState<any | null>(null)
   const [deletingConversation, setDeletingConversation] = useState<any | null>(null)
 
@@ -153,11 +152,6 @@ export default function ConversationList() {
       return
     }
 
-    if (selectedParticipants.size === 0) {
-      setCreateError("Selecciona al menos un participante")
-      return
-    }
-
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
     if (!token) {
       setCreateError("No se encontró sesión activa")
@@ -167,7 +161,6 @@ export default function ConversationList() {
     setCreating(true)
     setCreateError(null)
     try {
-      const participantIds = Array.from(selectedParticipants).map(id => Number(id))
       
       const res = await fetch(
         `${config.apiUrl}${config.endpoints.conversation.create}`,
@@ -179,8 +172,7 @@ export default function ConversationList() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            name,
-            participant_ids: participantIds,
+            name
           }),
         }
       )
@@ -196,7 +188,6 @@ export default function ConversationList() {
       
       setIsCreateDialogOpen(false)
       setNewConversationName("")
-      setSelectedParticipants(new Set())
       
       await fetchData()
       
@@ -292,16 +283,6 @@ export default function ConversationList() {
     } finally {
       setDeleting(false)
     }
-  }
-
-  const toggleParticipant = (userId: string | number) => {
-    const newSelected = new Set(selectedParticipants)
-    if (newSelected.has(userId)) {
-      newSelected.delete(userId)
-    } else {
-      newSelected.add(userId)
-    }
-    setSelectedParticipants(newSelected)
   }
 
   const filteredConversations = conversations.filter(conv =>
@@ -482,36 +463,6 @@ export default function ConversationList() {
               />
             </div>
 
-            <div>
-              <label className="text-sm font-medium mb-3 block">
-                Selecciona participantes ({selectedParticipants.size})
-              </label>
-              <div className="space-y-2 border rounded-lg p-3 max-h-[300px] overflow-y-auto">
-                {planningUsers.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No hay usuarios disponibles</p>
-                ) : (
-                  planningUsers.map((user) => (
-                    <div key={user.id} className="flex items-center gap-3 p-2 hover:bg-muted rounded">
-                      <Checkbox
-                        checked={selectedParticipants.has(user.id)}
-                        onCheckedChange={() => toggleParticipant(user.id)}
-                      />
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.avatar} />
-                        <AvatarFallback>
-                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{user.name}</p>
-                        <p className="text-xs text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
             {createError && (
               <p className="text-sm text-destructive">{createError}</p>
             )}
@@ -520,12 +471,11 @@ export default function ConversationList() {
             <Button variant="outline" onClick={() => {
               setIsCreateDialogOpen(false)
               setNewConversationName("")
-              setSelectedParticipants(new Set())
               setCreateError(null)
             }} disabled={creating}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateConversation} disabled={creating || selectedParticipants.size === 0}>
+            <Button onClick={handleCreateConversation} disabled={creating}>
               {creating ? "Creando..." : "Crear"}
             </Button>
           </DialogFooter>
@@ -638,10 +588,6 @@ function ConversationCard({
               </Badge>
             )}
           </div>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <IconUsers className="h-3 w-3" />
-          <span>{conversation.participantCount} participantes</span>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
