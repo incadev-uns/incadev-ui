@@ -3,7 +3,7 @@
  * @description Configuración del módulo de marketing.
  */
 
-const API_URL = import.meta.env.VITE_MARKETING_API_URL ?? "http://34.170.241.86/api";
+const API_URL = import.meta.env.VITE_MARKETING_API_URL ?? "http://34.170.241.86:8002/api";
 const AUTH_API_URL = import.meta.env.VITE_AUTH_SERVICE_URL ?? "https://project-48be602c-d967-4478-ab6.uc.r.appspot.com/api";
 const METRICS_API_URL = import.meta.env.VITE_METRICS_API_URL ?? "http://34.170.241.86:8006/api";
 const GENERATION_API_URL = import.meta.env.VITE_GENERATION_API_URL ?? "http://34.170.241.86:8002/api";
