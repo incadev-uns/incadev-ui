@@ -8,10 +8,21 @@ interface ForumListProps {
   forums: Forum[] | null | undefined;
   isLoading: boolean;
   error: string | null;
+  currentUserId?: number | null;
   onSelectForum: (forumId: number) => void;
+  onEditForum?: (forum: Forum) => void;
+  onDeleteForum?: (forum: Forum) => void;
 }
 
-export default function ForumList({ forums, isLoading, error, onSelectForum }: ForumListProps) {
+export default function ForumList({
+  forums,
+  isLoading,
+  error,
+  currentUserId,
+  onSelectForum,
+  onEditForum,
+  onDeleteForum
+}: ForumListProps) {
   const safeForums = Array.isArray(forums) ? forums : [];
 
   if (isLoading) {
@@ -51,10 +62,13 @@ export default function ForumList({ forums, isLoading, error, onSelectForum }: F
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {safeForums.map((forum) => (
-        <ForumCard 
-          key={forum.id} 
-          forum={forum} 
+        <ForumCard
+          key={forum.id}
+          forum={forum}
+          currentUserId={currentUserId}
           onSelect={onSelectForum}
+          onEdit={onEditForum}
+          onDelete={onDeleteForum}
         />
       ))}
     </div>
