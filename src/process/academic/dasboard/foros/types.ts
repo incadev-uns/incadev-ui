@@ -3,7 +3,14 @@ export interface Forum {
   id: number;
   name: string;
   description: string;
+  image_url?: string | null;
+  user_id?: number | null;
   threads_count?: number;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -14,6 +21,7 @@ export interface Thread {
   user_id: number;
   title: string;
   body: string;
+  image_url?: string | null;
   is_pinned: boolean;
   is_locked: boolean;
   views_count: number;
@@ -35,6 +43,7 @@ export interface Comment {
   user_id: number;
   parent_id: number | null;
   body: string;
+  attachment_url?: string | null;
   votes_count?: number;
   user_vote?: number;
   user?: {
@@ -50,16 +59,19 @@ export interface Comment {
 export interface CreateForumData {
   name: string;
   description: string;
+  image_url?: string | null;
 }
 
 export interface CreateThreadData {
   title: string;
   content: string;
+  image_url?: string | null;
 }
 
 export interface CreateCommentData {
   body: string;
   parent_id?: number | null;
+  attachment_url?: string | null;
 }
 
 export interface VoteData {
