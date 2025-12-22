@@ -1,6 +1,8 @@
+//
 import React, { useState, useEffect } from 'react';
 import AdministrativeLayout from '@/process/administrative/AdministrativeLayout';
 import { config } from "@/config/administrative-config";
+import { generateDocumentsPDF } from './components/document-export-pdf';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -216,15 +218,15 @@ export default function DocumentsManagement() {
       if (!response.ok) throw new Error(`Error ${response.status}`);
 
       const data = await response.json();
-      localStorage.setItem('documentsExportData', JSON.stringify(data));
-
-      const pdfWindow = window.open('/administrativo/gestion-documentaria/export-pdf', '_blank');
-      if (!pdfWindow) {
-        toast.warning('Por favor, permite las ventanas emergentes', 'Bloqueado');
-      }
+      
+      // Llamar a la función que genera el PDF
+      generateDocumentsPDF(data);
+      
+      toast.success('PDF descargado exitosamente', 'Descargado');
+      
     } catch (error) {
       console.error('Error al exportar PDF:', error);
-      toast.error('No se pudo preparar el PDF', 'Error');
+      toast.error('No se pudo generar el PDF', 'Error');
     }
   };
 

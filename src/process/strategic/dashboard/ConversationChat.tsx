@@ -15,6 +15,7 @@ import {
   IconX
 } from "@tabler/icons-react"
 import StrategicLayout from "../StrategicLayout"
+import { config } from "@/config/strategic-config"
 
 interface Message {
   id: string
@@ -43,109 +44,117 @@ interface Participant {
 }
 
 export default function ConversationChat({ conversationId = "1" }) {
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState("")
-  const [participants, setParticipants] = useState<Participant[]>([])
+  const [participants, setParticipants] = useState<any[]>([])
   const [conversationName, setConversationName] = useState("")
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
 
   useEffect(() => {
-    // Simular carga de datos
-    const mockMessages: Message[] = [
-      {
-        id: "1",
-        userId: "user1",
-        userName: "María González",
-        userAvatar: "",
-        content: "Buenos días equipo. ¿Han revisado los objetivos del segundo trimestre?",
-        timestamp: "10:30 AM",
-        files: []
-      },
-      {
-        id: "2",
-        userId: "user2", 
-        userName: "Carlos Rodríguez",
-        userAvatar: "",
-        content: "Sí, los revisé anoche. Tengo algunas observaciones sobre los indicadores de calidad.",
-        timestamp: "10:35 AM",
-        files: [
+    const fetchMessages = async () => {
+      if (!token) {
+        setLoading(false)
+        setError("No hay token de autenticación")
+        return
+      }
+
+      setLoading(true)
+      setError(null)
+      try {
+        const res = await fetch(
+          `${config.apiUrl}${config.endpoints.messages.list}?conversation_id=${conversationId}`,
           {
-            id: "f1",
-            name: "observaciones-q2.pdf",
-            type: "application/pdf",
-            size: "2.3 MB",
-            url: "#"
+            headers: {
+              Authorization: `Bearer ${token}`,
+              Accept: "application/json",
+            },
           }
-        ]
-      },
-      {
-        id: "3",
-        userId: "user3",
-        userName: "Ana Morales", 
-        userAvatar: "",
-        content: "Perfecto. ¿Podemos programar una reunión para esta semana?",
-        timestamp: "10:40 AM",
-        files: []
-      }
-    ]
+        )
+        const data = await res.json()
+        console.log("[ConversationChat] GET /messages response:", data)
 
-    const mockParticipants: Participant[] = [
-      {
-        id: "user1",
-        name: "María González",
-        email: "maria.gonzalez@uns.edu.pe",
-        avatar: "",
-        isOnline: true
-      },
-      {
-        id: "user2", 
-        name: "Carlos Rodríguez",
-        email: "carlos.rodriguez@uns.edu.pe",
-        avatar: "",
-        isOnline: true
-      },
-      {
-        id: "user3",
-        name: "Ana Morales",
-        email: "ana.morales@uns.edu.pe", 
-        avatar: "",
-        isOnline: false
-      }
-    ]
+        if (!res.ok) {
+          throw new Error(data?.message || "No se pudieron cargar los mensajes")
+        }
 
-    setMessages(mockMessages)
-    setParticipants(mockParticipants)
-    setConversationName("Plan Estratégico 2024-2028")
-  }, [conversationId])
+        const items: any[] = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
+        const mapped: Message[] = items.map((msg) => ({
+          id: msg.id?.toString() ?? crypto.randomUUID(),
+          userId: msg.user_id?.toString() ?? msg.userId ?? "unknown",
+          userName: msg.user?.name ?? msg.user_name ?? "Usuario",
+          userAvatar: msg.user?.avatar ?? "",
+          content: msg.content ?? "",
+          timestamp: msg.created_at ?? msg.timestamp ?? "",
+          files: Array.isArray(msg.files)
+            ? msg.files.map((f: any) => ({
+                id: f.id?.toString() ?? crypto.randomUUID(),
+                name: f.name ?? f.filename ?? "archivo",
+                type: f.type ?? "file",
+                size: f.size ?? "",
+                url: f.url ?? "#",
+              }))
+            : [],
+        }))
+
+        setMessages(mapped)
+        setConversationName(
+          data?.meta?.conversation?.name ??
+            items[0]?.conversation?.name ??
+            items[0]?.conversation_name ??
+            `Conversación ${conversationId}`
+        )
+
+        const participantMap = new Map<string, Participant>()
+        const backendParticipants: any[] =
+          data?.meta?.participants ??
+          items[0]?.conversation?.participants ??
+          []
+
+        backendParticipants.forEach((p) => {
+          participantMap.set(p.id?.toString(), {
+            id: p.id?.toString(),
+            name: p.name,
+            email: p.email ?? "",
+            avatar: p.avatar ?? "",
+            isOnline: Boolean(p.is_online ?? p.isOnline),
+          })
+        })
+
+        mapped.forEach((msg) => {
+          if (!participantMap.has(msg.userId)) {
+            participantMap.set(msg.userId, {
+              id: msg.userId,
+              name: msg.userName,
+              email: "",
+              avatar: msg.userAvatar ?? "",
+              isOnline: false,
+            })
+          }
+        })
+
+        setParticipants(Array.from(participantMap.values()))
+      } catch (err: any) {
+        console.error("[ConversationChat] Error:", err)
+        setError(err?.message || "Error al cargar la conversación")
+        setMessages([])
+        setParticipants([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMessages()
+  }, [conversationId, token])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages])
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() || selectedFiles.length > 0) {
-      const message: Message = {
-        id: Date.now().toString(),
-        userId: "current-user",
-        userName: "Tú",
-        content: newMessage,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        files: selectedFiles.map(file => ({
-          id: Date.now().toString() + Math.random(),
-          name: file.name,
-          type: file.type,
-          size: (file.size / 1024 / 1024).toFixed(1) + " MB",
-          url: "#"
-        }))
-      }
-      
-      setMessages(prev => [...prev, message])
-      setNewMessage("")
-      setSelectedFiles([])
-    }
-  }
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
@@ -154,6 +163,83 @@ export default function ConversationChat({ conversationId = "1" }) {
 
   const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() && selectedFiles.length === 0) return
+    if (!token) {
+      setError("No hay token de autenticación")
+      return
+    }
+
+    setSending(true)
+    setError(null)
+
+    try {
+      const hasFiles = selectedFiles.length > 0
+      const url = `${config.apiUrl}${config.endpoints.messages.create}`
+      let body: BodyInit
+      let headers: Record<string, string> = {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      }
+
+      if (hasFiles) {
+        const form = new FormData()
+        form.append("conversation_id", conversationId)
+        form.append("content", newMessage)
+        selectedFiles.forEach((file) => form.append("files[]", file))
+        body = form
+      } else {
+        headers["Content-Type"] = "application/json"
+        body = JSON.stringify({
+          conversation_id: conversationId,
+          content: newMessage,
+        })
+      }
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers,
+        body,
+      })
+      const data = await res.json()
+      console.log("[ConversationChat] POST /messages response:", data)
+
+      if (!res.ok) {
+        throw new Error(data?.message || "No se pudo enviar el mensaje")
+      }
+
+      const saved = data?.data ?? data
+      const appended: Message = {
+        id: saved.id?.toString() ?? Date.now().toString(),
+        userId: saved.user_id?.toString() ?? "current-user",
+        userName: saved.user?.name ?? "Tú",
+        userAvatar: saved.user?.avatar ?? "",
+        content: saved.content ?? newMessage,
+        timestamp:
+          saved.created_at ??
+          new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        files: Array.isArray(saved.files)
+          ? saved.files.map((f: any) => ({
+              id: f.id?.toString() ?? crypto.randomUUID(),
+              name: f.name ?? f.filename ?? "archivo",
+              type: f.type ?? "file",
+              size: f.size ?? "",
+              url: f.url ?? "#",
+            }))
+          : [],
+      }
+
+      setMessages((prev) => [...prev, appended])
+      setNewMessage("")
+      setSelectedFiles([])
+    } catch (err: any) {
+      console.error("[ConversationChat] Error al enviar:", err)
+      setError(err?.message || "Error al enviar el mensaje")
+    } finally {
+      setSending(false)
+    }
   }
 
   return (
@@ -186,9 +272,13 @@ export default function ConversationChat({ conversationId = "1" }) {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <MessageBubble key={message.id} message={message} />
-            ))}
+            {loading ? (
+              <div className="text-sm text-muted-foreground">Cargando mensajes...</div>
+            ) : (
+              messages.map((message) => (
+                <MessageBubble key={message.id} message={message} />
+              ))
+            )}
             <div ref={messagesEndRef} />
           </div>
 
@@ -220,6 +310,7 @@ export default function ConversationChat({ conversationId = "1" }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
+                disabled={sending}
               >
                 <IconPaperclip className="h-4 w-4" />
               </Button>
@@ -242,9 +333,10 @@ export default function ConversationChat({ conversationId = "1" }) {
                     }
                   }}
                   className="min-h-[40px] max-h-[120px] resize-none"
+                  disabled={sending}
                 />
               </div>
-              <Button onClick={handleSendMessage}>
+              <Button onClick={handleSendMessage} disabled={sending}>
                 <IconSend className="h-4 w-4" />
               </Button>
             </div>
@@ -262,7 +354,7 @@ export default function ConversationChat({ conversationId = "1" }) {
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={participant.avatar} />
                       <AvatarFallback>
-                        {participant.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        {participant.name.split(' ').map((n:any) => n[0]).join('').toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     {participant.isOnline && (

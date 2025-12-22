@@ -73,10 +73,9 @@ export const ROLE_ROUTES: Record<string, string> = {
   // ========================================
   // ⚙️ GRUPO DE BUSTAMANTE - ESTRATÉGICO
   // ========================================
-  planner_admin: "/estrategico/plan",
+  planner_admin: "/estrategico/admin/dashboard",
   planner: "/estrategico/plan",
-  // auditor: "/estrategico/auditor/dashboard", // NOTA: Comentado porque auditor ya existe en Grupo 06
-  continuous_improvement: "/estrategico/continuous_improvement/dashboard",
+  continuous_improvement: "/estrategico/iniciativas",
 }
 
 /**
