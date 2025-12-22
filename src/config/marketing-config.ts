@@ -3,20 +3,26 @@
  * @description Configuración del módulo de marketing.
  */
 
+const API_URL = import.meta.env.VITE_MARKETING_API_URL ?? "http://34.170.241.86:8002/api";
+const AUTH_API_URL = import.meta.env.VITE_AUTH_SERVICE_URL ?? "https://project-48be602c-d967-4478-ab6.uc.r.appspot.com/api";
+const METRICS_API_URL = import.meta.env.VITE_METRICS_API_URL ?? "http://34.170.241.86:8006/api";
+const GENERATION_API_URL = import.meta.env.VITE_GENERATION_API_URL ?? "http://34.170.241.86:8002/api";
+const SOCIAL_API_URL = import.meta.env.VITE_SOCIAL_API_URL ?? "http://34.170.241.86:8005/api";
+
 export const config = {
-  apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
-  //apiUrl: "http://127.0.0.1:8002/api",
+  //apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",// Api principal frontend en produccion
+  apiUrl: API_URL,
   // Marketing backend auth and related services
-  //authApiUrl: "http://127.0.0.1:8001/api", // Backend principal para autenticación
+  authApiUrl: AUTH_API_URL,
   // Metrics microservice. Used for batch metrics fetching.
-  //metricsApiUrl: "http://127.0.0.1:8006/api",
-  //generationApiUrl: "http://127.0.0.1:8002/api",
-  //socialApiUrl: "http://127.0.0.1:8005/api", // socialmediaapi
-  environment: "production",
+  metricsApiUrl: METRICS_API_URL,
+  generationApiUrl: GENERATION_API_URL,
+  socialApiUrl: SOCIAL_API_URL, // socialmediaapi
+  //environment: "production",
   //generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/generative/public/api",
-  generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",
-  socialApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/socialmedia/public/api",
-  metricsApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/metricsapi/public/api",
+  //generationApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/generative/public/api",
+  //socialApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/socialmedia/public/api",
+  //metricsApiUrl: "https://instituto.cetivirgendelapuerta.com/backend/metricsapi/public/api",
 
   endpoints: {
     // Authentication (usa authApiUrl)

@@ -75,8 +75,7 @@ export default function AvailabilityManager() {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
-          },
-          credentials: "include"
+          }
         }
       );
 
@@ -115,7 +114,6 @@ export default function AvailabilityManager() {
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
           },
-          credentials: "include",
           body: JSON.stringify({
             user_id: user?.id,
             day_of_week: parseInt(dayOfWeek),
@@ -161,8 +159,7 @@ export default function AvailabilityManager() {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
             "Content-Type": "application/json",
             "X-User-Id": user?.id?.toString() || ""
-          },
-          credentials: "include"
+          }
         }
       );
 

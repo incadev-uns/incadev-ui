@@ -1124,7 +1124,7 @@ export default function AcademicHistory() {
   };
 
   const exportPDF = () => {
-    const url = config.endpoints.academicHistoryExportData;
+    const url = `${config.apiUrl}${config.endpoints.academicHistoryExportData}`;
     fetch(url)
       .then((res) => res.json())
       .then((data) => {
