@@ -1,5 +1,5 @@
-import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { MessageSquare, ThumbsUp, User } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardContent } from "@/components/ui/card";
+import { MessageSquare, ThumbsUp, User, ImageIcon } from "lucide-react";
 import type { Thread } from "../types";
 
 interface ThreadCardProps {
@@ -26,13 +26,31 @@ export default function ThreadCard({ thread, onSelect }: ThreadCardProps) {
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={handleClick}>
+    <Card className="hover:shadow-md transition-shadow cursor-pointer overflow-hidden" onClick={handleClick}>
       <CardHeader>
         <CardTitle className="text-lg line-clamp-2">{thread.title}</CardTitle>
         <CardDescription className="line-clamp-3">
           {thread.body}
         </CardDescription>
       </CardHeader>
+
+      {/* Imagen adjunta si existe */}
+      {thread.image_url && (
+        <CardContent className="pt-0 pb-3">
+          <div className="relative rounded-lg overflow-hidden bg-muted">
+            <img
+              src={thread.image_url}
+              alt="Imagen del hilo"
+              className="w-full h-40 object-cover"
+            />
+            <div className="absolute bottom-2 right-2 bg-black/60 rounded px-2 py-1 flex items-center gap-1">
+              <ImageIcon className="h-3 w-3 text-white" />
+              <span className="text-xs text-white">Imagen</span>
+            </div>
+          </div>
+        </CardContent>
+      )}
+
       <CardFooter className="flex justify-between items-center text-sm text-muted-foreground">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">

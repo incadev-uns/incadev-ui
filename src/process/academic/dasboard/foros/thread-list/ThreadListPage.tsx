@@ -54,7 +54,7 @@ export default function ThreadListPage({ forumId }: ThreadListPageProps) {
     window.location.href = `/academico/foros/hilo/${threadId}`;
   };
 
-  const handleCreateThread = async (data: { title: string; body: string }) => {
+  const handleCreateThread = async (data: { title: string; body: string; image_url?: string }) => {
     if (!token || !user) {
       toast.error("Debes iniciar sesión para crear un hilo");
       return;
@@ -63,7 +63,7 @@ export default function ThreadListPage({ forumId }: ThreadListPageProps) {
     try {
       const tokenWithoutQuotes = token.replace(/^"|"$/g, '');
       const url = `${config.apiUrl}${config.endpoints.threads.create.replace(':forumId', String(forumId))}?user_id=${user.id}`;
-      
+
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -72,7 +72,11 @@ export default function ThreadListPage({ forumId }: ThreadListPageProps) {
           "Content-Type": "application/json",
           "X-User-Id": String(user.id),
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          title: data.title,
+          body: data.body,
+          image_url: data.image_url || null
+        }),
       });
 
       if (!response.ok) {
@@ -90,8 +94,28 @@ export default function ThreadListPage({ forumId }: ThreadListPageProps) {
 
   return (
     <AcademicLayout title="Hilos del Foro">
-      <div className="flex flex-1 flex-col p-6">
-        <div className="space-y-6">
+      <div className="flex flex-1 flex-col">
+        {/* Banner del foro */}
+        {forum?.image_url && (
+          <div className="relative h-48 w-full">
+            <img
+              src={forum.image_url}
+              alt={forum.name}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+            <div className="absolute bottom-4 left-6 right-6 text-white">
+              <h2 className="text-3xl font-bold tracking-tight drop-shadow-lg">
+                {forum.name}
+              </h2>
+              <p className="text-white/90 mt-1 drop-shadow">
+                {forum.description}
+              </p>
+            </div>
+          </div>
+        )}
+
+        <div className="p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
@@ -102,18 +126,21 @@ export default function ThreadListPage({ forumId }: ThreadListPageProps) {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Volver
               </Button>
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight">
-                  {loadingForum ? "Cargando..." : forum?.name || "Foro"}
-                </h2>
-                {forum && (
-                  <p className="text-muted-foreground mt-1">
-                    {forum.description}
-                  </p>
-                )}
-              </div>
+              {/* Solo mostrar título si NO hay imagen de banner */}
+              {!forum?.image_url && (
+                <div>
+                  <h2 className="text-3xl font-bold tracking-tight">
+                    {loadingForum ? "Cargando..." : forum?.name || "Foro"}
+                  </h2>
+                  {forum && (
+                    <p className="text-muted-foreground mt-1">
+                      {forum.description}
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
-            
+
             <Button onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nuevo Hilo
