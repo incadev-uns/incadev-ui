@@ -558,9 +558,7 @@ export default function ConversationChat({ conversationId = "1" }) {
               </Button>
               <div className="min-w-0 flex-1">
                 <h3 className="font-semibold truncate">{conversationName}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {participants.length} participantes • {participants.filter(p => p.isOnline).length} en línea
-                </p>
+                
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
