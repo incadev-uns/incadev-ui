@@ -35,7 +35,11 @@ export default function TutoringRequestCard({
   const [rejectError, setRejectError] = useState("");
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
+    if (!dateString) return "N/A";
+    // Parsear la fecha como local para evitar desfase de timezone
+    // Si viene en formato "YYYY-MM-DD", agregar T00:00:00 para interpretarla como hora local
+    const dateStr = dateString.includes('T') ? dateString : `${dateString}T00:00:00`;
+    return new Date(dateStr).toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "long",
       year: "numeric",

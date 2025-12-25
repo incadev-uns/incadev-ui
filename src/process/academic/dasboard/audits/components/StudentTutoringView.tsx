@@ -27,6 +27,8 @@ export interface StudentTutoring {
   teacherName?: string;
   requestedDate?: string;
   requestedTime?: string;
+  start_time?: string;
+  end_time?: string;
   teacher?: {
     id: number;
     name: string;
