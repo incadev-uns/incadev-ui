@@ -25,7 +25,10 @@ export default function StudentTutoringList({
 }: StudentTutoringListProps) {
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
-    const date = new Date(dateString);
+    // Parsear la fecha como local para evitar desfase de timezone
+    // Si viene en formato "YYYY-MM-DD", agregar T00:00:00 para interpretarla como hora local
+    const dateStr = dateString.includes('T') ? dateString : `${dateString}T00:00:00`;
+    const date = new Date(dateStr);
     return date.toLocaleDateString("es-ES", {
       day: "2-digit",
       month: "long",
@@ -46,21 +49,21 @@ export default function StudentTutoringList({
           icon: <AlertCircle className="h-5 w-5" />,
           badge: <Badge variant="secondary">Pendiente</Badge>,
           color: "text-yellow-600",
-          bgColor: "bg-yellow-50",
+          bgColor: "bg-yellow-500",
         };
       case "accepted":
         return {
           icon: <CheckCircle2 className="h-5 w-5" />,
           badge: <Badge>Aceptada</Badge>,
           color: "text-blue-600",
-          bgColor: "bg-blue-50",
+          bgColor: "bg-blue-500",
         };
       case "rejected":
         return {
           icon: <XCircle className="h-5 w-5" />,
           badge: <Badge variant="destructive">Rechazada</Badge>,
           color: "text-red-600",
-          bgColor: "bg-red-50",
+          bgColor: "bg-red-500",
         };
       case "completed":
         if (tutoring.student_attended === true) {
@@ -68,7 +71,7 @@ export default function StudentTutoringList({
             icon: <CheckCircle2 className="h-5 w-5" />,
             badge: <Badge className="bg-green-600">Completada - Asistió</Badge>,
             color: "text-green-600",
-            bgColor: "bg-green-50",
+            bgColor: "bg-green-500",
           };
         }
         if (tutoring.student_attended === false) {
@@ -76,21 +79,21 @@ export default function StudentTutoringList({
             icon: <XCircle className="h-5 w-5" />,
             badge: <Badge variant="secondary">Completada - No asistió</Badge>,
             color: "text-gray-600",
-            bgColor: "bg-gray-50",
+            bgColor: "bg-gray-400",
           };
         }
         return {
           icon: <CheckCircle2 className="h-5 w-5" />,
           badge: <Badge variant="outline">Completada</Badge>,
           color: "text-gray-600",
-          bgColor: "bg-gray-50",
+          bgColor: "bg-gray-400",
         };
       default:
         return {
           icon: <AlertCircle className="h-5 w-5" />,
           badge: <Badge variant="outline">Desconocido</Badge>,
           color: "text-gray-600",
-          bgColor: "bg-gray-50",
+          bgColor: "bg-gray-400",
         };
     }
   };
@@ -152,14 +155,14 @@ export default function StudentTutoringList({
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Fecha:</span>
                   <span className="text-sm">
-                    {formatDate(tutoring.requested_date)}
+                    {formatDate(tutoring.requested_date || (tutoring.start_time ? tutoring.start_time.split('T')[0] : ''))}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-medium">Hora:</span>
-                  <span className="text-sm">{formatTime(tutoring.requested_time)}</span>
+                  <span className="text-sm">{formatTime(tutoring.requested_time || (tutoring.start_time ? tutoring.start_time.split('T')[1]?.substring(0, 5) : ''))}</span>
                 </div>
               </div>
 
