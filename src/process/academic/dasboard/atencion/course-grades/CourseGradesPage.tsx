@@ -36,6 +36,7 @@ export default function CourseGradesPage() {
   const [loadingGroups, setLoadingGroups] = useState(true);
   const [loadingGrades, setLoadingGrades] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [gradesError, setGradesError] = useState<string | null>(null);
 
   useEffect(() => {
     if (mounted && user?.id) {
@@ -64,10 +65,13 @@ export default function CourseGradesPage() {
   const loadGrades = async (groupId: number) => {
     try {
       setLoadingGrades(true);
+      setGradesError(null);
+      setGradesData(null);
       const data = await getGroupGrades(groupId);
       setGradesData(data);
     } catch (err) {
       console.error("Error loading grades:", err);
+      setGradesError("No se pudieron cargar las notas para este curso. Es posible que aun no haya evaluaciones registradas.");
     } finally {
       setLoadingGrades(false);
     }
@@ -139,6 +143,10 @@ export default function CourseGradesPage() {
         {loadingGrades ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : gradesError ? (
+          <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/10 p-6 text-center">
+            <p className="text-yellow-600 dark:text-yellow-400">{gradesError}</p>
           </div>
         ) : gradesData ? (
           <>

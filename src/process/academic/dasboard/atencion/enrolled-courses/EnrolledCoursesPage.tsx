@@ -122,7 +122,7 @@ export default function EnrolledCoursesPage() {
                   <TableCell>{formatDate(group.end_date)}</TableCell>
                   <TableCell>{getStatusBadge(group.group_status)}</TableCell>
                   <TableCell className="text-right">
-                    {group.final_grade ? (
+                    {typeof group.final_grade === 'number' ? (
                       <span className="font-semibold">{group.final_grade.toFixed(1)}</span>
                     ) : (
                       <span className="text-muted-foreground">-</span>
