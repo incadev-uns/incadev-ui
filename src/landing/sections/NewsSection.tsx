@@ -251,13 +251,13 @@ export default function NewsSection() {
             return (
               <Card
                 key={item.id}
-                className={`group hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col relative border-l-4 ${config.borderAccent} ${config.cardClass} hover:-translate-y-1`}
+                className={`group hover:shadow-2xl transition-all duration-500 overflow-hidden flex flex-col relative border-l-4 ${config.borderAccent} ${config.cardClass} hover:-translate-y-1 p-0`}
               >
                 {/* Gradiente de fondo sutil */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${config.gradientFrom} ${config.gradientTo} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
 
                 {/* Imagen de la noticia con overlay dinámico */}
-                <div className="relative h-48 overflow-hidden bg-muted/30">
+                <div className="relative h-48 overflow-hidden bg-muted/30 rounded-t-lg">
                   <img
                     src={item.image_url}
                     alt={item.title}
@@ -296,7 +296,7 @@ export default function NewsSection() {
                   </div>
                 </div>
 
-                <CardHeader className="relative z-10">
+                <CardHeader className="relative z-10 px-6 pt-6 pb-4">
                   <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2 flex-wrap">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
@@ -319,7 +319,7 @@ export default function NewsSection() {
                   </CardDescription>
                 </CardHeader>
 
-                <CardContent className="mt-auto relative z-10">
+                <CardContent className="mt-auto relative z-10 px-6 pb-6">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-xs text-muted-foreground flex items-center gap-1">
                       <User className="h-3 w-3" />

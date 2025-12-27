@@ -233,16 +233,6 @@ export const ROLES: Role[] = [
     color: "text-red-500",
     loginPath: "/soporte/login"
   },
-  {
-    id: "administrative_clerk",
-    name: "administrative_clerk",
-    displayName: "Empleado Administrativo",
-    description: "Gestión de trámites y documentación administrativa",
-    group: "tutoring",
-    icon: "FileText",
-    color: "text-slate-600",
-    loginPath: "/soporte/login"
-  },
 
   // GRUPO DE BUSTAMANTE
   {

@@ -1,9 +1,38 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { PrivacyModal } from "@/components/modals/PrivacyModal";
+import { TermsModal } from "@/components/modals/TermsModal";
+import { CookiesModal } from "@/components/modals/CookiesModal";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isCookiesModalOpen, setIsCookiesModalOpen] = useState(false);
+
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const contactSection = document.getElementById('contactanos');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const handlePrivacyClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsPrivacyModalOpen(true);
+  };
+
+  const handleTermsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsTermsModalOpen(true);
+  };
+
+  const handleCookiesClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    setIsCookiesModalOpen(true);
+  };
 
   return (
     <footer className="bg-card border-t">
@@ -70,12 +99,12 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/#nosotros" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="/tecnologico/web/nosotros" className="text-muted-foreground hover:text-primary transition-colors">
                   Nosotros
                 </a>
               </li>
               <li>
-                <a href="/#contacto" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="/#contactanos" onClick={handleContactClick} className="text-muted-foreground hover:text-primary transition-colors">
                   Contacto
                 </a>
               </li>
@@ -92,18 +121,8 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/tecnologico" className="text-muted-foreground hover:text-primary transition-colors">
-                  Gestión Tecnológica
-                </a>
-              </li>
-              <li>
                 <a href="/soporte" className="text-muted-foreground hover:text-primary transition-colors">
                   Soporte
-                </a>
-              </li>
-              <li>
-                <a href="/ayuda" className="text-muted-foreground hover:text-primary transition-colors">
-                  Preguntas Frecuentes
                 </a>
               </li>
             </ul>
@@ -114,17 +133,17 @@ export function Footer() {
             <h4 className="text-sm font-semibold text-foreground">Legal</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a href="/privacidad" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#" onClick={handlePrivacyClick} className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">
                   Política de Privacidad
                 </a>
               </li>
               <li>
-                <a href="/terminos" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#" onClick={handleTermsClick} className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">
                   Términos y Condiciones
                 </a>
               </li>
               <li>
-                <a href="/cookies" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="#" onClick={handleCookiesClick} className="text-muted-foreground hover:text-primary transition-colors cursor-pointer">
                   Política de Cookies
                 </a>
               </li>
@@ -140,6 +159,24 @@ export function Footer() {
           © {currentYear} INCADEV - Instituto de Capacitación y Desarrollo Virtual. Todos los derechos reservados.
         </p>
       </div>
+
+      {/* Modal de Política de Privacidad */}
+      <PrivacyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+      />
+
+      {/* Modal de Términos y Condiciones */}
+      <TermsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+      />
+
+      {/* Modal de Política de Cookies */}
+      <CookiesModal
+        isOpen={isCookiesModalOpen}
+        onClose={() => setIsCookiesModalOpen(false)}
+      />
     </footer>
   );
 }
