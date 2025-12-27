@@ -152,7 +152,7 @@ export default function FeaturedCoursesSlider() {
           {courses.map((course, index) => (
             <div
               key={course.id}
-              className="absolute w-full max-w-md transition-all duration-700 ease-out"
+              className="absolute w-full max-w-md transition-all duration-300 ease-out"
               style={{
                 ...getCardStyle(index),
                 transformStyle: 'preserve-3d'
