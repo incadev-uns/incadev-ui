@@ -5,6 +5,14 @@ import { Separator } from "@/components/ui/separator";
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
+  const handleContactClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    const contactSection = document.getElementById('contactanos');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <footer className="bg-card border-t">
       <div className="container px-4 py-12 md:py-16">
@@ -70,12 +78,12 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/#nosotros" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="/tecnologico/web/nosotros" className="text-muted-foreground hover:text-primary transition-colors">
                   Nosotros
                 </a>
               </li>
               <li>
-                <a href="/#contacto" className="text-muted-foreground hover:text-primary transition-colors">
+                <a href="/#contactanos" onClick={handleContactClick} className="text-muted-foreground hover:text-primary transition-colors">
                   Contacto
                 </a>
               </li>
@@ -89,11 +97,6 @@ export function Footer() {
               <li>
                 <a href="/academico/grupos/disponible" className="text-muted-foreground hover:text-primary transition-colors">
                   Educación
-                </a>
-              </li>
-              <li>
-                <a href="/tecnologico" className="text-muted-foreground hover:text-primary transition-colors">
-                  Gestión Tecnológica
                 </a>
               </li>
               <li>

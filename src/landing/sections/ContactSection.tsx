@@ -124,7 +124,7 @@ export default function ContactSection() {
   };
 
   return (
-    <div className="container mx-auto px-4">
+    <div id="contactanos" className="container mx-auto px-4 scroll-mt-20">
       <div className="text-center mb-12">
         <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
           Contáctanos
