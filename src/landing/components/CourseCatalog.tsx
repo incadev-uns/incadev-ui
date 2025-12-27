@@ -165,26 +165,37 @@ export default function CourseCatalog() {
           <FeaturedCoursesSlider />
         </div>
 
-        {/* Búsqueda */}
-        <div className="mb-12">
-          <Card className="shadow-lg border-muted/50">
-            <CardContent className="pt-6">
+        {/* Bloque unificado de Búsqueda y Cursos */}
+        <Card className="shadow-xl border-2 border-muted/50">
+          {/* Sección de Búsqueda */}
+          <div className="bg-gradient-to-br from-primary/5 via-primary/3 to-background p-6 border-b-2 border-muted/50">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Search className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">Buscar Cursos</h2>
+                  <p className="text-sm text-muted-foreground">Encuentra el curso perfecto para ti</p>
+                </div>
+              </div>
+
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar cursos..."
+                  placeholder="Buscar por nombre o descripción del curso..."
                   value={search}
                   onChange={(e) => {
                     setSearch(e.target.value);
                     handleFilterChange();
                   }}
-                  className="pl-10"
+                  className="pl-10 h-11 bg-background/80 backdrop-blur-sm border-muted/50 focus:border-primary/50"
                 />
               </div>
 
               {/* Contador de resultados */}
-              <div className="mt-4 pt-4 border-t flex items-center justify-between">
-                <p className="text-sm text-muted-foreground">
+              <div className="flex items-center justify-between text-sm">
+                <p className="text-muted-foreground">
                   Mostrando <span className="font-semibold text-foreground">{currentCourses.length}</span> de{" "}
                   <span className="font-semibold text-foreground">{filteredCourses.length}</span> cursos
                 </p>
@@ -196,161 +207,159 @@ export default function CourseCatalog() {
                       setSearch("");
                       setCurrentPage(1);
                     }}
-                    className="text-xs"
+                    className="text-xs h-8"
                   >
                     Limpiar búsqueda
                   </Button>
                 )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
 
-        {/* Grid de Cursos */}
-        {currentCourses.length === 0 ? (
-          <Card className="shadow-lg">
-            <CardContent className="flex flex-col items-center justify-center py-16">
-              <div className="rounded-full bg-muted p-6 mb-4">
-                <BookOpen className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2">No se encontraron cursos</h3>
-              <p className="text-muted-foreground text-center max-w-md mb-4">
-                Intenta realizar una búsqueda diferente para encontrar más resultados
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearch("");
-                  setCurrentPage(1);
-                }}
-              >
-                Mostrar todos los cursos
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {currentCourses.map((course, index) => (
-                <Card
-                  key={course.id}
-                  className="group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col border-muted/50"
-                  style={{
-                    animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
+          {/* Sección de Cursos */}
+          <CardContent className="p-6">
+            {currentCourses.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="rounded-full bg-muted p-6 mb-4">
+                  <BookOpen className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">No se encontraron cursos</h3>
+                <p className="text-muted-foreground text-center max-w-md mb-4">
+                  Intenta realizar una búsqueda diferente para encontrar más resultados
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearch("");
+                    setCurrentPage(1);
                   }}
                 >
-                  {/* Imagen del curso */}
-                  <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10">
-                    <img
-                      src={course.image}
-                      alt={course.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-
-                  <CardHeader>
-                    <CardTitle className="text-xl line-clamp-2">{course.name}</CardTitle>
-                    <CardDescription className="line-clamp-2">
-                      {course.description}
-                    </CardDescription>
-                  </CardHeader>
-
-                  <CardContent className="flex-1 flex flex-col">
-                    {/* Versión */}
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                      <Tag className="h-4 w-4 text-primary" />
-                      <span>{course.version_name}</span>
-                    </div>
-
-                    {/* Precio */}
-                    <div className="mt-auto pt-4 border-t">
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-3xl font-bold text-primary">
-                          S/ {parseFloat(course.price).toFixed(0)}
-                        </span>
-                        <span className="text-sm text-muted-foreground">por curso</span>
+                  Mostrar todos los cursos
+                </Button>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentCourses.map((course, index) => (
+                    <Card
+                      key={course.id}
+                      className="group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col border-muted/50"
+                      style={{
+                        animation: `fadeInUp 0.5s ease-out ${index * 0.1}s both`
+                      }}
+                    >
+                      {/* Imagen del curso */}
+                      <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/5 to-primary/10">
+                        <img
+                          src={course.image}
+                          alt={course.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
+
+                      <CardHeader>
+                        <CardTitle className="text-xl line-clamp-2">{course.name}</CardTitle>
+                        <CardDescription className="line-clamp-2">
+                          {course.description}
+                        </CardDescription>
+                      </CardHeader>
+
+                      <CardContent className="flex-1 flex flex-col">
+                        {/* Versión */}
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
+                          <Tag className="h-4 w-4 text-primary" />
+                          <span>{course.version_name}</span>
+                        </div>
+
+                        {/* Precio */}
+                        <div className="mt-auto pt-4 border-t">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-3xl font-bold text-primary">
+                              S/ {parseFloat(course.price).toFixed(0)}
+                            </span>
+                            <span className="text-sm text-muted-foreground">por curso</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+
+                {/* Paginación */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 pt-6 border-t">
+                    <div className="text-sm text-muted-foreground">
+                      Página <span className="font-semibold text-foreground">{currentPage}</span> de{" "}
+                      <span className="font-semibold text-foreground">{totalPages}</span>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setCurrentPage(currentPage - 1);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        disabled={currentPage === 1}
+                        className="gap-1"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Anterior
+                      </Button>
 
-            {/* Paginación */}
-            {totalPages > 1 && (
-              <Card className="shadow-lg border-muted/50 mt-8">
-                <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 py-6">
-                  <div className="text-sm text-muted-foreground">
-                    Página <span className="font-semibold text-foreground">{currentPage}</span> de{" "}
-                    <span className="font-semibold text-foreground">{totalPages}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setCurrentPage(currentPage - 1);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      disabled={currentPage === 1}
-                      className="gap-1"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Anterior
-                    </Button>
+                      {/* Números de página */}
+                      <div className="hidden sm:flex gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          let pageNum;
+                          if (totalPages <= 5) {
+                            pageNum = i + 1;
+                          } else if (currentPage <= 3) {
+                            pageNum = i + 1;
+                          } else if (currentPage >= totalPages - 2) {
+                            pageNum = totalPages - 4 + i;
+                          } else {
+                            pageNum = currentPage - 2 + i;
+                          }
 
-                    {/* Números de página */}
-                    <div className="hidden sm:flex gap-1">
-                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (currentPage >= totalPages - 2) {
-                          pageNum = totalPages - 4 + i;
-                        } else {
-                          pageNum = currentPage - 2 + i;
-                        }
+                          return (
+                            <Button
+                              key={pageNum}
+                              variant={currentPage === pageNum ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => {
+                                setCurrentPage(pageNum);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }}
+                              className="w-9"
+                            >
+                              {pageNum}
+                            </Button>
+                          );
+                        })}
+                      </div>
 
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={currentPage === pageNum ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => {
-                              setCurrentPage(pageNum);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                            className="w-9"
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setCurrentPage(currentPage + 1);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        disabled={currentPage === totalPages}
+                        className="gap-1"
+                      >
+                        Siguiente
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
                     </div>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setCurrentPage(currentPage + 1);
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                      }}
-                      disabled={currentPage === totalPages}
-                      className="gap-1"
-                    >
-                      Siguiente
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
+                )}
+              </>
             )}
-          </>
-        )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
