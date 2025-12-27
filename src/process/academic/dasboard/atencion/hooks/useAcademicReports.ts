@@ -54,7 +54,7 @@ export function useAcademicReports() {
       
       const tokenWithoutQuotes = token?.replace(/^"|"/g, '');
       const response = await fetch(
-        `${config.apiUrl}${config.endpoints.report.groupGrades}?student_id=${user.id}&group_id=${groupId}`,
+        `${config.apiUrl}${config.endpoints.report.groupGrades}/${user.id}/${groupId}`,
         {
           headers: {
             "Authorization": `Bearer ${tokenWithoutQuotes}`,
@@ -65,7 +65,12 @@ export function useAcademicReports() {
       );
 
       if (!response.ok) {
-        throw new Error('Error al obtener notas');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error response from API:', errorData);
+        if (errorData.debug) {
+          console.log('Debug info:', errorData.debug);
+        }
+        throw new Error(errorData.message || 'Error al obtener notas');
       }
 
       return await response.json();
