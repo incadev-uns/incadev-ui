@@ -125,11 +125,6 @@ export function Footer() {
                   Soporte
                 </a>
               </li>
-              <li>
-                <a href="/ayuda" className="text-muted-foreground hover:text-primary transition-colors">
-                  Preguntas Frecuentes
-                </a>
-              </li>
             </ul>
           </div>
 
