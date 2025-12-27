@@ -140,7 +140,7 @@ export default function CourseCatalog() {
     <div className="min-h-screen bg-gradient-to-b from-background via-muted/20 to-background">
       <div className="container mx-auto px-4 py-20 md:py-24 max-w-[1400px]">
         {/* Header con breadcrumbs */}
-        <div className="flex flex-col gap-6 mb-12">
+        <div className="flex flex-col gap-6 mb-4">
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-sm text-muted-foreground">
             <a href="/" className="hover:text-foreground transition-colors flex items-center gap-1">
@@ -152,17 +152,11 @@ export default function CourseCatalog() {
           </nav>
 
           {/* Título y descripción */}
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-0 rounded-full bg-primary/10 text-primary text-sm font-medium">
               <BookOpen className="h-4 w-4" />
               <span>{courses.length} Cursos Disponibles</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Catálogo de Cursos
-            </h1>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-3xl">
-              Descubre cursos diseñados por expertos de la industria. Aprende a tu ritmo y obtén certificados reconocidos.
-            </p>
           </div>
         </div>
 
