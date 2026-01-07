@@ -5,7 +5,7 @@
  **/
 
 export const config = {
-  apiUrl: "https://project-48be602c-d967-4478-ab6.uc.r.appspot.com/api",
+  apiUrl: "http://35.232.144.43/api",
   //apiUrl: "http://localhost:8000/api",
   environment: "development",
   endpoints: {
