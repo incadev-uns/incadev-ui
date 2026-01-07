@@ -5,7 +5,7 @@
  **/
 
 export const config = {
-  apiUrl:"https://incadev-academico-847846098195.us-central1.run.app",
+  apiUrl:"http://34.41.41.33",
   //apiUrl: "http://127.0.0.1:8000",
   environment: "development",
   endpoints: {
