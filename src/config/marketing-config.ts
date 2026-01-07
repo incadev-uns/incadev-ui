@@ -3,11 +3,11 @@
  * @description Configuración del módulo de marketing.
  */
 
-const API_URL = import.meta.env.VITE_MARKETING_API_URL ?? "http://34.170.241.86:8002/api";
-const AUTH_API_URL = import.meta.env.VITE_AUTH_SERVICE_URL ?? "https://project-48be602c-d967-4478-ab6.uc.r.appspot.com/api";
+const API_URL = import.meta.env.VITE_MARKETING_API_URL ?? "http://34.170.27.155/api";
+const AUTH_API_URL = import.meta.env.VITE_AUTH_SERVICE_URL ?? "http://35.232.144.43/api";
 const METRICS_API_URL = import.meta.env.VITE_METRICS_API_URL ?? "http://34.170.241.86:8006/api";
 const GENERATION_API_URL = import.meta.env.VITE_GENERATION_API_URL ?? "http://34.170.241.86:8002/api";
-const SOCIAL_API_URL = import.meta.env.VITE_SOCIAL_API_URL ?? "http://34.170.241.86:8005/api";
+const SOCIAL_API_URL = import.meta.env.VITE_SOCIAL_API_URL ?? "http://136.112.154.196/api";
 
 export const config = {
   //apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/marketing/public/api",// Api principal frontend en produccion

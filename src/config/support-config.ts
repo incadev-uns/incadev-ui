@@ -5,7 +5,7 @@
  **/
 
 export const config = {
-  apiUrl:"https://api-soporteestudiantil-805049814485.us-central1.run.app",
+  apiUrl:"http://34.16.101.152",
   
   //apiUrl:"http://127.0.0.1:8000",
   environment:"development",

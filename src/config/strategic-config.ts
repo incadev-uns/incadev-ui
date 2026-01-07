@@ -8,7 +8,7 @@ type apiProps = string | number;
 
 export const config = {
   //apiUrl: "https://instituto.cetivirgendelapuerta.com/backend/estrategico/public",
-  apiUrl: "https://strategic-process-app-933196213879.us-central1.run.app",
+  apiUrl: "http://136.116.67.186",
   environment: "development",
   endpoints: {
     messageFiles: {
